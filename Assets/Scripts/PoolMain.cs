@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
+using UnityEngine.SceneManagement;
 
 public class PoolMain : MonoBehaviour
 {
@@ -12,7 +13,7 @@ public class PoolMain : MonoBehaviour
     [SerializeField] private Vector3 lineRendererOffset, cueOgPos, cueOgRot;
     [SerializeField] private Vector2 deltaPosition, deltaPos;
     [SerializeField] private GameObject targetBall, cueAnchor, cueBall, powerBar, aimDock, spinObj;
-    [SerializeField] private float maxPower, rotationSpeed = 0.1f, powerMultiplier, maxDistance = 3, secMax = 2;
+    [SerializeField] private float maxPower, rotationSpeed = 0.1f, powerMultiplier, maxDistance = 3, secMax = 2, ballWidth;
     [SerializeField] private Camera powerCam;
     [SerializeField] private Transform cueStick, forceAt;
     [SerializeField] private LineRenderer lineRenderer, linePlay;
@@ -46,6 +47,7 @@ public class PoolMain : MonoBehaviour
     {
         cueOgPos = cue.transform.localPosition;
         ballR = cueBall.GetComponent<Rigidbody>();
+        ballWidth = cueBall.GetComponent<MeshRenderer>().bounds.size.x/2;
         Application.targetFrameRate = 60;
     }
 
@@ -250,8 +252,10 @@ public class PoolMain : MonoBehaviour
         yield return new WaitForSeconds(2f);
         yield return new WaitUntil(BallStopped);
         yield return new WaitForSeconds(2f);
+        if(SceneManager.GetActiveScene().buildIndex==0)
+            cueBall.transform.rotation = Quaternion.Euler(Vector3.zero);
         spinObj.SetActive(true);
-        power.maxValue = 90;
+        power.maxValue = 86;
         spinIndicator.anchoredPosition = Vector2.zero;
         spinRect.anchoredPosition = Vector2.zero;
         spinMark.transform.localPosition = Vector3.zero;
@@ -262,7 +266,7 @@ public class PoolMain : MonoBehaviour
 
         if (gameOver) yield break;
 
-        if (!pocketed)
+        if (!pocketed || isFoul)
         {
             GameLogic.instance.currentPlayer = GameLogic.instance.currentPlayer == GameLogic.CurrentPlayer.player1 ? GameLogic.CurrentPlayer.player2 : GameLogic.CurrentPlayer.player1;
         }
@@ -331,24 +335,25 @@ public class PoolMain : MonoBehaviour
 
         points = 1;
 
+        //if(Physics.SphereCast(ballR.position, ballR.GetComponent<SphereCollider>().radius, direction,out hiit))
         if (ballR.SweepTest(direction, out hiit, 180))
         {
             points++;
             if (points > maxBounces) return;
 
+            collDistance = hiit.distance;
+
+            fallPoint = cueBall.transform.position + direction * collDistance;
+
             if (hiit.collider.CompareTag("playBall"))
             {
-                collDistance = hiit.distance;
-
-                fallPoint = cueBall.transform.position + direction * collDistance;                
-
                 lineRenderer.positionCount = points;
                 lineRenderer.SetPosition(points - 1, fallPoint);
 
                 aimDock.SetActive(true);                
                 aimDock.transform.position = fallPoint;
 
-                Vector3 newStart = hiit.point;
+                Vector3 newStart = hiit.collider.transform.position;
 
                 Vector3 newDir = (hiit.collider.transform.position - hiit.point).normalized;
 
@@ -362,7 +367,7 @@ public class PoolMain : MonoBehaviour
             {
                 aimDock.SetActive(false);
                 lineRenderer.positionCount = points;
-                lineRenderer.SetPosition(points - 1, hiit.point);
+                lineRenderer.SetPosition(points - 1, fallPoint);
                 linePlay.positionCount = 0;
             }
         }

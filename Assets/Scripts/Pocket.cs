@@ -14,28 +14,22 @@ public class Pocket : MonoBehaviour
         }
         else if (pocketedBall.ballType == BallBehaviour.BallType.black)
         {
-            Debug.Log("8b");
             if(GameLogic.instance.players[GameLogic.instance.currentPlayer].pocketedBalls.Count == 7)
             {
-                Debug.Log("cd1");
                 GameLogic.instance.GameCompleteEvent(GameLogic.instance.currentPlayer);
             }
             else
             {
-                Debug.Log("cd2");
                 GameLogic.instance.GameCompleteEvent(GameLogic.instance.GetOpponent(GameLogic.instance.currentPlayer));
             }
         }
         else
         {
-            Debug.Log("swa");
             other.gameObject.SetActive(false);
             GameLogic.instance.pocketedBalls.Add(other.gameObject);
             PoolMain.instance.balls.Remove(other.gameObject);
-            //other.gameObject.SetActive(false);
             if (PoolMain.instance.isBreak)
             {
-                Debug.Log("pot on break");
                 PoolMain.instance.pocketed = true;
             }
             else
@@ -71,12 +65,13 @@ public class Pocket : MonoBehaviour
                 {
                     PoolMain.instance.pocketed = true;
                     GameLogic.instance.players[GameLogic.instance.currentPlayer].pocketedBalls.Add(pocketedBall.gameObject);
+                    GameLogic.instance.players[GameLogic.instance.currentPlayer].DisableBallImage(pocketedBall.ballCode);
                 }
                 else
                 {
                     GameLogic.instance.players[GameLogic.instance.GetOpponent(GameLogic.instance.currentPlayer)].pocketedBalls.Add(pocketedBall.gameObject);
+                    GameLogic.instance.players[GameLogic.instance.GetOpponent(GameLogic.instance.currentPlayer)].DisableBallImage(pocketedBall.ballCode);
                 }
-                GameLogic.instance.DisableBallImage(pocketedBall.ballCode);
             }
 
         }

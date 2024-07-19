@@ -84,11 +84,6 @@ public class GameLogic : MonoBehaviour
         }
     }
 
-    public void DisableBallImage(int ballCode)
-    {
-        players[currentPlayer].playerBalls[ballCode].enabled = false;
-    }
-
     IEnumerator Toss()
     {
         float time = 0;
@@ -131,7 +126,10 @@ public class GameLogic : MonoBehaviour
 
     public void Restart()
     {
-        SceneManager.LoadScene(0);
+        if (SceneManager.GetActiveScene().buildIndex == 0)
+            SceneManager.LoadScene(0);
+        else
+            SceneManager.LoadScene(1);
     }
 
     [System.Serializable]
