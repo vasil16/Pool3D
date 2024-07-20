@@ -54,9 +54,6 @@ public class PoolCamBehaviour : MonoBehaviour
 
     void Update()
     {
-        //cam.fieldOfView = Mathf.Clamp(cam.fieldOfView, 25, 50);
-
-
         if (isZoomingIn)
         {
             ZoomIn();
@@ -107,7 +104,7 @@ public class PoolCamBehaviour : MonoBehaviour
         {
             foreach (Touch touch in Input.touches)
             {
-                if (PoolMain.instance.dragPower || Utils.IsPointerOverUIObject(Input.mousePosition)) return;
+                if (PoolMain.instance.dragPower || Utils.IsPointerOverUIObject(touch.position)) return;
 
                 if (Input.touchCount == 2)
                 {
@@ -133,14 +130,15 @@ public class PoolCamBehaviour : MonoBehaviour
                         {
                             if (Mathf.Abs(touch.deltaPosition.y) < 10) return;
                             PoolMain.instance.updown = true;
+
                             transform.rotation = Quaternion.Euler(transform.eulerAngles.x, transform.eulerAngles.y, transform.eulerAngles.z + (deltaPos.y * 0.1f));
                         }
                         else
                         {
                             PoolMain.instance.updown = false;
-                            if (gameState != GameState.Aim)
                             {
                                 Debug.Log("try swi");
+                                PoolMain.instance.cueAnchor.transform.rotation = Quaternion.Euler(0, PoolMain.instance.cueAnchor.transform.eulerAngles.y + (deltaPos.x * 0.1f), 0);
                                 transform.rotation = Quaternion.Euler(transform.eulerAngles.x, transform.eulerAngles.y + (deltaPos.x * 0.1f), transform.eulerAngles.z);
                             }
                         }
@@ -153,13 +151,7 @@ public class PoolCamBehaviour : MonoBehaviour
                         if (touchTime < longTouchThreshold)
                         {
                             touchDelta = touchEnd - touchStart;
-                            //if (touchDelta.x <= -60f || touchDelta.x > 60f || touchDelta.y <= -60f || touchDelta.y > 60f)
-                            //{
-                            //    swipeDirection = (touchDelta.x > touchDelta.y ? touchDelta.x > 0 ? touchDelta.y > 0 ?
-                            //            SwipeDirection.Right : SwipeDirection.Left : SwipeDirection.Down : SwipeDirection.Up);
-                            //    touchDelta = touchStart = touchEnd = Vector2.zero;
-                            //    StartCoroutine(MoveEffect());
-                            //}
+
                             if (Mathf.Abs(touchDelta.x) > 20f || Mathf.Abs(touchDelta.y) > 20f)
                             {
                                 if (Mathf.Abs(touchDelta.x) > Mathf.Abs(touchDelta.y))
@@ -198,6 +190,34 @@ public class PoolCamBehaviour : MonoBehaviour
         timerRunning = false;
     }
 
+    IEnumerator MoveEffect()
+    {
+        float time = 1;
+        while (time >= 0)
+        {
+            time -= Time.deltaTime;
+            if (swipeDirection == SwipeDirection.Left)
+            {
+                PoolMain.instance.cueAnchor.transform.rotation = Quaternion.Euler(0, transform.eulerAngles.y - (time * 0.5f), 0);
+                transform.rotation = Quaternion.Euler(0, transform.eulerAngles.y - (time * 0.5f), transform.eulerAngles.z);
+            }
+            else if (swipeDirection == SwipeDirection.Right)
+            {
+                PoolMain.instance.cueAnchor.transform.rotation = Quaternion.Euler(0, transform.eulerAngles.y + (time * 0.5f), 0);
+                transform.rotation = Quaternion.Euler(0, transform.eulerAngles.y + (time * 0.5f), transform.eulerAngles.z);
+            }
+            else if (swipeDirection == SwipeDirection.Up)
+            {
+                transform.rotation = Quaternion.Euler(0, transform.eulerAngles.y, transform.eulerAngles.z + (time * 0.5f));
+            }
+            else if (swipeDirection == SwipeDirection.Down)
+            {
+                transform.rotation = Quaternion.Euler(0, transform.eulerAngles.y, transform.eulerAngles.z - (time * 0.5f));
+            }
+            yield return null;
+        }
+    }
+
     public void ZoomIn()
     {
         //cam.fieldOfView = Mathf.Lerp(cam.fieldOfView, minFov, zoomSpeed * Time.deltaTime);
@@ -232,33 +252,7 @@ public class PoolCamBehaviour : MonoBehaviour
         isZoomingOut = false;
     }
 
-    IEnumerator MoveEffect()
-    {
-        float time = 1;
-        while (time >= 0)
-        {
-            time -= Time.deltaTime;
-            if (swipeDirection == SwipeDirection.Left)
-            {
-                if (gameState != GameState.Aim)
-                    transform.rotation = Quaternion.Euler(0, transform.eulerAngles.y - (time * 0.5f), 0);
-            }
-            else if (swipeDirection == SwipeDirection.Right)
-            {
-                if (gameState != GameState.Aim)
-                    transform.rotation = Quaternion.Euler(0, transform.eulerAngles.y + (time * 0.5f), 0);
-            }
-            else if (swipeDirection == SwipeDirection.Up)
-            {
-                transform.rotation = Quaternion.Euler(0, transform.eulerAngles.y, transform.eulerAngles.z + (time * 0.5f));
-            }
-            else if (swipeDirection == SwipeDirection.Down)
-            {
-                transform.rotation = Quaternion.Euler(0, transform.eulerAngles.y, transform.eulerAngles.z - (time * 0.5f));
-            }
-            yield return null;
-        }
-    }
+
 
     IEnumerator FollowBall()
     {

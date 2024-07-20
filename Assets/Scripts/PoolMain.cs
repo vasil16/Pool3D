@@ -12,7 +12,7 @@ public class PoolMain : MonoBehaviour
 
     [SerializeField] private Vector3 lineRendererOffset, cueOgPos, cueOgRot;
     [SerializeField] private Vector2 deltaPosition, deltaPos;
-    [SerializeField] private GameObject targetBall, cueAnchor, cueBall, powerBar, aimDock, spinObj;
+    [SerializeField] private GameObject targetBall, cueBall, powerBar, aimDock, spinObj;
     [SerializeField] private float maxPower, rotationSpeed = 0.1f, powerMultiplier, maxDistance = 3, secMax = 2, ballWidth;
     [SerializeField] private Camera powerCam;
     [SerializeField] private Transform cueStick, forceAt;
@@ -23,7 +23,8 @@ public class PoolMain : MonoBehaviour
     [SerializeField] public TextMeshProUGUI player1Txt, player2Txt;
     [SerializeField] public GameObject[] playerIndicator;
 
-    public GameObject cue, spinMark;
+
+    public GameObject cue, spinMark, cueAnchor;
     public bool isBreak = true;
     public bool dragPower, spun, hasSpin, isWaiting, pocketed, firstPot, updown, isFoul, firstBreak, gameOver;
     private bool looked;
@@ -31,7 +32,6 @@ public class PoolMain : MonoBehaviour
     private int rand;
 
     private Rigidbody ballR;
-    //public LayerMask collisionMask;
 
     private Ray pRay;
     private RaycastHit bHit;
@@ -135,10 +135,11 @@ public class PoolMain : MonoBehaviour
                 StartCoroutine(LookAtTarget(bHit.collider.gameObject));
                 looked = true;
             }
-            else
+            if (touch.phase == TouchPhase.Ended && dragPower)
             {
-                HandleCueControl(touch);
+                StartCoroutine(Hit());
             }
+
         }
     }
 
@@ -170,23 +171,6 @@ public class PoolMain : MonoBehaviour
             Vector3 newSpinMarkPosition = new Vector3(normalizedY * 0.03f, spinMark.transform.localPosition.y, normalizedX * 0.03f * -1);
             spinMark.transform.localPosition = newSpinMarkPosition;
             spinIndicator.anchoredPosition = new Vector2(normalizedX * 50, normalizedY * 50);
-        }
-    }
-
-    void HandleCueControl(Touch touch)
-    {
-        if (updown) return;
-        if (touch.phase == TouchPhase.Moved)
-        {
-            deltaPosition = touch.deltaPosition;
-            if (Mathf.Abs(deltaPosition.y) > 2f) return;
-            float rotationAmount = deltaPosition.x  * rotationSpeed * Time.smoothDeltaTime;
-            cueAnchor.transform.rotation *= Quaternion.Euler(0, rotationAmount, 0);
-        }
-
-        if (touch.phase == TouchPhase.Ended && dragPower)
-        {
-            StartCoroutine(Hit());
         }
     }
 
@@ -308,6 +292,7 @@ public class PoolMain : MonoBehaviour
 
     IEnumerator FoulReset()
     {
+        cueBall.GetComponent<Rigidbody>().isKinematic = true;
         cueBall.transform.localPosition = new Vector3(0.955f, 0.446f, 0f);
         cueBall.transform.localRotation = Quaternion.Euler(-90, 0, 0);
         cueBall.GetComponent<Rigidbody>().isKinematic = false;
@@ -354,7 +339,7 @@ public class PoolMain : MonoBehaviour
 
                 Vector3 newStart = hiit.collider.transform.position;
 
-                newDir = (hiit.collider.transform.position - hiit.point).normalized;
+                newDir = (hiit.collider.transform.position - hiit.point);
 
 
                 Ray hitRay = new(newStart, newDir);

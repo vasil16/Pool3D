@@ -8,10 +8,9 @@ public class Pocket : MonoBehaviour
 
         if (other.CompareTag("cueBall"))
         {
-            other.attachedRigidbody.isKinematic = true;
             PoolMain.instance.isFoul = true;
-            //PoolMain.instance.isBreak = true;
         }
+
         else if (pocketedBall.ballType == BallBehaviour.BallType.black)
         {
             if(GameLogic.instance.players[GameLogic.instance.currentPlayer].pocketedBalls.Count == 7)
@@ -23,6 +22,7 @@ public class Pocket : MonoBehaviour
                 GameLogic.instance.GameCompleteEvent(GameLogic.instance.GetOpponent(GameLogic.instance.currentPlayer));
             }
         }
+
         else
         {
             other.gameObject.SetActive(false);
