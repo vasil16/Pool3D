@@ -320,9 +320,9 @@ public class PoolMain : MonoBehaviour
 
     #region aimlinerender
     int points = 1;
-    [SerializeField] RaycastHit hiit;
+    [SerializeField] RaycastHit hiit, lHit;
     [SerializeField] float collDistance;
-    [SerializeField] Vector3 fallPoint;
+    [SerializeField] Vector3 fallPoint, newDir;
 
 
     void RenderTrajectory()
@@ -335,7 +335,6 @@ public class PoolMain : MonoBehaviour
 
         points = 1;
 
-        //if(Physics.SphereCast(ballR.position, ballR.GetComponent<SphereCollider>().radius, direction,out hiit))
         if (ballR.SweepTest(direction, out hiit, 180))
         {
             points++;
@@ -355,13 +354,20 @@ public class PoolMain : MonoBehaviour
 
                 Vector3 newStart = hiit.collider.transform.position;
 
-                Vector3 newDir = (hiit.collider.transform.position - hiit.point).normalized;
+                newDir = (hiit.collider.transform.position - hiit.point).normalized;
 
-                Ray hitRay = new Ray(newStart, newDir);
+
+                Ray hitRay = new(newStart, newDir);
+
 
                 linePlay.positionCount = 2;
                 linePlay.SetPosition(0, newStart);
-                linePlay.SetPosition(1, hitRay.GetPoint(0.3f));
+                if (Physics.Raycast(hitRay, out lHit, 0.3f))
+                {
+                    linePlay.SetPosition(1, lHit.point);
+                }
+                else
+                    linePlay.SetPosition(1, hitRay.GetPoint(0.3f));
             }
             else
             {
