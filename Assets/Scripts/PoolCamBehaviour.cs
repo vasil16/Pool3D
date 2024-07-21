@@ -6,6 +6,7 @@ public class PoolCamBehaviour : MonoBehaviour
 
     [SerializeField] Camera cam;
     [SerializeField] Transform cueStick, cueBall;
+    [SerializeField] RectTransform dragRotateRect;
     [SerializeField] Vector3 ballFollowOffset, stickFollowOffset, followRotation, initialRotation;
     [SerializeField] Vector2 touchDelta, touchStart, touchEnd, deltaPos;
     [SerializeField] int tCount;
@@ -99,23 +100,23 @@ public class PoolCamBehaviour : MonoBehaviour
 
     void CameraAction()
     {
-
         if (Input.touchCount > 0)
         {
             foreach (Touch touch in Input.touches)
             {
                 if (PoolMain.instance.dragPower || Utils.IsPointerOverUIObject(touch.position)) return;
 
-                if (Input.touchCount == 2)
+                if (tCount == 2)
                 {
                     //zoom
                     if (Input.GetTouch(0).deltaPosition.x > 0 && Input.GetTouch(1).deltaPosition.x < 0)
                     {
 
                     }
+                    return;
                 }
 
-                else if (Input.touchCount == 1)
+                else if (tCount == 1)
                 {
                     if (touch.phase == TouchPhase.Began)
                     {
@@ -274,7 +275,16 @@ public class PoolCamBehaviour : MonoBehaviour
     void Break()
     {
         transform.position = (cueBall.position + ballFollowOffset);
-        transform.rotation = Quaternion.Euler(Vector3.zero);
+        foreach (Touch touch in Input.touches)
+        {
+            if (Utils.IsPointerOverUIObject(touch.position) && RectTransformUtility.RectangleContainsScreenPoint(dragRotateRect, touch.position))
+            {
+                PoolMain.instance.cueAnchor.transform.rotation = Quaternion.Euler(0, PoolMain.instance.cueAnchor.transform.eulerAngles.y + (touch.deltaPosition.x * 0.1f), 0);
+                transform.rotation = Quaternion.Euler(transform.eulerAngles.x, transform.eulerAngles.y + (touch.deltaPosition.x * 0.1f), transform.eulerAngles.z);
+                return;
+            }
+        }
+        //transform.rotation = Quaternion.Euler(Vector3.zero);
     }
 
     IEnumerator FollowStick()

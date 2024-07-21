@@ -51,6 +51,7 @@ public class PoolMain : MonoBehaviour
         Application.targetFrameRate = 60;
     }
 
+    #region helperGizmos
     //void OnDrawGizmos()
     //{
     //    if (powerCam != null && Input.touchCount > 0)
@@ -61,6 +62,7 @@ public class PoolMain : MonoBehaviour
     //        Gizmos.DrawRay(ray.origin, ray.direction * 100);
     //    }
     //}
+    #endregion
 
     void Update()
     {
@@ -91,34 +93,12 @@ public class PoolMain : MonoBehaviour
         }
     }
 
-    void HandleBreak(Touch touch)
-    {        
-        if(touch.phase == TouchPhase.Moved)
-        {
-            Vector3 newPos = touch.deltaPosition * 0.1f * Time.deltaTime;
-            cueBall.transform.localPosition += new Vector3(newPos.y * -1, 0, newPos.x * 1);
-
-            if (firstBreak)
-            {
-                float clampedX = Mathf.Clamp(cueBall.transform.localPosition.x, 1.3f, 1.8f);
-                float clampedZ = Mathf.Clamp(cueBall.transform.localPosition.z, -0.507f, 0.507f);
-                cueBall.transform.localPosition = new Vector3(clampedX, cueBall.transform.localPosition.y, clampedZ);
-            }
-            else
-            {
-                float clampedX = Mathf.Clamp(cueBall.transform.localPosition.x, -0.279f, 1.8f);
-                float clampedZ = Mathf.Clamp(cueBall.transform.localPosition.z, -0.507f, 0.507f);
-                cueBall.transform.localPosition = new Vector3(clampedX, 0.3146f, clampedZ);                
-            }
-        }        
-    }
-
     void HandleTouchInput()
     {
         foreach (Touch touch in Input.touches)
-        {     
+        {
             if (Utils.IsPointerOverUIObject(touch.position))
-            {                
+            {
                 HandleSpinControl(touch);
                 return;
             }
@@ -142,6 +122,30 @@ public class PoolMain : MonoBehaviour
 
         }
     }
+
+    void HandleBreak(Touch touch)
+    {        
+        if(touch.phase == TouchPhase.Moved)
+        {
+            Vector3 newPos = touch.deltaPosition * 0.1f * Time.deltaTime;
+            cueBall.transform.localPosition += new Vector3(newPos.y * -1, 0, newPos.x * 1);
+
+            if (firstBreak)
+            {
+                float clampedX = Mathf.Clamp(cueBall.transform.localPosition.x, 1.3f, 1.8f);
+                float clampedZ = Mathf.Clamp(cueBall.transform.localPosition.z, -0.507f, 0.507f);
+                cueBall.transform.localPosition = new Vector3(clampedX, cueBall.transform.localPosition.y, clampedZ);
+            }
+            else
+            {
+                float clampedX = Mathf.Clamp(cueBall.transform.localPosition.x, -0.279f, 1.8f);
+                float clampedZ = Mathf.Clamp(cueBall.transform.localPosition.z, -0.507f, 0.507f);
+                cueBall.transform.localPosition = new Vector3(clampedX, 0.3146f, clampedZ);                
+            }
+        }        
+    }
+
+
 
     void HandleSpinControl(Touch touch)
     {
@@ -239,7 +243,7 @@ public class PoolMain : MonoBehaviour
         if(SceneManager.GetActiveScene().buildIndex==0)
             cueBall.transform.rotation = Quaternion.Euler(Vector3.zero);
         spinObj.SetActive(true);
-        power.maxValue = 86;
+        power.maxValue = 82;
         spinIndicator.anchoredPosition = Vector2.zero;
         spinRect.anchoredPosition = Vector2.zero;
         spinMark.transform.localPosition = Vector3.zero;
@@ -295,6 +299,7 @@ public class PoolMain : MonoBehaviour
         cueBall.GetComponent<Rigidbody>().isKinematic = true;
         cueBall.transform.localPosition = new Vector3(0.955f, 0.446f, 0f);
         cueBall.transform.localRotation = Quaternion.Euler(-90, 0, 0);
+        poolCam.transform.rotation = Quaternion.Euler(0, 0, 0);
         cueBall.GetComponent<Rigidbody>().isKinematic = false;
         GameLogic.instance.startPanel.SetActive(true);
         GameLogic.instance.placeBallPop.SetActive(true);
@@ -335,7 +340,7 @@ public class PoolMain : MonoBehaviour
                 lineRenderer.SetPosition(points - 1, fallPoint);
 
                 aimDock.SetActive(true);                
-                aimDock.transform.position = fallPoint;
+                aimDock.transform.position = hiit.point;
 
                 Vector3 newStart = hiit.collider.transform.position;
 

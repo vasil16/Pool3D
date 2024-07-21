@@ -5,6 +5,7 @@ public class Pocket : MonoBehaviour
     private void OnTriggerEnter(Collider other)
     {
         BallBehaviour pocketedBall = other.GetComponent<BallBehaviour>();
+        other.attachedRigidbody.constraints = RigidbodyConstraints.None;
 
         if (other.CompareTag("cueBall"))
         {
@@ -25,7 +26,7 @@ public class Pocket : MonoBehaviour
 
         else
         {
-            other.gameObject.SetActive(false);
+            //other.gameObject.SetActive(false);
             GameLogic.instance.pocketedBalls.Add(other.gameObject);
             PoolMain.instance.balls.Remove(other.gameObject);
             if (PoolMain.instance.isBreak)
