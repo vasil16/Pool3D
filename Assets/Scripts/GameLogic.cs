@@ -10,7 +10,7 @@ public class GameLogic : MonoBehaviour
     [SerializeField] PoolCamBehaviour poolCam;
     [SerializeField] public Text tossTxt;
     [SerializeField] AnimationCurve lerpCurve;
-    [SerializeField] public GameObject placeBallPop, startPanel;
+    [SerializeField] public GameObject placeBallPop, startPanel, restartPanel;
     [SerializeField] Sprite[] solidBalls;
     [SerializeField] Sprite[] stripeBalls;
     [SerializeField] Image[] p1Balls, p2Balls;
@@ -59,9 +59,8 @@ public class GameLogic : MonoBehaviour
         startPanel.SetActive(true);
         startPanel.GetComponent<Image>().enabled = true;
         startPanel.transform.GetChild(2).gameObject.SetActive(true);
-        placeBallPop.SetActive(true);
-        placeBallPop.GetComponentInChildren<Text>().text = player.ToString() + " WINS";
-        placeBallPop.GetComponentInChildren<Image>().enabled = false;
+        restartPanel.SetActive(true);
+        restartPanel.transform.GetChild(1).GetComponent<Text>().text = player.ToString() + " WINS";
     }
 
     public void SetBallImages()

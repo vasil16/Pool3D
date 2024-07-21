@@ -14,7 +14,7 @@ public class PoolMain : MonoBehaviour
     [SerializeField] private Vector2 deltaPosition, deltaPos;
     [SerializeField] private GameObject targetBall, cueBall, powerBar, aimDock, spinObj;
     [SerializeField] private float maxPower, rotationSpeed = 0.1f, powerMultiplier, maxDistance = 3, secMax = 2, ballWidth;
-    [SerializeField] private Camera powerCam;
+    [SerializeField] private Camera povCam;
     [SerializeField] private Transform cueStick, forceAt;
     [SerializeField] private LineRenderer lineRenderer, linePlay;
     [SerializeField] private PoolCamBehaviour poolCam;
@@ -124,8 +124,8 @@ public class PoolMain : MonoBehaviour
     }
 
     void HandleBreak(Touch touch)
-    {        
-        if(touch.phase == TouchPhase.Moved)
+    {
+        if (touch.phase == TouchPhase.Moved)
         {
             Vector3 newPos = touch.deltaPosition * 0.1f * Time.deltaTime;
             cueBall.transform.localPosition += new Vector3(newPos.y * -1, 0, newPos.x * 1);
@@ -140,12 +140,10 @@ public class PoolMain : MonoBehaviour
             {
                 float clampedX = Mathf.Clamp(cueBall.transform.localPosition.x, -0.279f, 1.8f);
                 float clampedZ = Mathf.Clamp(cueBall.transform.localPosition.z, -0.507f, 0.507f);
-                cueBall.transform.localPosition = new Vector3(clampedX, 0.3146f, clampedZ);                
+                cueBall.transform.localPosition = new Vector3(clampedX, 0.3146f, clampedZ);
             }
-        }        
+        }
     }
-
-
 
     void HandleSpinControl(Touch touch)
     {
@@ -243,7 +241,7 @@ public class PoolMain : MonoBehaviour
         if(SceneManager.GetActiveScene().buildIndex==0)
             cueBall.transform.rotation = Quaternion.Euler(Vector3.zero);
         spinObj.SetActive(true);
-        power.maxValue = 82;
+        power.maxValue = 100;
         spinIndicator.anchoredPosition = Vector2.zero;
         spinRect.anchoredPosition = Vector2.zero;
         spinMark.transform.localPosition = Vector3.zero;

@@ -14,6 +14,11 @@ public class Pocket : MonoBehaviour
 
         else if (pocketedBall.ballType == BallBehaviour.BallType.black)
         {
+            if(PoolMain.instance.firstBreak)
+            {
+                GameLogic.instance.GameCompleteEvent(GameLogic.instance.GetOpponent(GameLogic.instance.currentPlayer));
+                return;
+            }
             if(GameLogic.instance.players[GameLogic.instance.currentPlayer].pocketedBalls.Count == 7)
             {
                 GameLogic.instance.GameCompleteEvent(GameLogic.instance.currentPlayer);
@@ -26,7 +31,8 @@ public class Pocket : MonoBehaviour
 
         else
         {
-            //other.gameObject.SetActive(false);
+            other.gameObject.SetActive(false);
+            other.attachedRigidbody.isKinematic = true;
             GameLogic.instance.pocketedBalls.Add(other.gameObject);
             PoolMain.instance.balls.Remove(other.gameObject);
             if (PoolMain.instance.isBreak)
@@ -74,7 +80,6 @@ public class Pocket : MonoBehaviour
                     GameLogic.instance.players[GameLogic.instance.GetOpponent(GameLogic.instance.currentPlayer)].DisableBallImage(pocketedBall.ballCode);
                 }
             }
-
         }
     }
 }

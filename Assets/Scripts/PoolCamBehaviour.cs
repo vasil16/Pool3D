@@ -10,7 +10,7 @@ public class PoolCamBehaviour : MonoBehaviour
     [SerializeField] Vector3 ballFollowOffset, stickFollowOffset, followRotation, initialRotation;
     [SerializeField] Vector2 touchDelta, touchStart, touchEnd, deltaPos;
     [SerializeField] int tCount;
-    [SerializeField] float touchTime, longTouchThreshold, minFov, maxFov, zoomSpeed;
+    [SerializeField] float touchTime, longTouchThreshold, minFov, maxFov, zoomSpeed, rotationAmount;
     [SerializeField] public GameState gameState;
     [SerializeField] SwipeDirection swipeDirection;
     private GameState prevState = GameState.Break;
@@ -139,8 +139,8 @@ public class PoolCamBehaviour : MonoBehaviour
                             PoolMain.instance.updown = false;
                             {
                                 Debug.Log("try swi");
-                                PoolMain.instance.cueAnchor.transform.rotation = Quaternion.Euler(0, PoolMain.instance.cueAnchor.transform.eulerAngles.y + (deltaPos.x * 0.1f), 0);
-                                transform.rotation = Quaternion.Euler(transform.eulerAngles.x, transform.eulerAngles.y + (deltaPos.x * 0.1f), transform.eulerAngles.z);
+                                PoolMain.instance.cueAnchor.transform.rotation = Quaternion.Euler(0, PoolMain.instance.cueAnchor.transform.eulerAngles.y + (deltaPos.x * rotationAmount), 0);
+                                transform.rotation = Quaternion.Euler(transform.eulerAngles.x, transform.eulerAngles.y + (deltaPos.x * rotationAmount), transform.eulerAngles.z);
                             }
                         }
                     }
@@ -279,8 +279,8 @@ public class PoolCamBehaviour : MonoBehaviour
         {
             if (Utils.IsPointerOverUIObject(touch.position) && RectTransformUtility.RectangleContainsScreenPoint(dragRotateRect, touch.position))
             {
-                PoolMain.instance.cueAnchor.transform.rotation = Quaternion.Euler(0, PoolMain.instance.cueAnchor.transform.eulerAngles.y + (touch.deltaPosition.x * 0.1f), 0);
-                transform.rotation = Quaternion.Euler(transform.eulerAngles.x, transform.eulerAngles.y + (touch.deltaPosition.x * 0.1f), transform.eulerAngles.z);
+                PoolMain.instance.cueAnchor.transform.rotation = Quaternion.Euler(0, PoolMain.instance.cueAnchor.transform.eulerAngles.y + (touch.deltaPosition.x * rotationAmount), 0);
+                transform.rotation = Quaternion.Euler(transform.eulerAngles.x, transform.eulerAngles.y + (touch.deltaPosition.x * rotationAmount), transform.eulerAngles.z);
                 return;
             }
         }
