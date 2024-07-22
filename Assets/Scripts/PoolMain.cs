@@ -49,6 +49,7 @@ public class PoolMain : MonoBehaviour
         ballR = cueBall.GetComponent<Rigidbody>();
         ballWidth = cueBall.GetComponent<MeshRenderer>().bounds.size.x/2;
         Application.targetFrameRate = 60;
+        //power.maxValue = Random.Range(190, 208);
     }
 
     #region helperGizmos
@@ -236,12 +237,13 @@ public class PoolMain : MonoBehaviour
         dragPower = false;
         
         yield return new WaitForSeconds(2f);
+        ballR.constraints = RigidbodyConstraints.None;
         yield return new WaitUntil(BallStopped);
         yield return new WaitForSeconds(2f);
         if(SceneManager.GetActiveScene().buildIndex==0)
             cueBall.transform.rotation = Quaternion.Euler(Vector3.zero);
         spinObj.SetActive(true);
-        power.maxValue = 100;
+        power.maxValue = 92;
         spinIndicator.anchoredPosition = Vector2.zero;
         spinRect.anchoredPosition = Vector2.zero;
         spinMark.transform.localPosition = Vector3.zero;

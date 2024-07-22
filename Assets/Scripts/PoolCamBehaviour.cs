@@ -109,10 +109,21 @@ public class PoolCamBehaviour : MonoBehaviour
                 if (tCount == 2)
                 {
                     //zoom
-                    if (Input.GetTouch(0).deltaPosition.x > 0 && Input.GetTouch(1).deltaPosition.x < 0)
-                    {
+                    Debug.Log("zoomin");
+                    Touch touch0 = Input.GetTouch(0);
+                    Touch touch1 = Input.GetTouch(1);
 
-                    }
+                    Vector2 touch0PrevPos = touch0.position - touch0.deltaPosition;
+                    Vector2 touch1PrevPos = touch1.position - touch1.deltaPosition;
+
+                    float prevTouchDeltaMag = (touch0PrevPos - touch1PrevPos).magnitude;
+                    float touchDeltaMag = (touch0.position - touch1.position).magnitude;
+
+                    float deltaMagnitudeDiff = prevTouchDeltaMag - touchDeltaMag;
+
+                    cam.fieldOfView += deltaMagnitudeDiff * zoomSpeed;
+                    cam.fieldOfView = Mathf.Clamp(cam.fieldOfView, minFov, maxFov);
+
                     return;
                 }
 
@@ -149,11 +160,11 @@ public class PoolCamBehaviour : MonoBehaviour
                     {
                         EndTouchTimer();
                         touchEnd = touch.position;
-                        if (touchTime < longTouchThreshold)
+                        if (touchTime > 0.01 &&  touchTime < longTouchThreshold)
                         {
                             touchDelta = touchEnd - touchStart;
 
-                            if (Mathf.Abs(touchDelta.x) > 20f || Mathf.Abs(touchDelta.y) > 20f)
+                            if (Mathf.Abs(touchDelta.x) > 80f || Mathf.Abs(touchDelta.y) > 80f)
                             {
                                 if (Mathf.Abs(touchDelta.x) > Mathf.Abs(touchDelta.y))
                                 {
@@ -193,6 +204,7 @@ public class PoolCamBehaviour : MonoBehaviour
 
     IEnumerator MoveEffect()
     {
+        Debug.Log("moved");
         float time = 1;
         while (time >= 0)
         {

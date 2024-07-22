@@ -32,7 +32,6 @@ public class Pocket : MonoBehaviour
         else
         {
             other.gameObject.SetActive(false);
-            other.attachedRigidbody.isKinematic = true;
             GameLogic.instance.pocketedBalls.Add(other.gameObject);
             PoolMain.instance.balls.Remove(other.gameObject);
             if (PoolMain.instance.isBreak)

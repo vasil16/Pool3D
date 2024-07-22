@@ -42,12 +42,13 @@ public class BallBehaviour : MonoBehaviour
                     GetComponent<Rigidbody>().AddForceAtPosition(PoolMain.instance.spinMark.transform.localPosition.normalized * PoolMain.instance.hitPower * 0.20f, PoolMain.instance.spinMark.transform.localPosition, ForceMode.Force);
                     PoolMain.instance.spun = true;
                 }
-                //if (!PoolMain.instance.spun)
-                //{
-                //    Debug.Log("cut speed");
-                //    GetComponent<Rigidbody>().velocity = (GetComponent<Rigidbody>().velocity * -0.9f);
-                //    PoolMain.instance.spun = true;
-                //}
+                else
+                if (!PoolMain.instance.spun)
+                {
+                    Debug.Log("cut speed");
+                    GetComponent<Rigidbody>().AddForce(GetComponent<Rigidbody>().velocity * -0.6f);
+                    PoolMain.instance.spun = true;
+                }
             }
         }
     }

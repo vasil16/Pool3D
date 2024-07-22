@@ -56,9 +56,6 @@ public class GameLogic : MonoBehaviour
 
     public void GameCompleteEvent(CurrentPlayer player)
     {
-        startPanel.SetActive(true);
-        startPanel.GetComponent<Image>().enabled = true;
-        startPanel.transform.GetChild(2).gameObject.SetActive(true);
         restartPanel.SetActive(true);
         restartPanel.transform.GetChild(1).GetComponent<Text>().text = player.ToString() + " WINS";
     }
