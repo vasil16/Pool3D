@@ -39,14 +39,16 @@ public class BallBehaviour : MonoBehaviour
                 if (!PoolMain.instance.spun && PoolMain.instance.hasSpin)
                 {
                     Debug.Log("spinn power " + PoolMain.instance.hitPower + "  dir " + PoolMain.instance.spinMark.transform.position);
-                    GetComponent<Rigidbody>().AddForceAtPosition(PoolMain.instance.spinMark.transform.localPosition.normalized * PoolMain.instance.hitPower * 0.20f, PoolMain.instance.spinMark.transform.localPosition, ForceMode.Force);
+                    //GetComponent<Rigidbody>().AddForceAtPosition(PoolMain.instance.spinMark.transform.localPosition.normalized * PoolMain.instance.hitPower * 0.20f, PoolMain.instance.spinMark.transform.localPosition, ForceMode.Force);
+                    GetComponent<Rigidbody>().AddForce((transform.position - PoolMain.instance.spinMark.transform.position).normalized * PoolMain.instance.hitPower * 0.20f,  ForceMode.Force);
                     PoolMain.instance.spun = true;
                 }
                 else
                 if (!PoolMain.instance.spun)
                 {
                     Debug.Log("cut speed");
-                    GetComponent<Rigidbody>().AddForce(GetComponent<Rigidbody>().velocity * -0.6f);
+                    //GetComponent<Rigidbody>().AddForce(GetComponent<Rigidbody>().velocity * -0.7f);
+                    //GetComponent<Rigidbody>().drag = 3f;
                     PoolMain.instance.spun = true;
                 }
             }

@@ -3,14 +3,13 @@ using UnityEngine;
 
 public class PoolCamBehaviour : MonoBehaviour
 {
-
     [SerializeField] Camera cam;
     [SerializeField] Transform cueStick, cueBall;
     [SerializeField] RectTransform dragRotateRect;
     [SerializeField] Vector3 ballFollowOffset, stickFollowOffset, followRotation, initialRotation;
     [SerializeField] Vector2 touchDelta, touchStart, touchEnd, deltaPos;
     [SerializeField] int tCount;
-    [SerializeField] float touchTime, longTouchThreshold, minFov, maxFov, zoomSpeed, rotationAmount;
+    [SerializeField] float touchTime, longTouchThreshold, minFov, maxFov, zoomSpeed, rotationAmount, rotationThreshold;
     [SerializeField] public GameState gameState;
     [SerializeField] SwipeDirection swipeDirection;
     private GameState prevState = GameState.Break;
@@ -74,7 +73,6 @@ public class PoolCamBehaviour : MonoBehaviour
                 return;
 
             case GameState.Hit:
-
                 if (gameState != prevState)
                 {
                     StartCoroutine(FollowBall());
@@ -108,8 +106,6 @@ public class PoolCamBehaviour : MonoBehaviour
 
                 if (tCount == 2)
                 {
-                    //zoom
-                    Debug.Log("zoomin");
                     Touch touch0 = Input.GetTouch(0);
                     Touch touch1 = Input.GetTouch(1);
 
@@ -138,20 +134,24 @@ public class PoolCamBehaviour : MonoBehaviour
                     else if (touch.phase == TouchPhase.Moved)
                     {
                         deltaPos = touch.deltaPosition;
-                        if (Mathf.Abs(touch.deltaPosition.y) > Mathf.Abs(touch.deltaPosition.x))
-                        {
-                            if (Mathf.Abs(touch.deltaPosition.y) < 10) return;
-                            PoolMain.instance.updown = true;
 
-                            transform.rotation = Quaternion.Euler(transform.eulerAngles.x, transform.eulerAngles.y, transform.eulerAngles.z + (deltaPos.y * 0.1f));
-                        }
-                        else
+                        if (Mathf.Abs(deltaPos.x) > rotationThreshold || Mathf.Abs(deltaPos.y) > rotationThreshold)
                         {
-                            PoolMain.instance.updown = false;
+                            if (Mathf.Abs(deltaPos.y) > Mathf.Abs(deltaPos.x) && Mathf.Abs(deltaPos.y)>10)
                             {
-                                Debug.Log("try swi");
-                                PoolMain.instance.cueAnchor.transform.rotation = Quaternion.Euler(0, PoolMain.instance.cueAnchor.transform.eulerAngles.y + (deltaPos.x * rotationAmount), 0);
-                                transform.rotation = Quaternion.Euler(transform.eulerAngles.x, transform.eulerAngles.y + (deltaPos.x * rotationAmount), transform.eulerAngles.z);
+                                PoolMain.instance.updown = true;
+
+                                float smoothRotation = deltaPos.y * rotationAmount;
+                                transform.rotation = Quaternion.Euler(transform.eulerAngles.x, transform.eulerAngles.y, transform.eulerAngles.z + smoothRotation);
+                                return;
+                            }
+                            else
+                            {
+                                PoolMain.instance.updown = false;
+                                float smoothRotation = deltaPos.x * rotationAmount;
+                                PoolMain.instance.cueAnchor.transform.rotation = Quaternion.Euler(0, PoolMain.instance.cueAnchor.transform.eulerAngles.y + smoothRotation, 0);
+                                transform.rotation = Quaternion.Euler(transform.eulerAngles.x, transform.eulerAngles.y + smoothRotation, transform.eulerAngles.z);
+                                return;
                             }
                         }
                     }
@@ -204,32 +204,33 @@ public class PoolCamBehaviour : MonoBehaviour
 
     IEnumerator MoveEffect()
     {
-        Debug.Log("moved");
         float time = 1;
         while (time >= 0)
         {
             time -= Time.deltaTime;
             if (swipeDirection == SwipeDirection.Left)
             {
-                PoolMain.instance.cueAnchor.transform.rotation = Quaternion.Euler(0, transform.eulerAngles.y - (time * 0.5f), 0);
-                transform.rotation = Quaternion.Euler(0, transform.eulerAngles.y - (time * 0.5f), transform.eulerAngles.z);
+                PoolMain.instance.cueAnchor.transform.rotation = Quaternion.Euler(0, transform.eulerAngles.y - (time * 0.8f), 0);
+                transform.rotation = Quaternion.Euler(0, transform.eulerAngles.y - (time * 0.8f), transform.eulerAngles.z);
             }
             else if (swipeDirection == SwipeDirection.Right)
             {
-                PoolMain.instance.cueAnchor.transform.rotation = Quaternion.Euler(0, transform.eulerAngles.y + (time * 0.5f), 0);
-                transform.rotation = Quaternion.Euler(0, transform.eulerAngles.y + (time * 0.5f), transform.eulerAngles.z);
+                PoolMain.instance.cueAnchor.transform.rotation = Quaternion.Euler(0, transform.eulerAngles.y + (time * 0.8f), 0);
+                transform.rotation = Quaternion.Euler(0, transform.eulerAngles.y + (time * 0.8f), transform.eulerAngles.z);
             }
             else if (swipeDirection == SwipeDirection.Up)
             {
-                transform.rotation = Quaternion.Euler(0, transform.eulerAngles.y, transform.eulerAngles.z + (time * 0.5f));
+                transform.rotation = Quaternion.Euler(0, transform.eulerAngles.y, transform.eulerAngles.z + (time * 0.8f));
             }
             else if (swipeDirection == SwipeDirection.Down)
             {
-                transform.rotation = Quaternion.Euler(0, transform.eulerAngles.y, transform.eulerAngles.z - (time * 0.5f));
+                transform.rotation = Quaternion.Euler(0, transform.eulerAngles.y, transform.eulerAngles.z - (time * 0.8f));
             }
             yield return null;
         }
     }
+
+    #region Zoom
 
     public void ZoomIn()
     {
@@ -265,7 +266,7 @@ public class PoolCamBehaviour : MonoBehaviour
         isZoomingOut = false;
     }
 
-
+    #endregion
 
     IEnumerator FollowBall()
     {
@@ -284,19 +285,101 @@ public class PoolCamBehaviour : MonoBehaviour
         yield break;
     }
 
+    bool cut;
+    public float swipeSpeedX, swipeSpeedY;
+
     void Break()
     {
         transform.position = (cueBall.position + ballFollowOffset);
         foreach (Touch touch in Input.touches)
         {
+            deltaPos = touch.deltaPosition;
             if (Utils.IsPointerOverUIObject(touch.position) && RectTransformUtility.RectangleContainsScreenPoint(dragRotateRect, touch.position))
             {
-                PoolMain.instance.cueAnchor.transform.rotation = Quaternion.Euler(0, PoolMain.instance.cueAnchor.transform.eulerAngles.y + (touch.deltaPosition.x * rotationAmount), 0);
-                transform.rotation = Quaternion.Euler(transform.eulerAngles.x, transform.eulerAngles.y + (touch.deltaPosition.x * rotationAmount), transform.eulerAngles.z);
+                PoolMain.instance.cueAnchor.transform.rotation = Quaternion.Euler(0, PoolMain.instance.cueAnchor.transform.eulerAngles.y + (deltaPos.x * rotationAmount), 0);
+                transform.rotation = Quaternion.Euler(transform.eulerAngles.x, transform.eulerAngles.y + (deltaPos.x * rotationAmount), transform.eulerAngles.z);
                 return;
+            }
+            if(touch.phase == TouchPhase.Began)
+            {
+                touchStart = touch.position;
+                StartCoroutine(StartTouchTimer());
+            }
+            if (touch.phase == TouchPhase.Ended && !cut && PoolMain.instance.firstBreak)
+            {
+                EndTouchTimer();
+                touchEnd = touch.position;
+                touchDelta = touchEnd - touchStart;
+                
+                if (Mathf.Abs(touchDelta.x)> Mathf.Abs(touchDelta.y))
+                {
+                    swipeSpeedX = touchDelta.x / touchTime;
+                    
+                    if (Mathf.Abs(swipeSpeedX) > 300)
+                    {
+                        StartCoroutine(slideInOut());
+                        cut = true;
+                    }
+                    return;
+                }
+                else
+                {                    
+                    swipeSpeedY = touchDelta.y / touchTime;
+                                       
+                    if (Mathf.Abs(swipeSpeedY) > 300)
+                    {
+                        StartCoroutine(slideUpDown());
+                        cut = true;
+                    }
+                    return;
+                }
             }
         }
         //transform.rotation = Quaternion.Euler(Vector3.zero);
+    }
+
+    IEnumerator slideInOut()
+    {
+        float actualZPos = transform.position.z;
+        float zOffset = touchDelta.x < 0 ? 0.03f : -0.03f;
+        zOffset += actualZPos;
+        float duration = 0.1f, dur = 0.5f;
+        float time = 0, t2 = 0;
+        while (time<=duration)
+        {
+            time += Time.deltaTime;
+            transform.position = new Vector3(transform.position.x, transform.position.y, Mathf.Lerp(actualZPos,  zOffset, time / duration));
+            yield return null;
+        }
+        while (t2 <= dur)
+        {
+            t2 += Time.deltaTime;
+            transform.position = new Vector3(transform.position.x, transform.position.y, Mathf.Lerp(zOffset, actualZPos, t2 / dur));
+            yield return null;
+        }
+        cut = false;
+    }
+
+    IEnumerator slideUpDown()
+    {
+        float actualZPos = transform.position.x;
+        float zOffset = touchDelta.y < 0 ? 0.03f : -0.03f;
+        zOffset += actualZPos;
+        float duration = 0.1f, dur = 0.4f;
+        float time = 0, t2 = 0;
+        while (time <= duration)
+        {
+            time += Time.deltaTime;
+            transform.position = new Vector3(Mathf.Lerp(actualZPos, zOffset, time / duration), transform.position.y, transform.position.z);
+            yield return null;
+        }
+        while (t2 <= dur)
+        {
+            t2 += Time.deltaTime;
+            transform.position = new Vector3(Mathf.Lerp(zOffset, actualZPos, t2 / dur), transform.position.y, transform.position.z);
+            yield return null;
+        }
+        cut = false;
     }
 
     IEnumerator FollowStick()

@@ -57,7 +57,7 @@ public class GameLogic : MonoBehaviour
     public void GameCompleteEvent(CurrentPlayer player)
     {
         restartPanel.SetActive(true);
-        restartPanel.transform.GetChild(1).GetComponent<Text>().text = player.ToString() + " WINS";
+        restartPanel.transform.GetChild(0).GetComponent<Text>().text = player.ToString() + " WINS";
     }
 
     public void SetBallImages()

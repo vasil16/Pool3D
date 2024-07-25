@@ -10,6 +10,7 @@ public class PoolMain : MonoBehaviour
 
     public List<GameObject> balls;
 
+    [SerializeField] Vector4 clampTableBreak,clampTableNormal;
     [SerializeField] private Vector3 lineRendererOffset, cueOgPos, cueOgRot;
     [SerializeField] private Vector2 deltaPosition, deltaPos;
     [SerializeField] private GameObject targetBall, cueBall, powerBar, aimDock, spinObj;
@@ -23,7 +24,6 @@ public class PoolMain : MonoBehaviour
     [SerializeField] public TextMeshProUGUI player1Txt, player2Txt;
     [SerializeField] public GameObject[] playerIndicator;
 
-
     public GameObject cue, spinMark, cueAnchor;
     public bool isBreak = true;
     public bool dragPower, spun, hasSpin, isWaiting, pocketed, firstPot, updown, isFoul, firstBreak, gameOver;
@@ -36,7 +36,7 @@ public class PoolMain : MonoBehaviour
     private Ray pRay;
     private RaycastHit bHit;
 
-    public float time, duration, hitPower;
+    public float time, duration, hitPower, speedReductVal;
 
     private void Awake()
     {
@@ -129,18 +129,18 @@ public class PoolMain : MonoBehaviour
         if (touch.phase == TouchPhase.Moved)
         {
             Vector3 newPos = touch.deltaPosition * 0.1f * Time.deltaTime;
-            cueBall.transform.localPosition += new Vector3(newPos.y * -1, 0, newPos.x * 1);
+            cueBall.transform.localPosition += new Vector3(newPos.y, 0, newPos.x * 1);
 
             if (firstBreak)
             {
-                float clampedX = Mathf.Clamp(cueBall.transform.localPosition.x, 1.3f, 1.8f);
-                float clampedZ = Mathf.Clamp(cueBall.transform.localPosition.z, -0.507f, 0.507f);
+                float clampedX = Mathf.Clamp(cueBall.transform.localPosition.x, clampTableBreak.x, clampTableBreak.y);
+                float clampedZ = Mathf.Clamp(cueBall.transform.localPosition.z, clampTableBreak.z, clampTableBreak.w);
                 cueBall.transform.localPosition = new Vector3(clampedX, cueBall.transform.localPosition.y, clampedZ);
             }
             else
             {
-                float clampedX = Mathf.Clamp(cueBall.transform.localPosition.x, -0.279f, 1.8f);
-                float clampedZ = Mathf.Clamp(cueBall.transform.localPosition.z, -0.507f, 0.507f);
+                float clampedX = Mathf.Clamp(cueBall.transform.localPosition.x, clampTableNormal.x, clampTableNormal.y);
+                float clampedZ = Mathf.Clamp(cueBall.transform.localPosition.z, clampTableNormal.z, clampTableNormal.w);
                 cueBall.transform.localPosition = new Vector3(clampedX, 0.3146f, clampedZ);
             }
         }
@@ -226,9 +226,7 @@ public class PoolMain : MonoBehaviour
 
         Vector3 direction = cueStick.right.normalized;
         cue.SetActive(false);
-        Debug.Log("power  " + hitPower);
         ballR.AddForceAtPosition(direction * hitPower, forceAt.position, ForceMode.Force);
-        
         StartCoroutine(ResetCue());
     }
 
@@ -240,10 +238,11 @@ public class PoolMain : MonoBehaviour
         ballR.constraints = RigidbodyConstraints.None;
         yield return new WaitUntil(BallStopped);
         yield return new WaitForSeconds(2f);
-        if(SceneManager.GetActiveScene().buildIndex==0)
-            cueBall.transform.rotation = Quaternion.Euler(Vector3.zero);
+        //if(SceneManager.GetActiveScene().buildIndex==0)
+        //    cueBall.transform.rotation = Quaternion.Euler(Vector3.zero);
         spinObj.SetActive(true);
-        power.maxValue = 92;
+        speedReductVal = 0.6f;
+        power.maxValue = 97;
         spinIndicator.anchoredPosition = Vector2.zero;
         spinRect.anchoredPosition = Vector2.zero;
         spinMark.transform.localPosition = Vector3.zero;
@@ -338,7 +337,8 @@ public class PoolMain : MonoBehaviour
             {
                 lineRenderer.positionCount = points;
                 lineRenderer.SetPosition(points - 1, fallPoint);
-
+                //Vector3 dockPos = direction * aimDock.GetComponentInChildren<SpriteRenderer>().bounds.size.x/2;
+                //dockPos = new Vector3(dockPos.x, 0, dockPos.y);
                 aimDock.SetActive(true);                
                 aimDock.transform.position = hiit.point;
 
