@@ -83,7 +83,7 @@ public class GameLogic : MonoBehaviour
     IEnumerator Toss()
     {
         float time = 0;
-        float duration = (float) lerpCurve.keys[lerpCurve.length - 1].time;
+        float duration = 1;
         Debug.Log("duration " + duration);
         PoolMain.instance.isWaiting = true;
         yield return new WaitForSecondsRealtime(2f);

@@ -129,7 +129,7 @@ public class PoolMain : MonoBehaviour
         if (touch.phase == TouchPhase.Moved)
         {
             Vector3 newPos = touch.deltaPosition * 0.1f * Time.deltaTime;
-            cueBall.transform.localPosition += new Vector3(newPos.y, 0, newPos.x * 1);
+            cueBall.transform.localPosition += new Vector3(newPos.y, 0, newPos.x*-1);
 
             if (firstBreak)
             {
@@ -242,7 +242,7 @@ public class PoolMain : MonoBehaviour
         //    cueBall.transform.rotation = Quaternion.Euler(Vector3.zero);
         spinObj.SetActive(true);
         speedReductVal = 0.6f;
-        power.maxValue = 97;
+        power.maxValue = 162;
         spinIndicator.anchoredPosition = Vector2.zero;
         spinRect.anchoredPosition = Vector2.zero;
         spinMark.transform.localPosition = Vector3.zero;
@@ -316,61 +316,65 @@ public class PoolMain : MonoBehaviour
 
     void RenderTrajectory()
     {
-        Vector3 startPosition = cueBall.transform.position;
-        Vector3 direction = cueStick.right;
+        //Vector3 startPosition = cueBall.transform.position;
+        //Vector3 direction = cueStick.right;
 
-        lineRenderer.positionCount = 1;
-        lineRenderer.SetPosition(0, startPosition);
+        //lineRenderer.positionCount = 1;
+        //lineRenderer.SetPosition(0, startPosition);
 
-        points = 1;
+        //points = 1;
 
-        if (ballR.SweepTest(direction, out hiit, 180))
-        {
-            points++;
-            if (points > maxBounces) return;
+        //if (ballR.SweepTest(direction, out hiit, 180))
+        //{
+        //    points++;
+        //    if (points > maxBounces) return;
 
-            collDistance = hiit.distance;
+        //    collDistance = hiit.distance;
 
-            fallPoint = cueBall.transform.position + direction * collDistance;
+        //    fallPoint = cueBall.transform.position + direction * collDistance;
 
-            if (hiit.collider.CompareTag("playBall"))
-            {
-                lineRenderer.positionCount = points;
-                lineRenderer.SetPosition(points - 1, fallPoint);
-                //Vector3 dockPos = direction * aimDock.GetComponentInChildren<SpriteRenderer>().bounds.size.x/2;
-                //dockPos = new Vector3(dockPos.x, 0, dockPos.y);
-                aimDock.SetActive(true);                
-                aimDock.transform.position = hiit.point;
+        //    Vector3 fixedPosition = fallPoint - (direction * ballWidth);
 
-                Vector3 newStart = hiit.collider.transform.position;
+        //    if (hiit.collider.CompareTag("playBall"))
+        //    {
+        //        lineRenderer.positionCount = points;
+        //        lineRenderer.SetPosition(points - 1, fixedPosition);
+        //        //Vector3 dockPos = direction * aimDock.GetComponentInChildren<SpriteRenderer>().bounds.size.x/2;
+        //        //dockPos = new Vector3(dockPos.x, 0, dockPos.y);
+        //        aimDock.SetActive(true);                
+        //        aimDock.transform.position = hiit.point;
 
-                newDir = (hiit.collider.transform.position - hiit.point);
+        //        Vector3 newStart = hiit.collider.transform.position;
+
+        //        newDir = (hiit.collider.transform.position - hiit.point);
+
+        //        newDir = newDir.normalized;
 
 
-                Ray hitRay = new(newStart, newDir);
+        //        Ray hitRay = new(newStart, newDir);
 
 
-                linePlay.positionCount = 2;
-                linePlay.SetPosition(0, newStart);
-                if (Physics.Raycast(hitRay, out lHit, 0.3f))
-                {
-                    linePlay.SetPosition(1, lHit.point);
-                }
-                else
-                    linePlay.SetPosition(1, hitRay.GetPoint(0.3f));
-            }
-            else
-            {
-                aimDock.SetActive(false);
-                lineRenderer.positionCount = points;
-                lineRenderer.SetPosition(points - 1, fallPoint);
-                linePlay.positionCount = 0;
-            }
-        }
-        else
-        {
+        //        linePlay.positionCount = 2;
+        //        linePlay.SetPosition(0, newStart);
+        //        if (Physics.Raycast(hitRay, out lHit, 0.3f))
+        //        {
+        //            linePlay.SetPosition(1, lHit.point);
+        //        }
+        //        else
+        //            linePlay.SetPosition(1, hitRay.GetPoint(0.3f));
+        //    }
+        //    else
+        //    {
+        //        aimDock.SetActive(false);
+        //        lineRenderer.positionCount = points;
+        //        lineRenderer.SetPosition(points - 1, fallPoint);
+        //        linePlay.positionCount = 0;
+        //    }
+        //}
+        //else
+        //{
 
-        }
+        //}
     }
     #endregion
 

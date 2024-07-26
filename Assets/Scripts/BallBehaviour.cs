@@ -15,10 +15,21 @@ public class BallBehaviour : MonoBehaviour
 
     public BallType ballType;
     [SerializeField] public int ballCode;
+    public bool aimed;
+    public Vector3 hitPoint;
+    RaycastHit hit;
 
     private void Awake()
     {
         initPos = transform.position;
+    }
+
+    private void Update()
+    {
+        if(aimed)
+        {
+            GetComponent<Rigidbody>().SweepTest(hitPoint, out hit);
+        }
     }
 
     private void OnCollisionEnter(Collision collision)

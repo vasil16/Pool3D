@@ -106,21 +106,29 @@ public class PoolCamBehaviour : MonoBehaviour
 
                 if (tCount == 2)
                 {
+                    
                     Touch touch0 = Input.GetTouch(0);
                     Touch touch1 = Input.GetTouch(1);
 
-                    Vector2 touch0PrevPos = touch0.position - touch0.deltaPosition;
-                    Vector2 touch1PrevPos = touch1.position - touch1.deltaPosition;
+                    if (touch0.phase == TouchPhase.Ended && touch1.phase == TouchPhase.Ended)
+                    {
 
-                    float prevTouchDeltaMag = (touch0PrevPos - touch1PrevPos).magnitude;
-                    float touchDeltaMag = (touch0.position - touch1.position).magnitude;
+                    }
+                    else
+                    {
+                        Vector2 touch0PrevPos = touch0.position - touch0.deltaPosition;
+                        Vector2 touch1PrevPos = touch1.position - touch1.deltaPosition;
 
-                    float deltaMagnitudeDiff = prevTouchDeltaMag - touchDeltaMag;
+                        float prevTouchDeltaMag = (touch0PrevPos - touch1PrevPos).magnitude;
+                        float touchDeltaMag = (touch0.position - touch1.position).magnitude;
 
-                    cam.fieldOfView += deltaMagnitudeDiff * zoomSpeed;
-                    cam.fieldOfView = Mathf.Clamp(cam.fieldOfView, minFov, maxFov);
+                        float deltaMagnitudeDiff = prevTouchDeltaMag - touchDeltaMag;
 
-                    return;
+                        cam.fieldOfView += deltaMagnitudeDiff * zoomSpeed;
+                        cam.fieldOfView = Mathf.Clamp(cam.fieldOfView, minFov, maxFov);
+
+                        return;
+                    }
                 }
 
                 else if (tCount == 1)
@@ -158,6 +166,7 @@ public class PoolCamBehaviour : MonoBehaviour
 
                     else if (touch.phase == TouchPhase.Ended)
                     {
+                        if (tCount == 2) return;
                         EndTouchTimer();
                         touchEnd = touch.position;
                         if (touchTime > 0.01 &&  touchTime < longTouchThreshold)

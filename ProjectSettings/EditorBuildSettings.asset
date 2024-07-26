@@ -5,10 +5,10 @@ EditorBuildSettings:
   m_ObjectHideFlags: 0
   serializedVersion: 2
   m_Scenes:
-  - enabled: 0
+  - enabled: 1
     path: Assets/Scenes/Pool3D.unity
     guid: 6b54ee04c8766465198228bdabd8837b
-  - enabled: 1
+  - enabled: 0
     path: Assets/Scenes/Pool3D2e.unity
     guid: 1f884fe4a20c342338a0dd1e2feac33e
   m_configObjects: {}

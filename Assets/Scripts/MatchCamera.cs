@@ -47,15 +47,17 @@ public class MatchCamera : MonoBehaviour
 
     void AdjustPerspectiveFoV(float currentAspect, float targetAspect)
     {
-        if (currentAspect >= targetAspect)
-        {
-            cam.fieldOfView = referenceFoV;
-        }
-        else
-        {
-            float scaleFactor = currentAspect / targetAspect;
-            cam.fieldOfView = CalcVerticalFoV(referenceFoV, scaleFactor);
-        }
+        //if (currentAspect >= targetAspect)
+        //{
+        //    cam.fieldOfView = referenceFoV;
+        //}
+        //else
+        //{
+        //    float scaleFactor = currentAspect / targetAspect;
+        //    cam.fieldOfView = CalcVerticalFoV(referenceFoV, scaleFactor);
+        //}
+        //float targetFov = (referenceFoV * currentAspect) / targetAspect;
+        cam.fieldOfView = referenceFoV;
     }
 
     float CalcVerticalFoV(float horizontalFoV, float aspectRatio)
