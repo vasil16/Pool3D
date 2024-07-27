@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
 using UnityEngine.SceneManagement;
+using Unity.Burst.CompilerServices;
 
 public class PoolMain : MonoBehaviour
 {
@@ -23,6 +24,8 @@ public class PoolMain : MonoBehaviour
     [SerializeField] private RectTransform spinRect, circleRect, spinIndicator;
     [SerializeField] public TextMeshProUGUI player1Txt, player2Txt;
     [SerializeField] public GameObject[] playerIndicator;
+    [SerializeField] Rigidbody simCueBall;
+    [SerializeReference] GameObject simBall;
 
     public GameObject cue, spinMark, cueAnchor;
     public bool isBreak = true;
@@ -50,6 +53,7 @@ public class PoolMain : MonoBehaviour
         ballWidth = cueBall.GetComponent<MeshRenderer>().bounds.size.x/2;
         Application.targetFrameRate = 60;
         //power.maxValue = Random.Range(190, 208);
+        PlayerPrefs.DeleteAll();
     }
 
     #region helperGizmos
@@ -312,71 +316,102 @@ public class PoolMain : MonoBehaviour
     [SerializeField] RaycastHit hiit, lHit;
     [SerializeField] float collDistance;
     [SerializeField] Vector3 fallPoint, newDir;
-
+    bool directionSet;
+    public Vector3 direction, returnVector;
 
     void RenderTrajectory()
     {
-        //Vector3 startPosition = cueBall.transform.position;
-        //Vector3 direction = cueStick.right;
+        Vector3 startPosition = cueBall.transform.position;
+        Vector3 direction = cueStick.right;
 
-        //lineRenderer.positionCount = 1;
-        //lineRenderer.SetPosition(0, startPosition);
+        lineRenderer.positionCount = 1;
+        lineRenderer.SetPosition(0, startPosition);
 
-        //points = 1;
+        points = 1;
 
-        //if (ballR.SweepTest(direction, out hiit, 180))
-        //{
-        //    points++;
-        //    if (points > maxBounces) return;
+        if (ballR.SweepTest(direction, out hiit, 180))
+        {
+            points++;
+            if (points > maxBounces) return;
 
-        //    collDistance = hiit.distance;
+            collDistance = hiit.distance;
 
-        //    fallPoint = cueBall.transform.position + direction * collDistance;
+            fallPoint = cueBall.transform.position + direction * collDistance;
 
-        //    Vector3 fixedPosition = fallPoint - (direction * ballWidth);
+            Vector3 fixedPosition = fallPoint - (direction * ballWidth);
 
-        //    if (hiit.collider.CompareTag("playBall"))
-        //    {
-        //        lineRenderer.positionCount = points;
-        //        lineRenderer.SetPosition(points - 1, fixedPosition);
-        //        //Vector3 dockPos = direction * aimDock.GetComponentInChildren<SpriteRenderer>().bounds.size.x/2;
-        //        //dockPos = new Vector3(dockPos.x, 0, dockPos.y);
-        //        aimDock.SetActive(true);                
-        //        aimDock.transform.position = hiit.point;
+            if (hiit.collider.CompareTag("playBall"))
+            {
+                lineRenderer.positionCount = points;
+                lineRenderer.SetPosition(points - 1, fixedPosition);
 
-        //        Vector3 newStart = hiit.collider.transform.position;
+                Vector3 dockPos = fixedPosition;
 
-        //        newDir = (hiit.collider.transform.position - hiit.point);
+                aimDock.SetActive(true);
+                aimDock.transform.position =dockPos;
 
-        //        newDir = newDir.normalized;
+                Vector3 newStart = hiit.collider.transform.position;
 
+                newDir = (hiit.collider.transform.position - fallPoint).normalized;
 
-        //        Ray hitRay = new(newStart, newDir);
+                Ray hitRay = new(newStart, newDir);
 
 
-        //        linePlay.positionCount = 2;
-        //        linePlay.SetPosition(0, newStart);
-        //        if (Physics.Raycast(hitRay, out lHit, 0.3f))
-        //        {
-        //            linePlay.SetPosition(1, lHit.point);
-        //        }
-        //        else
-        //            linePlay.SetPosition(1, hitRay.GetPoint(0.3f));
-        //    }
-        //    else
-        //    {
-        //        aimDock.SetActive(false);
-        //        lineRenderer.positionCount = points;
-        //        lineRenderer.SetPosition(points - 1, fallPoint);
-        //        linePlay.positionCount = 0;
-        //    }
-        //}
-        //else
-        //{
+                linePlay.positionCount = 2;
+                linePlay.SetPosition(0, newStart);
+                if (Physics.Raycast(hitRay, out lHit, 5f))
+                {
+                    linePlay.SetPosition(1, lHit.point);
+                }
+                else
+                    linePlay.SetPosition(1, hitRay.GetPoint(5f));
+            }
+            else
+            {
+                aimDock.SetActive(false);
+                lineRenderer.positionCount = points;
+                lineRenderer.SetPosition(points - 1, fallPoint);
+                linePlay.positionCount = 0;
+            }
+        }
+        else
+        {
 
-        //}
+        }
     }
     #endregion
+
+    IEnumerator SimulateDirection(Transform hitBall)
+    {
+        Debug.Log("run cc");
+        ballR.isKinematic = true;
+        simCueBall.transform.position = cueBall.transform.position;
+        simCueBall.transform.rotation = cueBall.transform.rotation;
+        simBall.transform.position = hitBall.position;
+        simBall.transform.rotation = hitBall.rotation;
+        simBall.GetComponent<Rigidbody>().isKinematic = true;
+        yield return new WaitForSeconds(0.2f);
+        // Ensure simBall is not kinematic and simulate a force
+        simBall.GetComponent<Rigidbody>().isKinematic = false;
+        simCueBall.AddForceAtPosition(direction * 85, forceAt.position, ForceMode.Force);
+        yield return new WaitUntil(CheckKinematic);
+
+        returnVector = simBall.transform.position; // Update returnVector based on simulated ball position
+        linePlay.SetPosition(1, returnVector);
+        // Clean up
+        ballR.isKinematic = false; // Reset kinematic state
+        directionSet = false;
+    }
+
+    bool CheckKinematic()
+    {
+        if(simBall.GetComponent<Rigidbody>().isKinematic)
+        {
+            return true;
+        }
+        return false;
+    }
+
 
     bool BallStopped()
     {

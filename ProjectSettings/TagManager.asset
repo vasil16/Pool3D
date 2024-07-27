@@ -10,6 +10,7 @@ TagManager:
   - pocket
   - cushion
   - outer
+  - simBall
   layers:
   - Default
   - TransparentFX
@@ -20,7 +21,7 @@ TagManager:
   - power
   - ball
   - table
-  - 
+  - simBall
   - 
   - 
   - 
