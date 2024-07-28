@@ -242,6 +242,7 @@ public class PoolMain : MonoBehaviour
         ballR.constraints = RigidbodyConstraints.None;
         yield return new WaitUntil(BallStopped);
         yield return new WaitForSeconds(2f);
+        ballR.drag = 0.23f;
         //if(SceneManager.GetActiveScene().buildIndex==0)
         //    cueBall.transform.rotation = Quaternion.Euler(Vector3.zero);
         spinObj.SetActive(true);

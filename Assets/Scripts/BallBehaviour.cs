@@ -47,8 +47,8 @@ public class BallBehaviour : MonoBehaviour
                 if (!PoolMain.instance.spun)
                 {
                     Debug.Log("cut speed");
-                    GetComponent<Rigidbody>().AddForce(GetComponent<Rigidbody>().velocity * -0.7f);
-                    //GetComponent<Rigidbody>().drag = 3f;
+                    //GetComponent<Rigidbody>().AddForce(GetComponent<Rigidbody>().velocity * -0.7f);
+                    GetComponent<Rigidbody>().drag = 3f;
                     PoolMain.instance.spun = true;
                 }
             }
