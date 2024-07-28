@@ -15,7 +15,7 @@ public class PoolMain : MonoBehaviour
     [SerializeField] private Vector3 lineRendererOffset, cueOgPos, cueOgRot;
     [SerializeField] private Vector2 deltaPosition, deltaPos;
     [SerializeField] private GameObject targetBall, cueBall, powerBar, aimDock, spinObj;
-    [SerializeField] private float maxPower, rotationSpeed = 0.1f, powerMultiplier, maxDistance = 3, secMax = 2, ballWidth;
+    [SerializeField] private float maxPower, rotationSpeed = 0.1f, powerMultiplier, maxDistance = 3, secMax = 2, ballWidth, ballYpos;
     [SerializeField] private Camera povCam;
     [SerializeField] private Transform cueStick, forceAt;
     [SerializeField] private LineRenderer lineRenderer, linePlay;
@@ -145,7 +145,7 @@ public class PoolMain : MonoBehaviour
             {
                 float clampedX = Mathf.Clamp(cueBall.transform.localPosition.x, clampTableNormal.x, clampTableNormal.y);
                 float clampedZ = Mathf.Clamp(cueBall.transform.localPosition.z, clampTableNormal.z, clampTableNormal.w);
-                cueBall.transform.localPosition = new Vector3(clampedX, 0.3146f, clampedZ);
+                cueBall.transform.localPosition = new Vector3(clampedX, cueBall.transform.localPosition.y, clampedZ);
             }
         }
     }
@@ -246,7 +246,7 @@ public class PoolMain : MonoBehaviour
         //    cueBall.transform.rotation = Quaternion.Euler(Vector3.zero);
         spinObj.SetActive(true);
         speedReductVal = 0.6f;
-        power.maxValue = 162;
+        power.maxValue = 112;
         spinIndicator.anchoredPosition = Vector2.zero;
         spinRect.anchoredPosition = Vector2.zero;
         spinMark.transform.localPosition = Vector3.zero;
@@ -300,7 +300,7 @@ public class PoolMain : MonoBehaviour
     IEnumerator FoulReset()
     {
         cueBall.GetComponent<Rigidbody>().isKinematic = true;
-        cueBall.transform.localPosition = new Vector3(0.955f, 0.446f, 0f);
+        cueBall.transform.localPosition = new Vector3(0.955f, ballYpos, 0f);
         cueBall.transform.localRotation = Quaternion.Euler(-90, 0, 0);
         poolCam.transform.rotation = Quaternion.Euler(0, 0, 0);
         cueBall.GetComponent<Rigidbody>().isKinematic = false;
@@ -338,6 +338,8 @@ public class PoolMain : MonoBehaviour
 
             fallPoint = cueBall.transform.position + direction * collDistance;
 
+            //simBall.transform.position = fallPoint;
+
             Vector3 fixedPosition = fallPoint - (direction * ballWidth);
 
             if (hiit.collider.CompareTag("playBall"))
@@ -350,21 +352,25 @@ public class PoolMain : MonoBehaviour
                 aimDock.SetActive(true);
                 aimDock.transform.position =dockPos;
 
-                Vector3 newStart = hiit.collider.transform.position;
+                Vector3 newStart = fallPoint;
 
-                newDir = (hiit.collider.transform.position - fallPoint).normalized;
-
-                Ray hitRay = new(newStart, newDir);
 
 
                 linePlay.positionCount = 2;
-                linePlay.SetPosition(0, newStart);
-                if (Physics.Raycast(hitRay, out lHit, 5f))
-                {
-                    linePlay.SetPosition(1, lHit.point);
-                }
-                else
-                    linePlay.SetPosition(1, hitRay.GetPoint(5f));
+                Vector3 startPoint = new Vector3(newStart.x, fallPoint.y, newStart.z);
+                Vector3 endPoint = new Vector3(hiit.collider.transform.position.x, fallPoint.y, hiit.collider.transform.position.z);
+
+                Vector3 newDir = (endPoint - startPoint).normalized; // Calculate direction vector
+                float extensionLength = 0.3f; // Adjust this value to change the extension length
+
+                linePlay.SetPosition(0, startPoint);
+                linePlay.SetPosition(1, endPoint + newDir * extensionLength);
+                //if (Physics.Raycast(hitRay, out lHit, 2f))
+                //{
+                //    linePlay.SetPosition(1, lHit.point);
+                //}
+                //else
+                //    linePlay.SetPosition(1, hitRay.GetPoint(2f));
             }
             else
             {
@@ -379,7 +385,6 @@ public class PoolMain : MonoBehaviour
 
         }
     }
-    #endregion
 
     IEnumerator SimulateDirection(Transform hitBall)
     {
@@ -405,12 +410,13 @@ public class PoolMain : MonoBehaviour
 
     bool CheckKinematic()
     {
-        if(simBall.GetComponent<Rigidbody>().isKinematic)
+        if (simBall.GetComponent<Rigidbody>().isKinematic)
         {
             return true;
         }
         return false;
     }
+    #endregion
 
 
     bool BallStopped()
