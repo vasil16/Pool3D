@@ -7,8 +7,8 @@ PhysicMaterial:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: cueBall
-  dynamicFriction: 1.6
+  dynamicFriction: 3.07
   staticFriction: 0.06
-  bounciness: 0.87
+  bounciness: 0.94
   frictionCombine: 2
   bounceCombine: 2

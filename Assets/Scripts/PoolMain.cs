@@ -26,6 +26,7 @@ public class PoolMain : MonoBehaviour
     [SerializeField] public GameObject[] playerIndicator;
     [SerializeField] Rigidbody simCueBall;
     [SerializeReference] GameObject simBall;
+    [SerializeField] LayerMask closeMask;
 
     public GameObject cue, spinMark, cueAnchor;
     public bool isBreak = true;
@@ -115,7 +116,7 @@ public class PoolMain : MonoBehaviour
             }
 
             pRay = poolCam.GetComponentInChildren<Camera>().ScreenPointToRay(touch.position);
-            if (Physics.Raycast(pRay, out bHit) && bHit.collider.gameObject.CompareTag("playBall") && !looked)
+            if (Physics.Raycast(pRay, out bHit, closeMask) && bHit.collider.gameObject.CompareTag("playBall") && !looked)
             {
                 StartCoroutine(LookAtTarget(bHit.collider.gameObject));
                 looked = true;
@@ -208,7 +209,7 @@ public class PoolMain : MonoBehaviour
     public IEnumerator Hit()
     {
         if (hitPower <= 5) yield break;
-        firstBreak = false;
+        
         poolCam.gameState = PoolCamBehaviour.GameState.Hit;
         float time = 0;
         spinObj.SetActive(false);
@@ -242,12 +243,13 @@ public class PoolMain : MonoBehaviour
         ballR.constraints = RigidbodyConstraints.None;
         yield return new WaitUntil(BallStopped);
         yield return new WaitForSeconds(2f);
+        firstBreak = false;
         ballR.drag = 0.23f;
         //if(SceneManager.GetActiveScene().buildIndex==0)
         //    cueBall.transform.rotation = Quaternion.Euler(Vector3.zero);
         spinObj.SetActive(true);
         speedReductVal = 0.6f;
-        power.maxValue = 112;
+        power.maxValue = 180;
         spinIndicator.anchoredPosition = Vector2.zero;
         spinRect.anchoredPosition = Vector2.zero;
         spinMark.transform.localPosition = Vector3.zero;
@@ -362,16 +364,17 @@ public class PoolMain : MonoBehaviour
                 Vector3 endPoint = new Vector3(hiit.collider.transform.position.x, fallPoint.y, hiit.collider.transform.position.z);
 
                 Vector3 newDir = (endPoint - startPoint).normalized; // Calculate direction vector
-                float extensionLength = 0.3f; // Adjust this value to change the extension length
+                float extensionLength = 0.23f; // Adjust this value to change the extension length
 
-                linePlay.SetPosition(0, startPoint);
+                linePlay.SetPosition(0, endPoint);
                 linePlay.SetPosition(1, endPoint + newDir * extensionLength);
-                //if (Physics.Raycast(hitRay, out lHit, 2f))
+                //if (Physics.Raycast(hiit.transform.position, newDir, out lHit, 2f))
                 //{
                 //    linePlay.SetPosition(1, lHit.point);
                 //}
                 //else
-                //    linePlay.SetPosition(1, hitRay.GetPoint(2f));
+                //    //linePlay.SetPosition(1, hitRay.GetPoint(2f));
+                //    linePlay.SetPosition(1, endPoint + newDir * extensionLength);
             }
             else
             {
