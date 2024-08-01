@@ -19,6 +19,7 @@ public class PoolCamBehaviour : MonoBehaviour
     private bool isZoomingIn = false;
     private bool isZoomingOut = false;
 
+
     enum Target
     {
         CueBall,
@@ -54,15 +55,15 @@ public class PoolCamBehaviour : MonoBehaviour
 
     void Update()
     {
-        if (isZoomingIn)
-        {
-            ZoomIn();
-        }
+        //if (isZoomingIn)
+        //{
+        //    ZoomIn();
+        //}
 
-        if (isZoomingOut)
-        {
-            ZoomOut();
-        }
+        //if (isZoomingOut)
+        //{
+        //    ZoomOut();
+        //}
 
         tCount = Input.touchCount;
 
@@ -75,7 +76,7 @@ public class PoolCamBehaviour : MonoBehaviour
             case GameState.Hit:
                 if (gameState != prevState)
                 {
-                    StartCoroutine(FollowBall());
+                    //StartCoroutine(FollowBall());
                 }
                 break;
 
@@ -279,10 +280,10 @@ public class PoolCamBehaviour : MonoBehaviour
 
     IEnumerator FollowBall()
     {
-        Vector3 startPos = transform.position;
-        Quaternion startRotation = transform.rotation;
-        float time = 0;
-        float duration = 0.8f;
+        //Vector3 startPos = transform.position;
+        //Quaternion startRotation = transform.rotation;
+        //float time = 0;
+        //float duration = 0.8f;
         //while(time <= duration)
         //{
         //    time += Time.smoothDeltaTime;

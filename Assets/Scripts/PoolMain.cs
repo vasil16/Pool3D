@@ -42,6 +42,7 @@ public class PoolMain : MonoBehaviour
 
     public float time, duration, hitPower, speedReductVal;
 
+
     private void Awake()
     {
         instance = this;
@@ -237,16 +238,13 @@ public class PoolMain : MonoBehaviour
 
     IEnumerator ResetCue()
     {
-        dragPower = false;
-        
+        dragPower = false;        
         yield return new WaitForSeconds(2f);
         ballR.constraints = RigidbodyConstraints.None;
         yield return new WaitUntil(BallStopped);
         yield return new WaitForSeconds(2f);
         firstBreak = false;
         ballR.drag = 0.23f;
-        //if(SceneManager.GetActiveScene().buildIndex==0)
-        //    cueBall.transform.rotation = Quaternion.Euler(Vector3.zero);
         spinObj.SetActive(true);
         speedReductVal = 0.6f;
         power.maxValue = 180;
@@ -350,7 +348,7 @@ public class PoolMain : MonoBehaviour
                 lineRenderer.positionCount = points;
                 lineRenderer.SetPosition(points - 1, fixedPosition);
 
-                Vector3 dockPos = fixedPosition;
+                Vector3 dockPos = new Vector3(fixedPosition.x, 0.7785423f, fixedPosition.z);
 
                 aimDock.SetActive(true);
                 aimDock.transform.position =dockPos;

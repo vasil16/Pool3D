@@ -14,7 +14,6 @@ public class BallBehaviour : MonoBehaviour
     public BallType ballType;
     [SerializeField] public int ballCode;
 
-
     private void OnCollisionEnter(Collision collision)
     {
         //if (collision.gameObject.CompareTag("outer"))
@@ -36,11 +35,11 @@ public class BallBehaviour : MonoBehaviour
                     GetComponent<Rigidbody>().AddForce((transform.position - PoolMain.instance.spinMark.transform.position).normalized * PoolMain.instance.hitPower * 0.10f,  ForceMode.Force);
                     PoolMain.instance.spun = true;
                 }
-                else
-                if (!PoolMain.instance.spun)
+                else if (!PoolMain.instance.spun)
                 {                    
                     if(!PoolMain.instance.firstBreak)
                     {
+                        Debug.Log("cut on  " + gameObject.name+ " with "+ collision.gameObject.name);
                         StartCoroutine(CutOff());
                         PoolMain.instance.spun = true;
                     }
