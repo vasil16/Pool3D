@@ -53,6 +53,6 @@ public class BallBehaviour : MonoBehaviour
     {
         yield return new WaitForSeconds(0.1f);
         Vector3 relVelocity = gameObject.GetComponent<Rigidbody>().velocity;
-        gameObject.GetComponent<Rigidbody>().velocity = (relVelocity * 0.07f);
+        gameObject.GetComponent<Rigidbody>().velocity = (relVelocity * 0.06f);
     }
 }

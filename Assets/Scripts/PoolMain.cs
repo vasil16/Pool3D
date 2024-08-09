@@ -2,8 +2,6 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
-using UnityEngine.SceneManagement;
-using Unity.Burst.CompilerServices;
 
 public class PoolMain : MonoBehaviour
 {
@@ -15,7 +13,7 @@ public class PoolMain : MonoBehaviour
     [SerializeField] private Vector3 lineRendererOffset, cueOgPos, cueOgRot;
     [SerializeField] private Vector2 deltaPosition, deltaPos;
     [SerializeField] private GameObject targetBall, cueBall, powerBar, aimDock, spinObj;
-    [SerializeField] private float maxPower, rotationSpeed = 0.1f, powerMultiplier, maxDistance = 3, secMax = 2, ballWidth, ballYpos;
+    [SerializeField] private float rotationSpeed = 0.1f, powerMultiplier, maxDistance = 3, secMax = 2, ballWidth, ballYpos;
     [SerializeField] private Camera povCam;
     [SerializeField] private Transform cueStick, forceAt;
     [SerializeField] private LineRenderer lineRenderer, linePlay;
@@ -52,7 +50,8 @@ public class PoolMain : MonoBehaviour
     {
         cueOgPos = cue.transform.localPosition;
         ballR = cueBall.GetComponent<Rigidbody>();
-        ballWidth = cueBall.GetComponent<MeshRenderer>().bounds.size.x/2;
+        //ballWidth = cueBall.GetComponent<MeshRenderer>().bounds.size.x/2;
+        ballWidth = 0.035f;
         Application.targetFrameRate = 60;
         //power.maxValue = Random.Range(190, 208);
         PlayerPrefs.DeleteAll();
@@ -247,7 +246,7 @@ public class PoolMain : MonoBehaviour
         ballR.drag = 0.23f;
         spinObj.SetActive(true);
         speedReductVal = 0.6f;
-        power.maxValue = 180;
+        power.maxValue = 170;
         spinIndicator.anchoredPosition = Vector2.zero;
         spinRect.anchoredPosition = Vector2.zero;
         spinMark.transform.localPosition = Vector3.zero;
