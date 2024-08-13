@@ -13,6 +13,19 @@ public class BallBehaviour : MonoBehaviour
 
     public BallType ballType;
     [SerializeField] public int ballCode;
+    [SerializeField] AudioClip ballHit;
+
+    //private void Update()
+    //{
+    //    if(GetComponent<Rigidbody>().velocity!=Vector3.zero)
+    //    {
+    //        GetComponent<AudioSource>().mute = false;
+    //    }
+    //    else
+    //    {
+    //        GetComponent<AudioSource>().mute = true;
+    //    }
+    //}
 
     private void OnCollisionEnter(Collision collision)
     {

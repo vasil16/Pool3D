@@ -25,6 +25,8 @@ public class PoolMain : MonoBehaviour
     [SerializeField] Rigidbody simCueBall;
     [SerializeReference] GameObject simBall;
     [SerializeField] LayerMask closeMask;
+    [SerializeField] public AudioSource gameAudio;
+    [SerializeField] public AudioClip cueHit, rolling;
 
     public GameObject cue, spinMark, cueAnchor;
     public bool isBreak = true;
@@ -51,7 +53,7 @@ public class PoolMain : MonoBehaviour
         cueOgPos = cue.transform.localPosition;
         ballR = cueBall.GetComponent<Rigidbody>();
         //ballWidth = cueBall.GetComponent<MeshRenderer>().bounds.size.x/2;
-        ballWidth = 0.035f;
+        ballWidth = 0.0345f;
         Application.targetFrameRate = 60;
         //power.maxValue = Random.Range(190, 208);
         PlayerPrefs.DeleteAll();
@@ -231,6 +233,7 @@ public class PoolMain : MonoBehaviour
 
         Vector3 direction = cueStick.right.normalized;
         cue.SetActive(false);
+        gameAudio.PlayOneShot(cueHit);
         ballR.AddForceAtPosition(direction * hitPower, forceAt.position, ForceMode.Force);
         StartCoroutine(ResetCue());
     }
@@ -329,7 +332,8 @@ public class PoolMain : MonoBehaviour
 
         points = 1;
 
-        if (ballR.SweepTest(direction, out hiit, 180))
+        if(Physics.SphereCast(ballR.position, ballWidth,direction, out hiit, 180))
+        //if (ballR.SweepTest(direction, out hiit, 180))
         {
             points++;
             if (points > maxBounces) return;
