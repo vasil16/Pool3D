@@ -13,19 +13,7 @@ public class BallBehaviour : MonoBehaviour
 
     public BallType ballType;
     [SerializeField] public int ballCode;
-    [SerializeField] AudioClip ballHit;
-
-    //private void Update()
-    //{
-    //    if(GetComponent<Rigidbody>().velocity!=Vector3.zero)
-    //    {
-    //        GetComponent<AudioSource>().mute = false;
-    //    }
-    //    else
-    //    {
-    //        GetComponent<AudioSource>().mute = true;
-    //    }
-    //}
+    [SerializeField] AudioClip ballHit, cushionHit;
 
     private void OnCollisionEnter(Collision collision)
     {
@@ -38,27 +26,37 @@ public class BallBehaviour : MonoBehaviour
 
         //else
 
-        if (ballType == BallType.white)
+        if (collision.gameObject.CompareTag("playBall"))
         {
-            if (collision.gameObject.CompareTag("playBall"))
+            if (!PoolMain.instance.firstBreak)
+            {
+                if(!PoolMain.instance.gameAudio.isPlaying)
+                    PoolMain.instance.gameAudio.PlayOneShot(ballHit);
+            }
+            if (ballType == BallType.white)
             {
                 if (!PoolMain.instance.spun && PoolMain.instance.hasSpin)
                 {
                     Debug.Log("spinn power " + PoolMain.instance.hitPower + "  dir " + PoolMain.instance.spinMark.transform.position);
-                    GetComponent<Rigidbody>().AddForce((transform.position - PoolMain.instance.spinMark.transform.position).normalized * PoolMain.instance.hitPower * 0.10f,  ForceMode.Force);
+                    GetComponent<Rigidbody>().AddForce((transform.position - PoolMain.instance.spinMark.transform.position).normalized * PoolMain.instance.hitPower * 0.10f, ForceMode.Force);
                     PoolMain.instance.spun = true;
                 }
                 else if (!PoolMain.instance.spun)
-                {                    
-                    if(!PoolMain.instance.firstBreak)
+                {
+                    if (!PoolMain.instance.firstBreak)
                     {
-                        Debug.Log("cut on  " + gameObject.name+ " with "+ collision.gameObject.name);
+                        Debug.Log("cut on  " + gameObject.name + " with " + collision.gameObject.name);
                         StartCoroutine(CutOff());
                         PoolMain.instance.spun = true;
                     }
                 }
             }
         }
+        else if (collision.gameObject.CompareTag("pocket"))
+        {
+            PoolMain.instance.gameAudio.PlayOneShot(cushionHit);
+        }
+
     }
 
 

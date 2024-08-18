@@ -2,8 +2,10 @@ using UnityEngine;
 
 public class Pocket : MonoBehaviour
 {
+    [SerializeField] AudioClip pocketClip;
     private void OnTriggerEnter(Collider other)
     {
+        PoolMain.instance.gameAudio.PlayOneShot(pocketClip);
         BallBehaviour pocketedBall = other.GetComponent<BallBehaviour>();
         other.attachedRigidbody.constraints = RigidbodyConstraints.None;
 

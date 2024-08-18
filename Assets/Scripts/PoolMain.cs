@@ -15,7 +15,7 @@ public class PoolMain : MonoBehaviour
     [SerializeField] private GameObject targetBall, cueBall, powerBar, aimDock, spinObj;
     [SerializeField] private float rotationSpeed = 0.1f, powerMultiplier, maxDistance = 3, secMax = 2, ballWidth, ballYpos;
     [SerializeField] private Camera povCam;
-    [SerializeField] private Transform cueStick, forceAt;
+    [SerializeField] private Transform forceAt;
     [SerializeField] private LineRenderer lineRenderer, linePlay;
     [SerializeField] private PoolCamBehaviour poolCam;
     [SerializeField] private PowerControl power;
@@ -53,7 +53,8 @@ public class PoolMain : MonoBehaviour
         cueOgPos = cue.transform.localPosition;
         ballR = cueBall.GetComponent<Rigidbody>();
         //ballWidth = cueBall.GetComponent<MeshRenderer>().bounds.size.x/2;
-        ballWidth = 0.0345f;
+        ballWidth = cueBall.GetComponent<SphereCollider>().radius;
+        //ballWidth = 0.0345f;
         Application.targetFrameRate = 60;
         //power.maxValue = Random.Range(190, 208);
         PlayerPrefs.DeleteAll();
@@ -215,7 +216,7 @@ public class PoolMain : MonoBehaviour
         poolCam.gameState = PoolCamBehaviour.GameState.Hit;
         float time = 0;
         spinObj.SetActive(false);
-
+        firstBreak = false;
         Vector3 startPos = cue.transform.localPosition;
 
         slingDuration = Mathf.Lerp(0.4f, 0.24f, hitPower / power.maxValue);
@@ -231,7 +232,7 @@ public class PoolMain : MonoBehaviour
         isWaiting = true;
         powerBar.SetActive(false);
 
-        Vector3 direction = cueStick.right.normalized;
+        Vector3 direction = cueAnchor.transform.right.normalized;
         cue.SetActive(false);
         gameAudio.PlayOneShot(cueHit);
         ballR.AddForceAtPosition(direction * hitPower, forceAt.position, ForceMode.Force);
@@ -242,10 +243,11 @@ public class PoolMain : MonoBehaviour
     {
         dragPower = false;        
         yield return new WaitForSeconds(2f);
+
         ballR.constraints = RigidbodyConstraints.None;
         yield return new WaitUntil(BallStopped);
         yield return new WaitForSeconds(2f);
-        firstBreak = false;
+        
         ballR.drag = 0.23f;
         spinObj.SetActive(true);
         speedReductVal = 0.6f;
@@ -325,7 +327,7 @@ public class PoolMain : MonoBehaviour
     void RenderTrajectory()
     {
         Vector3 startPosition = cueBall.transform.position;
-        Vector3 direction = cueStick.right;
+        Vector3 direction = cueAnchor.transform.right;
 
         lineRenderer.positionCount = 1;
         lineRenderer.SetPosition(0, startPosition);
@@ -354,28 +356,30 @@ public class PoolMain : MonoBehaviour
                 Vector3 dockPos = new Vector3(fixedPosition.x, 0.7785423f, fixedPosition.z);
 
                 aimDock.SetActive(true);
-                aimDock.transform.position =dockPos;
+                aimDock.transform.position = dockPos;
 
                 Vector3 newStart = fallPoint;
-
-
 
                 linePlay.positionCount = 2;
                 Vector3 startPoint = new Vector3(newStart.x, fallPoint.y, newStart.z);
                 Vector3 endPoint = new Vector3(hiit.collider.transform.position.x, fallPoint.y, hiit.collider.transform.position.z);
 
                 Vector3 newDir = (endPoint - startPoint).normalized; // Calculate direction vector
-                float extensionLength = 0.23f; // Adjust this value to change the extension length
+                float extensionLength = 0.2f; // Adjust this value to change the extension length
 
                 linePlay.SetPosition(0, endPoint);
+                //linePlay.SetPosition(1, endPoint + newDir * extensionLength);
+                if (Physics.Raycast(hiit.transform.position, newDir, out lHit, 0.2f))
+                {
+                    Debug.Log("hhh");
+                    linePlay.SetPosition(1, lHit.point);
+                    return;
+                }
+
                 linePlay.SetPosition(1, endPoint + newDir * extensionLength);
-                //if (Physics.Raycast(hiit.transform.position, newDir, out lHit, 2f))
-                //{
-                //    linePlay.SetPosition(1, lHit.point);
-                //}
-                //else
-                //    //linePlay.SetPosition(1, hitRay.GetPoint(2f));
-                //    linePlay.SetPosition(1, endPoint + newDir * extensionLength);
+                //    else
+                //        //linePlay.SetPosition(1, hitRay.GetPoint(2f));
+                //        linePlay.SetPosition(1, endPoint + newDir * extensionLength);                
             }
             else
             {
@@ -387,7 +391,10 @@ public class PoolMain : MonoBehaviour
         }
         else
         {
-
+            aimDock.SetActive(false);
+            lineRenderer.positionCount = points;
+            lineRenderer.SetPosition(points - 1, fallPoint);
+            linePlay.positionCount = 0;
         }
     }
 

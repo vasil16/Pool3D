@@ -8,17 +8,16 @@ Material:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: ball 4
-  m_Shader: {fileID: 4800000, guid: 933532a4fcc9baf4fa0491de14d08ed7, type: 3}
-  m_ValidKeywords:
+  m_Shader: {fileID: 46, guid: 0000000000000000f000000000000000, type: 0}
+  m_ValidKeywords: []
+  m_InvalidKeywords:
   - _ENVIRONMENTREFLECTIONS_OFF
   - _RECEIVE_SHADOWS_OFF
-  m_InvalidKeywords: []
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 1
   m_DoubleSidedGI: 0
   m_CustomRenderQueue: -1
-  stringTagMap:
-    RenderType: Opaque
+  stringTagMap: {}
   disabledShaderPasses: []
   m_SavedProperties:
     serializedVersion: 3
@@ -48,7 +47,7 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _MainTex:
-        m_Texture: {fileID: 2800000, guid: dd5013cb7ee5e4fbe8cbf1c15374246a, type: 3}
+        m_Texture: {fileID: 2800000, guid: fbf7098773b9742f59cd00168ca09768, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _MetallicGlossMap:
@@ -96,7 +95,7 @@ Material:
     - _DstBlendAlpha: 0
     - _EnvironmentReflections: 0
     - _GlossMapScale: 1
-    - _Glossiness: 0.14142135
+    - _Glossiness: 0.786
     - _GlossyReflections: 1
     - _Metallic: 0
     - _Mode: 0
