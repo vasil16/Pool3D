@@ -431,7 +431,7 @@ public class PoolMain : MonoBehaviour
     #endregion
 
 
-    bool BallStopped()
+    public bool BallStopped()
     {
         foreach (var ball in balls)
         {

@@ -46,8 +46,8 @@ public class BallBehaviour : MonoBehaviour
                     if (!PoolMain.instance.firstBreak)
                     {
                         Debug.Log("cut on  " + gameObject.name + " with " + collision.gameObject.name);
-                        StartCoroutine(CutOff());
-                        PoolMain.instance.spun = true;
+                        //StartCoroutine(CutOff());
+                        //PoolMain.instance.spun = true;
                     }
                 }
             }
