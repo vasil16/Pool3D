@@ -371,7 +371,7 @@ public class PoolMain : MonoBehaviour
                 //linePlay.SetPosition(1, endPoint + newDir * extensionLength);
                 if (Physics.Raycast(hiit.transform.position, newDir, out lHit, 0.2f))
                 {
-                    Debug.Log("hhh");
+                    //Debug.Log("hhh");
                     linePlay.SetPosition(1, lHit.point);
                     return;
                 }

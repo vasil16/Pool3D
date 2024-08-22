@@ -11,6 +11,7 @@ TagManager:
   - cushion
   - outer
   - simBall
+  - plane
   layers:
   - Default
   - TransparentFX
