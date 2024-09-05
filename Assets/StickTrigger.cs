@@ -73,5 +73,9 @@ public class StickTrigger : MonoBehaviour
                 yield return null;
             }
         }
+        else
+        {
+            transform.parent.localRotation = Quaternion.Euler(0, 0, -5.927f);
+        }
     }
 }
