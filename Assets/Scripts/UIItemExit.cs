@@ -29,7 +29,7 @@ public class UIItemExit : MonoBehaviour
         while(time<=duration)
         {
             time += Time.deltaTime;
-            float t = time / duration;
+            float t = Mathf.SmoothStep(0, 1, time / duration);
             rect.anchoredPosition = Vector2.Lerp(actualPos, finalPos, t);
             yield return null;
         }

@@ -30,8 +30,11 @@ public class BallBehaviour : MonoBehaviour
         {
             if (!PoolMain.instance.firstBreak)
             {
-                if(!PoolMain.instance.gameAudio.isPlaying)
-                    PoolMain.instance.gameAudio.PlayOneShot(ballHit);
+                if(PoolMain.instance.gameAudio.isPlaying)
+                {
+                    PoolMain.instance.gameAudio.Stop();
+                }
+                PoolMain.instance.gameAudio.PlayOneShot(ballHit);
             }
             if (ballType == BallType.white)
             {

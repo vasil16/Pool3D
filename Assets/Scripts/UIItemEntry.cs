@@ -1,57 +1,43 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
+using System.Collections;
 
 public class UIItemEntry : MonoBehaviour
 {
+    [SerializeField] private Vector2 finalPos;
+    [SerializeField] private float startDelay = 0.5f;
+    [SerializeField] private float duration = 1f;
+    [SerializeField] private AnimationCurve movementCurve = AnimationCurve.EaseInOut(0, 0, 1, 1);
 
-    [SerializeField] Vector2 finalPos, actualPos;
-    [SerializeField] float startDelay, duration;
     private RectTransform rect;
-    float runTime;
-    bool completed;
+    private Vector2 startPos;
 
-    void Start()
+    private void Awake()
     {
         rect = GetComponent<RectTransform>();
-        actualPos = rect.anchoredPosition;
-        //StartCoroutine(MoveToPos());
+        startPos = rect.anchoredPosition;
     }
 
-    void Update()
+    private void OnEnable()
     {
-        runTime += Time.deltaTime;
-        if(!completed && runTime>startDelay)
-        {
-            float t = (runTime - startDelay) / duration;
-            t = Mathf.Clamp01(t);
-
-            rect.anchoredPosition = Vector2.Lerp(actualPos, finalPos, t);
-            if (t >= 1.0f) // Check if the movement is complete
-            {
-                // Execute the next line of code after movement completes
-                GetComponent<UIItemExit>().enabled = true;
-
-                // Disable this script
-                completed = true; // Stop further movement
-                this.enabled = false; // Disable the script
-            }
-        }
-
+        StartCoroutine(AnimateMovement());
     }
 
-    IEnumerator MoveToPos()
+    private IEnumerator AnimateMovement()
     {
         yield return new WaitForSeconds(startDelay);
-        float time = 0;
-        while(time<=duration)
+
+        float elapsedTime = 0f;
+        while (elapsedTime < duration)
         {
-            time += Time.deltaTime;
-            float t = time / duration;
-            rect.anchoredPosition = Vector2.Lerp(actualPos, finalPos, t);
+            elapsedTime += Time.deltaTime;
+            float t = Mathf.Clamp01(elapsedTime / duration);
+            float curveValue = movementCurve.Evaluate(t);
+            rect.anchoredPosition = Vector2.LerpUnclamped(startPos, finalPos, curveValue);
             yield return null;
         }
-        GetComponent<UIItemExit>().enabled = true;
-    }
 
+        rect.anchoredPosition = finalPos;
+        GetComponent<UIItemExit>().enabled = true;
+        enabled = false;
+    }
 }

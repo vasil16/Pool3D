@@ -55,7 +55,7 @@ public class PoolMain : MonoBehaviour
         //ballWidth = cueBall.GetComponent<MeshRenderer>().bounds.size.x/2;
         ballWidth = cueBall.GetComponent<SphereCollider>().radius;
         //ballWidth = 0.0345f;
-        Application.targetFrameRate = 60;
+        //Application.targetFrameRate = 60;
         //power.maxValue = Random.Range(190, 208);
         PlayerPrefs.DeleteAll();
     }
@@ -251,7 +251,7 @@ public class PoolMain : MonoBehaviour
         ballR.drag = 0.23f;
         spinObj.SetActive(true);
         speedReductVal = 0.6f;
-        power.maxValue = 170;
+        power.maxValue = 150;
         spinIndicator.anchoredPosition = Vector2.zero;
         spinRect.anchoredPosition = Vector2.zero;
         spinMark.transform.localPosition = Vector3.zero;
