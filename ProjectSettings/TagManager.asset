@@ -4,14 +4,10 @@
 TagManager:
   serializedVersion: 2
   tags:
-  - playBall
-  - powerBar
-  - cueBall
   - pocket
   - cushion
-  - outer
-  - simBall
-  - plane
+  - playBall
+  - cueBall
   layers:
   - Default
   - TransparentFX
@@ -19,9 +15,9 @@ TagManager:
   - 
   - Water
   - UI
-  - power
   - ball
   - table
+  - occlude
   - 
   - 
   - 

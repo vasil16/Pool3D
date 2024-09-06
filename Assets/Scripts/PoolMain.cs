@@ -251,7 +251,7 @@ public class PoolMain : MonoBehaviour
         ballR.drag = 0.23f;
         spinObj.SetActive(true);
         speedReductVal = 0.6f;
-        power.maxValue = 170;
+        power.maxValue = 110;
         spinIndicator.anchoredPosition = Vector2.zero;
         spinRect.anchoredPosition = Vector2.zero;
         spinMark.transform.localPosition = Vector3.zero;
