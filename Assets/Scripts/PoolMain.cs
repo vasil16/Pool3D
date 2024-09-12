@@ -13,7 +13,7 @@ public class PoolMain : MonoBehaviour
     [SerializeField] private Vector3 lineRendererOffset, cueOgPos, cueOgRot;
     [SerializeField] private Vector2 deltaPosition, deltaPos;
     [SerializeField] private GameObject targetBall, cueBall, powerBar, aimDock, spinObj;
-    [SerializeField] private float rotationSpeed = 0.1f, powerMultiplier, maxDistance = 3, secMax = 2, ballWidth, ballYpos;
+    [SerializeField] private float rotationSpeed = 0.1f, powerMultiplier, maxDistance = 3, secMax = 2, ballWidth, ballYpos, dockYpos;
     [SerializeField] private Camera povCam;
     [SerializeField] private Transform forceAt;
     [SerializeField] private LineRenderer lineRenderer, linePlay;
@@ -253,8 +253,9 @@ public class PoolMain : MonoBehaviour
         ballR.constraints = RigidbodyConstraints.None;
         yield return new WaitUntil(BallStopped);
         yield return new WaitForSeconds(2f);
+
+        Debug.Log("gon");
         
-        ballR.drag = 0.23f;
         spinObj.SetActive(true);
         speedReductVal = 0.6f;
         power.maxValue = 160;
@@ -362,7 +363,7 @@ public class PoolMain : MonoBehaviour
                 lineRenderer.positionCount = points;
                 lineRenderer.SetPosition(points - 1, fixedPosition);
 
-                Vector3 dockPos = new Vector3(fixedPosition.x, 1.05363f, fixedPosition.z);
+                Vector3 dockPos = new Vector3(fixedPosition.x, dockYpos, fixedPosition.z);
 
                 aimDock.SetActive(true);
                 aimDock.transform.position = dockPos;
@@ -442,10 +443,10 @@ public class PoolMain : MonoBehaviour
 
     public bool BallStopped()
     {
-        foreach (var ball in balls)
+        foreach (GameObject ball in balls)
         {
             Rigidbody ballRb = ball.GetComponent<Rigidbody>();
-            if (ballRb.velocity != Vector3.zero || ballRb.angularVelocity != Vector3.zero)
+            if (ball.activeInHierarchy && ballRb.velocity != Vector3.zero || ballRb.angularVelocity != Vector3.zero)
             {
                 return false;
             }

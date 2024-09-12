@@ -20,6 +20,7 @@ public class GameLogic : MonoBehaviour
     [Space(10)] public Dictionary<CurrentPlayer, Player> players;
 
     public CurrentPlayer currentPlayer;
+    public GameMode gameMode;
 
     public Action <CurrentPlayer> onGameComplete;
 
@@ -30,6 +31,12 @@ public class GameLogic : MonoBehaviour
 
 
     public static GameLogic instance;
+
+    public enum GameMode
+    {
+        players,
+        cpu
+    }
 
     public enum CurrentPlayer
     {
@@ -47,8 +54,10 @@ public class GameLogic : MonoBehaviour
         StartCoroutine(Toss());
         player1 = new Player();
         player1.playerBalls = p1Balls;
+        player1.name = "Player 1";
         player2 = new Player();
         player2.playerBalls = p2Balls;
+        player2.name = gameMode == GameMode.cpu ? "CPU" : "Player 2";
         players = new Dictionary<CurrentPlayer, Player>();
         players[CurrentPlayer.player1] = player1;
         players[CurrentPlayer.player2] = player2;
@@ -82,25 +91,28 @@ public class GameLogic : MonoBehaviour
 
     IEnumerator Toss()
     {
+        yield return null;
         float time = 0;
-        float duration = 1;
+        float duration = 2;
         Debug.Log("duration " + duration);
         PoolMain.instance.isWaiting = true;
-        yield return new WaitForSecondsRealtime(2f);
+        //yield return new WaitForSecondsRealtime(2f);
         int rand = UnityEngine.Random.Range(0, 2); ;
         currentPlayer = (CurrentPlayer)rand;
         PoolMain.instance.playerIndicator[rand].SetActive(true);
-        tossTxt.text = currentPlayer.ToString() + " will break";
+        tossTxt.text = players[currentPlayer].name + " will break";
+        //tossTxt.text = currentPlayer.ToString() + " will break";
 
-        while(time<=duration)
+        while (time <= duration)
         {
             time += Time.smoothDeltaTime;
             float t = lerpCurve.Evaluate(time);
             Color newColor = tossTxt.color;
             newColor.a = t;
             tossTxt.color = newColor;
+            yield return null;
         }
-        
+
         Debug.Log("currPla " + currentPlayer);
         tossTxt.gameObject.SetActive(false);
         placeBallPop.SetActive(true);
@@ -131,6 +143,7 @@ public class GameLogic : MonoBehaviour
     [System.Serializable]
     public class Player
     {
+        public string name;
         public BallBehaviour.BallType BallType;
         public bool isLast;
         public List<GameObject> pocketedBalls = new();

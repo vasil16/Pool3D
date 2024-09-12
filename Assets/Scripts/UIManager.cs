@@ -4,12 +4,14 @@ using UnityEngine;
 
 public class UIManager : MonoBehaviour
 {
-    [SerializeField] GameObject homePanel, gameplayPanel, gameStartPanel;
+    [SerializeField] GameObject homePanel, gameplayPanel, gameStartPanel, gameLogic;
+    int index;
 
-    public void PlayClick()
+    public void PlayClick(int index)
     {
         foreach(Transform t in homePanel.transform)
         {
+            this.index = index;            
             if(t.GetComponent<UIItemExit>())
                 t.GetComponent<UIItemExit>().ExitWithCallBack(PlayButtonCallback);
         }
@@ -20,6 +22,8 @@ public class UIManager : MonoBehaviour
         homePanel.SetActive(false);
         gameplayPanel.SetActive(true);
         gameStartPanel.SetActive(true);
+        gameLogic.SetActive(true);
+        GameLogic.instance.gameMode = index == 0 ? GameLogic.GameMode.players : GameLogic.GameMode.cpu;
     }
    
 }
