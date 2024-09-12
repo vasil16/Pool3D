@@ -6,12 +6,6 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
-    path: Assets/Scenes/p3i.unity
-    guid: 21c1286daf4f2416e8ee4d4cb0aaaece
-  - enabled: 0
-    path: Assets/Scenes/Pool3D.unity
-    guid: 6b54ee04c8766465198228bdabd8837b
-  - enabled: 1
-    path: Assets/Scenes/Pool3D2e.unity
-    guid: 1f884fe4a20c342338a0dd1e2feac33e
+    path: Assets/Scenes/dwf.unity
+    guid: 937a0b49746a44010b5cb59c56632f04
   m_configObjects: {}

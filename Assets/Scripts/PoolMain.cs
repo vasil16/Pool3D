@@ -40,7 +40,7 @@ public class PoolMain : MonoBehaviour
     private Ray pRay;
     private RaycastHit bHit;
 
-    public float time, duration, hitPower, speedReductVal;
+    public float time, duration, hitPower, speedReductVal, dockOffset;
 
 
     private void Awake()
@@ -55,7 +55,13 @@ public class PoolMain : MonoBehaviour
         //ballWidth = cueBall.GetComponent<MeshRenderer>().bounds.size.x/2;
         ballWidth = cueBall.GetComponent<SphereCollider>().radius;
         //ballWidth = 0.0345f;
-        //Application.targetFrameRate = 60;
+#if UNITY_EDITOR
+        {
+
+        }
+#else
+        Application.targetFrameRate = 90;
+#endif
         //power.maxValue = Random.Range(190, 208);
         PlayerPrefs.DeleteAll();
     }
@@ -251,7 +257,7 @@ public class PoolMain : MonoBehaviour
         ballR.drag = 0.23f;
         spinObj.SetActive(true);
         speedReductVal = 0.6f;
-        power.maxValue = 150;
+        power.maxValue = 160;
         spinIndicator.anchoredPosition = Vector2.zero;
         spinRect.anchoredPosition = Vector2.zero;
         spinMark.transform.localPosition = Vector3.zero;
@@ -329,6 +335,8 @@ public class PoolMain : MonoBehaviour
         Vector3 startPosition = cueBall.transform.position;
         Vector3 direction = cueAnchor.transform.right;
 
+        Vector3 normalDir = direction.normalized;
+
         lineRenderer.positionCount = 1;
         lineRenderer.SetPosition(0, startPosition);
 
@@ -342,18 +350,19 @@ public class PoolMain : MonoBehaviour
 
             collDistance = hiit.distance;
 
-            fallPoint = cueBall.transform.position + direction * collDistance;
+            fallPoint = cueBall.transform.position + normalDir * collDistance;
 
             //simBall.transform.position = fallPoint;
 
-            Vector3 fixedPosition = fallPoint - (direction * ballWidth);
+            //Vector3 fixedPosition = fallPoint - (direction * ballWidth/2);
+            Vector3 fixedPosition = fallPoint - (normalDir * dockOffset);
 
             if (hiit.collider.CompareTag("playBall"))
             {
                 lineRenderer.positionCount = points;
                 lineRenderer.SetPosition(points - 1, fixedPosition);
 
-                Vector3 dockPos = new Vector3(fixedPosition.x, 0.7785423f, fixedPosition.z);
+                Vector3 dockPos = new Vector3(fixedPosition.x, 1.05363f, fixedPosition.z);
 
                 aimDock.SetActive(true);
                 aimDock.transform.position = dockPos;
