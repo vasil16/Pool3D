@@ -65431,7 +65431,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Padding: {x: 0, y: 0, z: 0, w: 0}
-  m_Softness: {x: 0, y: 0}
+  m_Softness: {x: 0, y: 92}
 --- !u!114 &2037800204
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -70456,7 +70456,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: abc00000000002305762848874662505, type: 2}
+  - {fileID: 2100000, guid: 7fb2b93870aec4e58951422ca4db3425, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
