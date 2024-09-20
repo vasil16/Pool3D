@@ -6,7 +6,7 @@ public class PoolCamBehaviour : MonoBehaviour
     [SerializeField] Camera cam;
     [SerializeField] Transform cueStick, cueBall;
     [SerializeField] RectTransform dragRotateRect;
-    [SerializeField] Vector3 ballFollowOffset, stickFollowOffset, followRotation, initialRotation;
+    [SerializeField] Vector3 ballFollowOffset, stickFollowOffset, followRotation, initialRotation, cpuWaitPosition, cpuWaitRotation;
     [SerializeField] Vector2 touchDelta, touchStart, touchEnd, deltaPos;
     [SerializeField] int tCount;
     [SerializeField] float touchTime, longTouchThreshold, minFov, maxFov, zoomSpeed, rotationAmount, rotationThreshold;
@@ -400,10 +400,21 @@ public class PoolCamBehaviour : MonoBehaviour
 
     IEnumerator AfterHit()
     {
-        while (gameState == GameState.Hit)
+        float time = 0;
+        float duration =.8f;
+        Vector3 currentPos = transform.position;
+        Quaternion currentRot = transform.rotation;
+        while(time<=duration)
         {
+            time += Time.deltaTime;
+            transform.position = Vector3.LerpUnclamped(currentPos, cpuWaitPosition, time / duration);
+            transform.rotation = Quaternion.SlerpUnclamped(currentRot, Quaternion.Euler(cpuWaitRotation), time / duration);
             yield return null;
         }
+        //while (gameState == GameState.Hit)
+        //{
+        //    yield return null;
+        //}
     }
 
     IEnumerator ResetCam()
@@ -420,7 +431,6 @@ public class PoolCamBehaviour : MonoBehaviour
             transform.rotation = Quaternion.Slerp(startRotation, Quaternion.Euler(0, cueStick.eulerAngles.y, 0), t);
             yield return null;
         }
-
         gameState = GameState.Aim;
 
     }

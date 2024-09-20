@@ -47,9 +47,31 @@ public class Pocket : MonoBehaviour
             {
                 if (PoolMain.instance.firstPot)
                 {
-                    PoolMain.instance.firstPot = false;
+                    PoolMain.instance.firstPot = false;                    
                     GameLogic.instance.players[GameLogic.instance.currentPlayer].BallType = pocketedBall.ballType;
                     GameLogic.instance.players[GameLogic.instance.GetOpponent(GameLogic.instance.currentPlayer)].BallType = pocketedBall.ballType == BallBehaviour.BallType.stripe ? BallBehaviour.BallType.solid : BallBehaviour.BallType.stripe;
+
+                    if (GameLogic.instance.players[GameLogic.instance.currentPlayer].name == "CPU")
+                    {
+                        foreach (GameObject ball in PoolMain.instance.balls)
+                        {
+                            if (ball.GetComponent<BallBehaviour>().ballType == pocketedBall.ballType)
+                            {
+                                PoolMain.instance.cpuBalls.Add(ball);
+                            }
+                        }
+                    }
+                    else
+                    {
+                        foreach (GameObject ball in PoolMain.instance.balls)
+                        {
+                            if (ball.GetComponent<BallBehaviour>().ballType != pocketedBall.ballType && ball.GetComponent<BallBehaviour>().ballType != BallBehaviour.BallType.white && ball.GetComponent<BallBehaviour>().ballType != BallBehaviour.BallType.black)
+                            {
+                                PoolMain.instance.cpuBalls.Add(ball);
+                            }
+                        }
+                    }
+
                     PoolMain.instance.player1Txt.text = GameLogic.instance.player1.BallType + "";
                     PoolMain.instance.player2Txt.text = GameLogic.instance.player2.BallType + "";
                     PoolMain.instance.pocketed = true;

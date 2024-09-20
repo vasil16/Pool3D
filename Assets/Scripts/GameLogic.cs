@@ -63,6 +63,17 @@ public class GameLogic : MonoBehaviour
         players[CurrentPlayer.player2] = player2;
     }
 
+    public void SetCpu()
+    {
+        //foreach(GameObject ball in PoolMain.instance.balls)
+        //{
+        //    if(ball.GetComponent<BallBehaviour>().ballType == player2.BallType)
+        //    {
+        //        PoolMain.instance.cpuBalls.Add(ball);
+        //    }
+        //}
+    }
+
     public void GameCompleteEvent(CurrentPlayer player)
     {
         restartPanel.SetActive(true);
@@ -98,7 +109,8 @@ public class GameLogic : MonoBehaviour
         PoolMain.instance.isWaiting = true;
         //yield return new WaitForSecondsRealtime(2f);
         int rand = UnityEngine.Random.Range(0, 2); ;
-        currentPlayer = (CurrentPlayer)rand;
+        //currentPlayer = (CurrentPlayer)rand;
+        currentPlayer = (CurrentPlayer)1;
         PoolMain.instance.playerIndicator[rand].SetActive(true);
         tossTxt.text = players[currentPlayer].name + " will break";
         //tossTxt.text = currentPlayer.ToString() + " will break";
@@ -114,12 +126,24 @@ public class GameLogic : MonoBehaviour
         }
 
         Debug.Log("currPla " + currentPlayer);
+        if(players[currentPlayer].name =="CPU")
+        {
+            Debug.Log("cpu  break");
+            placeBallPop.SetActive(false);
+            ClosePlacePop();
+        }
+        else
+            placeBallPop.SetActive(true);
         tossTxt.gameObject.SetActive(false);
-        placeBallPop.SetActive(true);
+        
     }
 
     public void ClosePlacePop()
     {
+        foreach(GameObject ball in PoolMain.instance.balls)
+        {
+            ball.GetComponent<Rigidbody>().isKinematic = false;
+        }
         PoolMain.instance.isWaiting = false;
         poolCam.gameState = PoolCamBehaviour.GameState.Aim;
         placeBallPop.SetActive(false);
