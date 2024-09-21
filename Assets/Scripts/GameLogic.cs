@@ -108,9 +108,9 @@ public class GameLogic : MonoBehaviour
         Debug.Log("duration " + duration);
         PoolMain.instance.isWaiting = true;
         //yield return new WaitForSecondsRealtime(2f);
-        int rand = UnityEngine.Random.Range(0, 2); ;
-        //currentPlayer = (CurrentPlayer)rand;
-        currentPlayer = (CurrentPlayer)1;
+        int rand = UnityEngine.Random.Range(1, 2); ;
+        currentPlayer = (CurrentPlayer)rand;
+        //currentPlayer = (CurrentPlayer)1;
         PoolMain.instance.playerIndicator[rand].SetActive(true);
         tossTxt.text = players[currentPlayer].name + " will break";
         //tossTxt.text = currentPlayer.ToString() + " will break";
