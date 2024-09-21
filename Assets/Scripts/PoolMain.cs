@@ -103,7 +103,7 @@ public class PoolMain : MonoBehaviour
         if (lockedPocket != null && cueBall != null)
         {
             Gizmos.color = Color.red;
-            Gizmos.DrawLine(cueBall.transform.position, lockedPocket.position);
+            Gizmos.DrawLine(cueBall.transform.position, hitPoint);
         }
 
         // Draw the pocket direction from the ball to the pocket in green
@@ -167,6 +167,7 @@ public class PoolMain : MonoBehaviour
         }
     }
 
+    #region InputHandle
     void HandleTouchInput()
     {
         foreach (Touch touch in Input.touches)
@@ -276,7 +277,9 @@ public class PoolMain : MonoBehaviour
         looked = false;
     }
 
-    float slingDuration;
+    #endregion
+
+    
     public Transform lockedPocket;
     public Vector3 hitPoint;
     bool playableBallFound;
@@ -284,7 +287,7 @@ public class PoolMain : MonoBehaviour
     Vector3 lastPocketDirection; // Store the direction to the pocket
     Vector3 lastHittingDirection; // Store the cue ball to ball direction
 
-    BallBehaviour lockedBall;
+    Transform lockedBall;
 
     IEnumerator HandleCpuPlay()
     {
@@ -296,40 +299,27 @@ public class PoolMain : MonoBehaviour
             StartCoroutine(Hit());
         }
         else
-        {
-            
-            //do
-            //{
-            //    Debug.Log("do runn");
-            //    if(firstPot)
-            //    {
-            //        int randomIndex = Random.Range(0, balls.Count);
-            //        lockedBall = balls[randomIndex].GetComponent<BallBehaviour>();                    
-            //    }
-            //    else
-            //    {
-            //        int randomIndex = Random.Range(0, cpuBalls.Count);
-            //        lockedBall = balls[randomIndex].GetComponent<BallBehaviour>();
-            //    }
-            //    yield return null;
-            //}
-
-            //while (!lockedBall.gameObject.activeInHierarchy || BallPlayable(lockedBall.gameObject));
-
+        { 
             do
             {
                 Debug.Log("Selecting a ball");
-
+                
                 // Select a ball depending on whether it's the first pot or not
                 if (firstPot)
                 {
-                    int randomIndex = Random.Range(0, balls.Count-1);
-                    lockedBall = balls[randomIndex].GetComponent<BallBehaviour>();
+                    System.Random random = new System.Random();
+                    //int randomIndex = Random.Range(0, balls.Count-1);
+                    int randomIndex = random.Next(0, balls.Count - 1);
+                    lockedBall = balls[randomIndex].transform;
                 }
                 else
                 {
-                    int randomIndex = Random.Range(0, cpuBalls.Count);
-                    lockedBall = cpuBalls[randomIndex].GetComponent<BallBehaviour>();
+                    //int randomIndex = Random.Range(0, cpuBalls.Count);
+
+                    System.Random random = new System.Random();
+                    //int randomIndex = Random.Range(0, balls.Count-1);
+                    int randomIndex = random.Next(0, cpuBalls.Count);
+                    lockedBall = cpuBalls[randomIndex].transform;
                 }
 
                 yield return new WaitForSeconds(0.3f);
@@ -340,30 +330,35 @@ public class PoolMain : MonoBehaviour
                     playableBallFound = true;
                     Debug.Log("Playable ball found: " + lockedBall.gameObject.name);
                 }
-
+                yield return null;
             }
             while (!playableBallFound);
 
+
             if (lockedPocket == null)
             {
-                Debug.Log("no pocket selected");
+                Debug.Log("No pocket selected");
                 direction = lockedBall.transform.position - cueBall.transform.position;
             }
             else
             {
-                Debug.Log("chosen ball " + lockedBall.gameObject);
-                Debug.Log("chosen pocket " + lockedPocket.gameObject);
-                //hitPoint = (lockedPocket.transform.position - lockedBall.transform.position) * -1 * ballWidth;
-                hitPoint = (lockedPocket.transform.position - lockedBall.transform.position) * Vector3.Distance(lockedPocket.transform.position , lockedBall.transform.position);
-                //direction = hitPoint - cueBall.transform.position;
+                Debug.Log("Chosen ball: " + lockedBall.gameObject);
+                Debug.Log("Chosen pocket: " + lockedPocket.gameObject);
+
                 Vector3 pocketDirection = (lockedPocket.transform.position - lockedBall.transform.position).normalized;
-                //hitPoint = lockedBall.transform.position - (pocketDirection * lockedBall.GetComponent<SphereCollider>().radius);
-                direction = (hitPoint - cueBall.transform.position).normalized;
+
+                float ballRadius = lockedBall.GetComponent<SphereCollider>().radius;
+                hitPoint = lockedBall.transform.position - (pocketDirection * (ballWidth*2));
+
+                Vector3 cueDirection = (hitPoint - cueBall.transform.position).normalized;
+                cueDirection.y = 0; 
+
+                Quaternion newRotation = Quaternion.LookRotation(cueDirection);
+                cueAnchor.transform.rotation = Quaternion.Euler(0, newRotation.eulerAngles.y - 90, 0);
             }
-            yield return new WaitForSeconds(0.4f);
+
+            yield return new WaitForSeconds(1f);
             hitPower = 80;
-            
-            LookAtTarget(lockedBall.gameObject);
 
             yield return new WaitForSeconds(0.6f);
 
@@ -373,53 +368,64 @@ public class PoolMain : MonoBehaviour
         yield return null;
     }
 
+    Vector3 HitPoint(Vector3 ballPos, Vector3 pocketPos)
+    {
+        Vector3 pocketDirection = (pocketPos - ballPos).normalized;
+
+        Vector3 newPoint = ballPos - (pocketDirection * (ballWidth*2));
+        return newPoint;
+    }
+
+
     public bool pos = false;
 
     bool BallPlayable(GameObject ball)
     {
         for (int i = 0; i < 6; i++)
         {
-            GameObject active = pockets[i];
-            if (active.transform.position.x < ball.transform.position.x)
+            GameObject activePocket = pockets[i];
+            if (activePocket.transform.position.x < ball.transform.position.x)
             {
-                Debug.Log("no pockets ahead for " + ball.name + " for " + active.name);
+                Debug.Log("no pockets ahead for " + ball.name + " for " + activePocket.name);
                 continue;
             }
 
-            Vector3 pocketDirection = (active.transform.position - ball.transform.position).normalized;            
+            Vector3 pocketDirection = (activePocket.transform.position - ball.transform.position);            
             if (ball.GetComponent<Rigidbody>().SweepTest(pocketDirection, out RaycastHit hiit))
             {
+                
                 if (hiit.collider.CompareTag("playBall") || hiit.collider.CompareTag("cushion"))
                 {
-                    Debug.Log("pockets blocked for " + ball.name + " for " + active.name + " by " + hiit.transform.gameObject.name);
+                    Debug.Log("pockets blocked for " + ball.name + " for " + activePocket.name + " by " + hiit.transform.gameObject.name);
                     continue;
                 }
+                Debug.Log("choseen pockets not blocked for " + ball.name + " for " + activePocket.name + " by " + hiit.transform.gameObject.name);
             }
 
-            Vector3 hittingDirectoin = (ball.transform.position - cueBall.transform.position).normalized;            
-            if (ballR.SweepTest(hittingDirectoin, out RaycastHit hit))
+            //Vector3 hittingDirection = (ball.transform.position - cueBall.transform.position);
+
+            Vector3 hittingDirection = (HitPoint(ball.transform.position, activePocket.transform.position) - cueBall.transform.position);
+
+            if (ballR.SweepTest(hittingDirection, out RaycastHit hit))
             {
-                if (hit.collider.CompareTag("playBall") && hit.transform.gameObject.name != ball.gameObject.name)
+                if (hit.collider.CompareTag("playBall") && hit.transform.gameObject.name != ball.gameObject.name || hit.collider.CompareTag("cushion"))
                 {
-                    Debug.Log("cueball blocked for " + ball.name + " for " + active.name + " by " + hit.transform.gameObject.name);
+                    Debug.Log("cueball blocked for " + ball.name + " for " + activePocket.name + " by " + hit.transform.gameObject.name);
                     continue;
                 }
-                //if (hit.collider.gameObject == ball)
-                //{
-                //    Debug.Log("sameObj");
-                //    return true;                    
-                //}
             }
-            lastPocketDirection = active.transform.position;
+            lastPocketDirection = activePocket.transform.position;
             lastHittingDirection = ball.transform.position;
             pos = true;            
             Debug.Log("chose sum");
-            lockedPocket = active.transform;
+            lockedPocket = activePocket.transform;
             break;
         }
         return pos;
     }
 
+
+    float slingDuration;
     public IEnumerator Hit()
     {
         if (hitPower <= 5) yield break;
@@ -552,7 +558,7 @@ public class PoolMain : MonoBehaviour
 
         points = 1;
 
-        if(Physics.SphereCast(ballR.position, ballWidth,direction, out hiit, 180))
+        //if(Physics.SphereCast(ballR.position, ballWidth,direction, out hiit, 180))
         if (ballR.SweepTest(direction, out hiit, 180))
         {
             points++;
