@@ -282,7 +282,8 @@ public class PoolMain : MonoBehaviour
 
     #endregion
 
-    
+
+    #region CpuPlay
     public Transform lockedPocket;
     public Vector3 hitPoint;
     bool playableBallFound;
@@ -471,7 +472,7 @@ public class PoolMain : MonoBehaviour
         }
     }
 
-
+    #endregion
 
     #region GameMech
     float slingDuration;
@@ -481,8 +482,7 @@ public class PoolMain : MonoBehaviour
         
         poolCam.gameState = PoolCamBehaviour.GameState.Hit;
         float time = 0;
-        spinObj.SetActive(false);
-        firstBreak = false;
+        spinObj.SetActive(false);        
         Vector3 startPos = cue.transform.localPosition;
 
         slingDuration = Mathf.Lerp(0.4f, 0.24f, hitPower / power.maxValue);
@@ -542,6 +542,7 @@ public class PoolMain : MonoBehaviour
 
         pocketed = false;
         isBreak = false;
+        firstBreak = false;
         rand = Random.Range(0, balls.Count - 1);
         targetBall = balls[rand];
 
@@ -576,6 +577,7 @@ public class PoolMain : MonoBehaviour
 
     IEnumerator FoulReset()
     {
+        firstBreak = false;
         cueBall.GetComponent<Rigidbody>().isKinematic = true;
         cueBall.transform.localPosition = new Vector3(0.955f, ballYpos, 0f);
         cueBall.transform.localRotation = Quaternion.Euler(-90, 0, 0);
@@ -621,7 +623,7 @@ public class PoolMain : MonoBehaviour
 
             //simBall.transform.position = fallPoint;
 
-            Vector3 fixedPosition = fallPoint - (direction * cueBallRadius/2);
+            Vector3 fixedPosition = fallPoint - (direction * cueBallRadius);
             //Vector3 fixedPosition = fallPoint - (normalDir * dockOffset);
 
             if (hiit.collider.CompareTag("playBall"))
@@ -641,8 +643,8 @@ public class PoolMain : MonoBehaviour
                 Vector3 startPoint = new Vector3(newStart.x, fallPoint.y, newStart.z);
                 Vector3 endPoint = new Vector3(hiit.collider.transform.position.x, fallPoint.y, hiit.collider.transform.position.z);
 
-                //Vector3 newDir = (endPoint - startPoint).normalized; // Calculate direction vector
-                Vector3 newDir = (hiit.transform.position - hiit.point).normalized; // Calculate direction vector
+                //Vector3 newDir = (endPoint - startPoint).normalized; 
+                Vector3 newDir = (hiit.transform.position - hiit.point).normalized;
 
                 linePlay.SetPosition(0, endPoint);
                 //linePlay.SetPosition(1, endPoint + newDir * extensionLength);

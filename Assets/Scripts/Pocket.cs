@@ -39,7 +39,11 @@ public class Pocket : MonoBehaviour
             other.gameObject.SetActive(false);
             GameLogic.instance.pocketedBalls.Add(other.gameObject);
             PoolMain.instance.balls.Remove(other.gameObject);
-            if (PoolMain.instance.isBreak)
+            //if (PoolMain.instance.isBreak)
+            //{
+            //    PoolMain.instance.pocketed = true;
+            //}
+            if (PoolMain.instance.firstBreak)
             {
                 PoolMain.instance.pocketed = true;
             }
