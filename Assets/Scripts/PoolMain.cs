@@ -282,7 +282,6 @@ public class PoolMain : MonoBehaviour
 
     #endregion
 
-
     #region CpuPlay
     public Transform lockedPocket;
     public Vector3 hitPoint;
@@ -303,7 +302,9 @@ public class PoolMain : MonoBehaviour
             StartCoroutine(Hit());
         }
         else
-        { 
+        {
+
+            //lockedBall = null;
             do
             {
                 Debug.Log("selecting ball");
@@ -325,7 +326,6 @@ public class PoolMain : MonoBehaviour
                     lockedBall = cpuBalls[randomIndex].transform;
                 }
 
-                //yield return new WaitForSeconds(0.3f);
 
                 if (lockedBall.gameObject.activeInHierarchy && BallPlayable(lockedBall.gameObject))
                 {
@@ -343,18 +343,18 @@ public class PoolMain : MonoBehaviour
             }
             while (!playableBallFound);
 
-
             if (lockedPocket == null)
             {
                 Debug.Log("No pocket selected");
                 direction = lockedBall.transform.position - cueBall.transform.position;
             }
+
             else
             {
                 Debug.Log("Chosen ball: " + lockedBall.gameObject);
                 Debug.Log("Chosen pocket: " + lockedPocket.gameObject);
 
-                Vector3 pocketDirection = (lockedPocket.transform.position - lockedBall.transform.position).normalized;
+                Vector3 pocketDirection = (lockedPocket.transform.position - lockedBall.GetComponent<Rigidbody>().worldCenterOfMass).normalized;
 
                 hitPoint = lockedBall.transform.position - (pocketDirection * (ballRadius+cueBallRadius));
 
@@ -394,11 +394,11 @@ public class PoolMain : MonoBehaviour
         {
             GameObject activePocket = pockets[i];
 
-            if (!IsPocketInFrontOfBallAndCue(ball, activePocket))
-            {
-                Debug.Log("no pockets for " + ball.name + " for " + activePocket.name);
-                continue; 
-            }
+            //if (!IsPocketInFrontOfBallAndCue(ball, activePocket))
+            //{
+            //    Debug.Log("no pockets for " + ball.name + " for " + activePocket.name);
+            //    continue;
+            //}
 
             Vector3 pocketDirection = (activePocket.transform.position - ball.transform.position).normalized;
             RaycastHit[] hitResultsPocket = ball.GetComponent<Rigidbody>().SweepTestAll(pocketDirection);
@@ -438,6 +438,12 @@ public class PoolMain : MonoBehaviour
                 continue; 
             }
 
+            if (!IsPocketInFrontOfBallAndCue(ball, activePocket))
+            {
+                Debug.Log("no pockets for " + ball.name + " for " + activePocket.name);
+                continue;
+            }
+
             lastPocketDirection = activePocket.transform.position;
             lastHittingDirection = ball.transform.position;
             lockedPocket = activePocket.transform;
@@ -449,37 +455,64 @@ public class PoolMain : MonoBehaviour
         return pos;
     }
 
+
     bool IsPocketInFrontOfBallAndCue(GameObject ball, GameObject activePocket)
     {
-        // Get the cue ball, selected ball, and pocket positions
-        Vector3 cueBallPosition = cueBall.transform.position;
-        Vector3 ballPosition = ball.transform.position;
-        Vector3 pocketPosition = activePocket.transform.position;
+        Vector3 ballToPocket;
+        Vector3 cueToBall;
 
-        // Vector from the selected ball to the pocket
-        Vector3 ballToPocket = pocketPosition - ballPosition;
+        ballToPocket = (activePocket.transform.position - ball.transform.position).normalized;
+        cueToBall = (ball.transform.position - cueBall.transform.position).normalized;
 
-        // Vector from the cue ball to the selected ball
-        Vector3 cueToBall = ballPosition - cueBallPosition;
+        bool isPocketInFrontOfBall = Vector3.Dot(ballToPocket, (ball.transform.position - cueBall.transform.position).normalized) > 0;
 
-        // Check if the pocket is in front of the selected ball (based on relative positions along the X and Z axes)
-        bool isPocketInFront = (pocketPosition.x > ballPosition.x && pocketPosition.z > ballPosition.z);  // Comparing both X and Z axes
-
-        // If the pocket is in front of the ball
-        if (isPocketInFront)
+        // If the pocket is in front of the ball, check if the ball is in front of the cue ball
+        if (isPocketInFrontOfBall)
         {
-            // The selected ball should be in front of the cue ball along both X and Z axes, with the distance check
-            return (ballPosition.x > cueBallPosition.x && ballPosition.z > cueBallPosition.z &&
-                    (ballPosition.x - cueBallPosition.x > 0.7f) && (ballPosition.z - cueBallPosition.z > 0.7f));
+            Debug.Log("dir first");
+            return Vector3.Dot(cueToBall, (activePocket.transform.position - ball.transform.position).normalized) > 0;
         }
-        // If the pocket is behind the selected ball
         else
         {
-            // The cue ball should be in front of the selected ball along both X and Z axes, with the distance check
-            return (cueBallPosition.x > ballPosition.x && cueBallPosition.z > ballPosition.z &&
-                    (cueBallPosition.x - ballPosition.x > 0.7f) && (cueBallPosition.z - ballPosition.z > 0.7f));
+            Debug.Log("dir second");
+            // If the pocket is behind the ball, check if the cue ball is in front of the selected ball
+            return Vector3.Dot(cueToBall, ballToPocket) > 0;
         }
+
     }
+    //bool IsPocketInFrontOfBallAndCue(GameObject ball, GameObject activePocket)
+    //{
+    //    // Get the cue ball, selected ball, and pocket positions
+
+
+    //    Vector3 cueBallPosition = cueBall.transform.position;
+    //    Vector3 ballPosition = ball.transform.position;
+    //    Vector3 pocketPosition = activePocket.transform.position;
+
+    //    // Vector from the selected ball to the pocket
+    //    Vector3 ballToPocket = pocketPosition - ballPosition;
+
+    //    // Vector from the cue ball to the selected ball
+    //    Vector3 cueToBall = ballPosition - cueBallPosition;
+
+    //    // Check if the pocket is in front of the selected ball (based on relative positions along the X and Z axes)
+    //    bool isPocketInFront = (pocketPosition.x > ballPosition.x && pocketPosition.z > ballPosition.z);  // Comparing both X and Z axes
+
+    //    // If the pocket is in front of the ball
+    //    if (isPocketInFront)
+    //    {
+    //        // The selected ball should be in front of the cue ball along both X and Z axes, with the distance check
+    //        return (ballPosition.x > cueBallPosition.x && ballPosition.z > cueBallPosition.z &&
+    //                (ballPosition.x - cueBallPosition.x > 0.7f) && (ballPosition.z - cueBallPosition.z > 0.7f));
+    //    }
+    //    // If the pocket is behind the selected ball
+    //    else
+    //    {
+    //        // The cue ball should be in front of the selected ball along both X and Z axes, with the distance check
+    //        return (cueBallPosition.x > ballPosition.x && cueBallPosition.z > ballPosition.z &&
+    //                (cueBallPosition.x - ballPosition.x > 0.7f) && (cueBallPosition.z - ballPosition.z > 0.7f));
+    //    }
+    //}
 
 
     #endregion
