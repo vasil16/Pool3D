@@ -7,6 +7,7 @@ public class PoolCamBehaviour : MonoBehaviour
     [SerializeField] Transform cueStick, cueBall;
     [SerializeField] RectTransform dragRotateRect;
     [SerializeField] Vector3 ballFollowOffset, stickFollowOffset, followRotation, initialRotation, cpuWaitPosition, cpuWaitRotation;
+    [SerializeField] Vector3[] cpuWaitPositions;
     [SerializeField] Vector2 touchDelta, touchStart, touchEnd, deltaPos;
     [SerializeField] int tCount;
     [SerializeField] float touchTime, longTouchThreshold, minFov, maxFov, zoomSpeed, rotationAmount, rotationThreshold;
@@ -86,7 +87,7 @@ public class PoolCamBehaviour : MonoBehaviour
 
             case GameState.Waiting:
                 StartCoroutine(AfterHit());
-                break;
+                return;
 
             case GameState.Reset:
                 if (gameState != prevState)
@@ -99,6 +100,7 @@ public class PoolCamBehaviour : MonoBehaviour
 
     void CameraAction()
     {
+        if (gameState == GameState.Waiting) return;
         if (Input.touchCount > 0)
         {
             foreach (Touch touch in Input.touches)
@@ -278,23 +280,6 @@ public class PoolCamBehaviour : MonoBehaviour
 
     #endregion
 
-    IEnumerator FollowBall()
-    {
-        //Vector3 startPos = transform.position;
-        //Quaternion startRotation = transform.rotation;
-        //float time = 0;
-        //float duration = 0.8f;
-        //while(time <= duration)
-        //{
-        //    time += Time.smoothDeltaTime;
-        //    float t = time / duration;
-        //    transform.position = Vector3.Slerp(startPos, ballFollowOffset, t);
-        //    transform.rotation = Quaternion.Slerp(startRotation, Quaternion.Euler(followRotation), t);
-        //    yield return null;
-        //}
-        yield break;
-    }
-
     bool cut;
     public float swipeSpeedX, swipeSpeedY;
 
@@ -345,7 +330,6 @@ public class PoolCamBehaviour : MonoBehaviour
                 }
             }
         }
-        //transform.rotation = Quaternion.Euler(Vector3.zero);
     }
 
     IEnumerator slideInOut()
@@ -404,17 +388,34 @@ public class PoolCamBehaviour : MonoBehaviour
         float duration =.8f;
         Vector3 currentPos = transform.position;
         Quaternion currentRot = transform.rotation;
-        while(time<=duration)
+
+        if(Vector3.Distance(cpuWaitPositions[0], cueBall.transform.position) >1)
+        {
+
+        }
+
+        else if (Vector3.Distance(cpuWaitPositions[1], cueBall.transform.position) > 1)
+        {
+
+        }
+
+        else if (Vector3.Distance(cpuWaitPositions[2], cueBall.transform.position) > 1)
+        {
+
+        }
+
+        else
+        {
+
+        }
+
+        while (time<=duration)
         {
             time += Time.deltaTime;
             transform.position = Vector3.LerpUnclamped(currentPos, cpuWaitPosition, time / duration);
             transform.rotation = Quaternion.SlerpUnclamped(currentRot, Quaternion.Euler(cpuWaitRotation), time / duration);
             yield return null;
         }
-        //while (gameState == GameState.Hit)
-        //{
-        //    yield return null;
-        //}
     }
 
     IEnumerator ResetCam()

@@ -41,7 +41,7 @@ public class PoolMain : MonoBehaviour
     private Ray pRay;
     private RaycastHit bHit;
 
-    public float time, duration, hitPower, speedReductVal, dockOffset;
+    public float time, duration, hitPower, dockOffset;
 
     public bool cpuMode;
 
@@ -354,7 +354,7 @@ public class PoolMain : MonoBehaviour
                 Debug.Log("Chosen ball: " + lockedBall.gameObject);
                 Debug.Log("Chosen pocket: " + lockedPocket.gameObject);
 
-                Vector3 pocketDirection = (lockedPocket.transform.position - lockedBall.GetComponent<Rigidbody>().worldCenterOfMass).normalized;
+                Vector3 pocketDirection = (lockedPocket.transform.position - lockedBall.transform.position).normalized;
 
                 hitPoint = lockedBall.transform.position - (pocketDirection * (ballRadius+cueBallRadius));
 
@@ -393,12 +393,6 @@ public class PoolMain : MonoBehaviour
         for (int i = 0; i < 6; i++)
         {
             GameObject activePocket = pockets[i];
-
-            //if (!IsPocketInFrontOfBallAndCue(ball, activePocket))
-            //{
-            //    Debug.Log("no pockets for " + ball.name + " for " + activePocket.name);
-            //    continue;
-            //}
 
             Vector3 pocketDirection = (activePocket.transform.position - ball.transform.position).normalized;
             RaycastHit[] hitResultsPocket = ball.GetComponent<Rigidbody>().SweepTestAll(pocketDirection);
@@ -478,42 +472,7 @@ public class PoolMain : MonoBehaviour
             // If the pocket is behind the ball, check if the cue ball is in front of the selected ball
             return Vector3.Dot(cueToBall, ballToPocket) > 0;
         }
-
     }
-    //bool IsPocketInFrontOfBallAndCue(GameObject ball, GameObject activePocket)
-    //{
-    //    // Get the cue ball, selected ball, and pocket positions
-
-
-    //    Vector3 cueBallPosition = cueBall.transform.position;
-    //    Vector3 ballPosition = ball.transform.position;
-    //    Vector3 pocketPosition = activePocket.transform.position;
-
-    //    // Vector from the selected ball to the pocket
-    //    Vector3 ballToPocket = pocketPosition - ballPosition;
-
-    //    // Vector from the cue ball to the selected ball
-    //    Vector3 cueToBall = ballPosition - cueBallPosition;
-
-    //    // Check if the pocket is in front of the selected ball (based on relative positions along the X and Z axes)
-    //    bool isPocketInFront = (pocketPosition.x > ballPosition.x && pocketPosition.z > ballPosition.z);  // Comparing both X and Z axes
-
-    //    // If the pocket is in front of the ball
-    //    if (isPocketInFront)
-    //    {
-    //        // The selected ball should be in front of the cue ball along both X and Z axes, with the distance check
-    //        return (ballPosition.x > cueBallPosition.x && ballPosition.z > cueBallPosition.z &&
-    //                (ballPosition.x - cueBallPosition.x > 0.7f) && (ballPosition.z - cueBallPosition.z > 0.7f));
-    //    }
-    //    // If the pocket is behind the selected ball
-    //    else
-    //    {
-    //        // The cue ball should be in front of the selected ball along both X and Z axes, with the distance check
-    //        return (cueBallPosition.x > ballPosition.x && cueBallPosition.z > ballPosition.z &&
-    //                (cueBallPosition.x - ballPosition.x > 0.7f) && (cueBallPosition.z - ballPosition.z > 0.7f));
-    //    }
-    //}
-
 
     #endregion
 
@@ -557,7 +516,6 @@ public class PoolMain : MonoBehaviour
         yield return new WaitUntil(BallStopped);
         yield return new WaitForSeconds(2f);        
         
-        speedReductVal = 0.6f;
         power.maxValue = 130;
         spinIndicator.anchoredPosition = Vector2.zero;
         spinRect.anchoredPosition = Vector2.zero;
@@ -664,8 +622,6 @@ public class PoolMain : MonoBehaviour
 
             fallPoint = cueBall.transform.position + normalDir * collDistance;
 
-            //simBall.transform.position = fallPoint;
-
             Vector3 fixedPosition = fallPoint - (direction * cueBallRadius);
 
             if (hiit.collider.CompareTag("playBall"))
@@ -681,7 +637,7 @@ public class PoolMain : MonoBehaviour
                 linePlay.positionCount = 2;
                 Vector3 endPoint = new Vector3(hiit.collider.transform.position.x, fixedPosition.y, hiit.collider.transform.position.z);
 
-                Vector3 newDir = (hiit.transform.GetComponent<Rigidbody>().worldCenterOfMass - hiit.point).normalized;
+                Vector3 newDir = (hiit.transform.position - hiit.point).normalized;
 
                 linePlay.SetPosition(0, endPoint);
                 if (Physics.Raycast(hiit.transform.position, newDir, out lHit, 0.2f))
