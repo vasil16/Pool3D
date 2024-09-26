@@ -7,7 +7,7 @@ public class PoolCamBehaviour : MonoBehaviour
     [SerializeField] Transform cueStick, cueBall;
     [SerializeField] RectTransform dragRotateRect;
     [SerializeField] Vector3 ballFollowOffset, stickFollowOffset, followRotation, initialRotation, cpuWaitPosition, cpuWaitRotation;
-    [SerializeField] Vector3[] cpuWaitPositions;
+    [SerializeField] Vector3[] cpuWaitPositions, cpuWaitRotations;
     [SerializeField] Vector2 touchDelta, touchStart, touchEnd, deltaPos;
     [SerializeField] int tCount;
     [SerializeField] float touchTime, longTouchThreshold, minFov, maxFov, zoomSpeed, rotationAmount, rotationThreshold;
@@ -389,24 +389,38 @@ public class PoolCamBehaviour : MonoBehaviour
         Vector3 currentPos = transform.position;
         Quaternion currentRot = transform.rotation;
 
-        if(Vector3.Distance(cpuWaitPositions[0], cueBall.transform.position) >1)
-        {
+        //for(int k =0; k<4;k++)
+        //{
+        //    if (Vector3.Distance(cpuWaitPositions[k], cueBall.transform.position) < 1)
+        //    {
+        //        cpuWaitPosition = cpuWaitPositions[k];
+        //        cpuWaitRotation = cpuWaitRotations[k];
+        //        break;
+        //    }
+        //}
 
+        if(Vector3.Distance(cpuWaitPositions[1], cueBall.transform.position) <1)
+        {
+            cpuWaitPosition = cpuWaitPositions[1];
+            cpuWaitRotation = cpuWaitRotations[1];
         }
 
-        else if (Vector3.Distance(cpuWaitPositions[1], cueBall.transform.position) > 1)
+        else if (Vector3.Distance(cpuWaitPositions[2], cueBall.transform.position) < 1)
         {
-
+            cpuWaitPosition = cpuWaitPositions[2];
+            cpuWaitRotation = cpuWaitRotations[2];
         }
 
-        else if (Vector3.Distance(cpuWaitPositions[2], cueBall.transform.position) > 1)
+        else if (Vector3.Distance(cpuWaitPositions[3], cueBall.transform.position) < 1)
         {
-
+            cpuWaitPosition = cpuWaitPositions[3];
+            cpuWaitRotation = cpuWaitRotations[3];
         }
 
         else
         {
-
+            cpuWaitPosition = cpuWaitPositions[0];
+            cpuWaitRotation = cpuWaitRotations[0];
         }
 
         while (time<=duration)

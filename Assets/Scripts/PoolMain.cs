@@ -287,8 +287,8 @@ public class PoolMain : MonoBehaviour
     public Vector3 hitPoint;
     bool playableBallFound;
 
-    Vector3 lastPocketDirection; // Store the direction to the pocket
-    Vector3 lastHittingDirection; // Store the cue ball to ball direction
+    Vector3 lastPocketDirection;
+    Vector3 lastHittingDirection;
 
     Transform lockedBall;
 
@@ -304,7 +304,6 @@ public class PoolMain : MonoBehaviour
         else
         {
 
-            //lockedBall = null;
             do
             {
                 Debug.Log("selecting ball");
@@ -319,13 +318,10 @@ public class PoolMain : MonoBehaviour
                 else
                 {
                     //int randomIndex = Random.Range(0, cpuBalls.Count);
-
                     System.Random random = new System.Random();
-                    //int randomIndex = Random.Range(0, balls.Count-1);
                     int randomIndex = random.Next(0, cpuBalls.Count);
                     lockedBall = cpuBalls[randomIndex].transform;
                 }
-
 
                 if (lockedBall.gameObject.activeInHierarchy && BallPlayable(lockedBall.gameObject))
                 {
@@ -359,15 +355,15 @@ public class PoolMain : MonoBehaviour
                 hitPoint = lockedBall.transform.position - (pocketDirection * (ballRadius+cueBallRadius));
 
                 Vector3 cueDirection = (hitPoint - cueBall.transform.position).normalized;
-                cueDirection.y = 0; 
-
+                cueDirection.y = 0;
+                cue.SetActive(true);
                 Quaternion newRotation = Quaternion.LookRotation(cueDirection);
                 cueAnchor.transform.rotation = Quaternion.Euler(0, newRotation.eulerAngles.y - 90, 0);
             }
 
             yield return new WaitForSeconds(1f);
             hitPower = 80;
-
+            
             yield return new WaitForSeconds(0.6f);
 
             StartCoroutine(Hit());
