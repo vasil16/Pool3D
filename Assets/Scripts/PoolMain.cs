@@ -558,7 +558,7 @@ public class PoolMain : MonoBehaviour
         yield return new WaitForSeconds(2f);        
         
         speedReductVal = 0.6f;
-        power.maxValue = 160;
+        power.maxValue = 130;
         spinIndicator.anchoredPosition = Vector2.zero;
         spinRect.anchoredPosition = Vector2.zero;
         spinMark.transform.localPosition = Vector3.zero;
