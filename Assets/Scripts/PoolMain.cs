@@ -608,8 +608,8 @@ public class PoolMain : MonoBehaviour
 
         points = 1;
 
-        //if(Physics.SphereCast(ballR.position, ballWidth,direction, out hiit, 180))
-        if (ballR.SweepTest(direction, out hiit, 180))
+        if(Physics.SphereCast(ballR.position, cueBallRadius,direction, out hiit, 180))
+        //if (ballR.SweepTest(direction, out hiit, 180))
         {
             points++;
             if (points > maxBounces) return;
