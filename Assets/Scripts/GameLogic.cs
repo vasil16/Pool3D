@@ -29,7 +29,6 @@ public class GameLogic : MonoBehaviour
         onGameComplete += GameCompleteEvent;
     }
 
-
     public static GameLogic instance;
 
     public enum GameMode

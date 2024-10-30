@@ -1,6 +1,4 @@
-using System.Collections;
 using System.Collections.Generic;
-using Unity.VisualScripting;
 using UnityEngine;
 
 public class MaterialPooling : MonoBehaviour
@@ -34,7 +32,6 @@ public class MaterialPooling : MonoBehaviour
     {
         _propBlock.Clear();
 
-        // Set the texture property
         _propBlock.SetTexture("_BaseMap", newTexture);
         _propBlock.SetColor("_BaseColor", newColor);
 

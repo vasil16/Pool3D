@@ -58,11 +58,9 @@ public class PoolMain : MonoBehaviour
         _propBlock = new MaterialPropertyBlock();
         SetBallTextures();
         cueOgPos = cue.transform.localPosition;
-        ballR = cueBall.GetComponent<Rigidbody>();        
-
+        ballR = cueBall.GetComponent<Rigidbody>();
         cueBallRadius = cueBall.GetComponent<MeshRenderer>().bounds.extents.x;
         ballRadius = balls[2].GetComponent<MeshRenderer>().bounds.extents.x;
-
         PlayerPrefs.DeleteAll();
     }
 
