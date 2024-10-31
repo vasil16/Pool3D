@@ -589,7 +589,6 @@ public class PoolMain : MonoBehaviour
 
     #region aimlinerender
     int points = 1;
-    [SerializeField] RaycastHit hiit, lHit;
     [SerializeField] float collDistance;
     [SerializeField] Vector3 fallPoint, newDir;
     public Vector3 direction, returnVector;
@@ -598,63 +597,74 @@ public class PoolMain : MonoBehaviour
     {
         Vector3 startPosition = cueBall.transform.position;
         Vector3 direction = cueAnchor.transform.right;
-
         Vector3 normalDir = direction.normalized;
 
+        // Reset line renderers
         lineRenderer.positionCount = 1;
         lineRenderer.SetPosition(0, startPosition);
-
         points = 1;
 
-        if(Physics.SphereCast(ballR.position, cueBallRadius,direction, out hiit, 180))
-        //if (ballR.SweepTest(direction, out hiit, 180))
+        // Create sphere cast origin slightly above the table to prevent ground collision
+        Vector3 castOrigin = new Vector3(ballR.position.x, ballR.position.y, ballR.position.z);
+
+        // First trajectory: Cue ball path
+        if (Physics.SphereCast(castOrigin, cueBallRadius, direction, out RaycastHit hit, 180f, ~LayerMask.GetMask("plane")))
         {
             points++;
-            if (points > maxBounces) return;
-
-            collDistance = hiit.distance;
-
-            fallPoint = cueBall.transform.position + normalDir * collDistance;
-
-            Vector3 fixedPosition = fallPoint - (direction * cueBallRadius);
-
-            if (hiit.collider.CompareTag("playBall"))
+            if (points <= maxBounces)
             {
+                collDistance = hit.distance;
+                fallPoint = startPosition + direction * collDistance;
+
+                // Adjust contact point by ball radius to show accurate collision point
+                Vector3 contactPoint = fallPoint - (direction * (cueBallRadius/4));
                 lineRenderer.positionCount = points;
-                lineRenderer.SetPosition(points - 1, fixedPosition);
+                lineRenderer.SetPosition(points - 1, contactPoint);
 
-                Vector3 dockPos = new Vector3(fallPoint.x, fixedPosition.y, fallPoint.z);
-
-                aimDock.SetActive(true);
-                aimDock.transform.position = dockPos;
-
-                linePlay.positionCount = 2;
-                Vector3 endPoint = new Vector3(hiit.collider.transform.position.x, fixedPosition.y, hiit.collider.transform.position.z);
-
-                Vector3 newDir = (hiit.transform.position - hiit.point).normalized;
-
-                linePlay.SetPosition(0, endPoint);
-                if (Physics.Raycast(hiit.transform.position, newDir, out lHit, 0.2f))
+                // If we hit another ball, calculate and show its trajectory
+                if (hit.collider.CompareTag("playBall"))
                 {
-                    linePlay.SetPosition(1, lHit.point);
-                    return;
+                    aimDock.SetActive(true);
+                    aimDock.transform.position = contactPoint;
+
+                    // Calculate the direction the hit ball will travel
+                    Vector3 hitBallPos = hit.collider.transform.position;
+                    Vector3 hitBallCenter = new Vector3(hitBallPos.x, contactPoint.y, hitBallPos.z);
+
+                    // Calculate angle of deflection based on collision point
+                    Vector3 collisionToCenter = (hitBallCenter - contactPoint).normalized;
+
+                    // Set up the predicted path line for the hit ball
+                    linePlay.positionCount = 2;
+                    linePlay.SetPosition(0, hitBallCenter);
+
+                    // Cast a ray to check if the hit ball will collide with anything
+                    if (Physics.SphereCast(hitBallCenter, ballRadius, collisionToCenter, out RaycastHit hitBallPath, extensionLength))
+                    {
+                        linePlay.SetPosition(1, hitBallPath.point);
+                    }
+                    else
+                    {
+                        // If no collision, extend the line by the specified length
+                        Vector3 endPoint = hitBallCenter + (collisionToCenter * extensionLength);
+                        linePlay.SetPosition(1, endPoint);
+                    }
                 }
-                Vector3 newPoint = endPoint + newDir * extensionLength;
-                linePlay.SetPosition(1, new Vector3(newPoint.x, fixedPosition.y,newPoint.z));            
-            }
-            else
-            {
-                aimDock.SetActive(false);
-                lineRenderer.positionCount = points;
-                lineRenderer.SetPosition(points - 1, fallPoint);
-                linePlay.positionCount = 0;
+                else
+                {
+                    // If we hit something other than a ball, hide the hit ball trajectory
+                    aimDock.SetActive(false);
+                    linePlay.positionCount = 0;
+                }
             }
         }
         else
         {
+            // If no collision detected, extend the line to maximum distance
             aimDock.SetActive(false);
-            lineRenderer.positionCount = points;
-            lineRenderer.SetPosition(points - 1, fallPoint);
+            Vector3 endPoint = startPosition + (normalDir * 180f);
+            lineRenderer.positionCount = 2;
+            lineRenderer.SetPosition(1, endPoint);
             linePlay.positionCount = 0;
         }
     }
