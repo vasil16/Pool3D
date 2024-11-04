@@ -139,10 +139,14 @@ public class GameLogic : MonoBehaviour
 
     public void ClosePlacePop()
     {
-        foreach(GameObject ball in PoolMain.instance.balls)
+        for (int i = 0; i < PoolMain.instance.balls.Count-1; i++)
+        {
+            if (PoolMain.instance.balls[i].GetComponent<MeshRenderer>().bounds.Contains(PoolMain.instance.balls[PoolMain.instance.balls.Count - 1].transform.position)) return;
+        }
+        foreach (GameObject ball in PoolMain.instance.balls)
         {
             ball.GetComponent<Rigidbody>().isKinematic = false;
-        }
+        }        
         PoolMain.instance.isWaiting = false;
         poolCam.gameState = PoolCamBehaviour.GameState.Aim;
         placeBallPop.SetActive(false);

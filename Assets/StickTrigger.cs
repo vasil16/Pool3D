@@ -4,6 +4,7 @@ using UnityEngine;
 
 public class StickTrigger : MonoBehaviour
 {
+    List<MeshRenderer> objectMeshes;
 
     bool overLap;
 
@@ -22,7 +23,8 @@ public class StickTrigger : MonoBehaviour
         //{
         //    //transform.parent.localRotation = Quaternion.Euler(0, 0, -5.927f);
         //}
-        StartCoroutine(HasColliderBelow());
+        //StartCoroutine(HasColliderBelow());
+        //if (GetComponent<MeshRenderer>().bounds.Contains(objectMeshes.))
     }
 
     private void OnTriggerEnter(Collider other)

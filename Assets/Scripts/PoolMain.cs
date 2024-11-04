@@ -47,6 +47,7 @@ public class PoolMain : MonoBehaviour
 
     MaterialPropertyBlock _propBlock;
 
+    public Coroutine HandleCoroutine;
 
     private void Awake()
     {
@@ -154,7 +155,11 @@ public class PoolMain : MonoBehaviour
         if (GameLogic.instance.players[GameLogic.instance.currentPlayer].name == "CPU")
         {
             cpuMode = true;
-            StartCoroutine(HandleCpuPlay());
+            if(HandleCoroutine!=null)
+            {
+                StopCoroutine(HandleCoroutine);
+            }
+            HandleCoroutine = StartCoroutine(HandleCpuPlay());
         }
         else
         {
@@ -163,7 +168,11 @@ public class PoolMain : MonoBehaviour
             if (firstBreak)
             {
                 Debug.Log("fbr");
-                StartCoroutine(LookAtTarget(balls[0]));
+                if (HandleCoroutine != null)
+                {
+                    StopCoroutine(HandleCoroutine);
+                }
+                HandleCoroutine = StartCoroutine(LookAtTarget(balls[0]));
             }
         }
     }
@@ -188,12 +197,20 @@ public class PoolMain : MonoBehaviour
             pRay = poolCam.GetComponentInChildren<Camera>().ScreenPointToRay(touch.position);
             if (Physics.Raycast(pRay, out bHit, closeMask) && bHit.collider.gameObject.CompareTag("playBall") && !looked)
             {
-                StartCoroutine(LookAtTarget(bHit.collider.gameObject));
+                if (HandleCoroutine != null)
+                {
+                    StopCoroutine(HandleCoroutine);
+                }
+                HandleCoroutine = StartCoroutine(LookAtTarget(bHit.collider.gameObject));
                 looked = true;
             }
             if (touch.phase == TouchPhase.Ended && dragPower)
             {
-                StartCoroutine(Hit());
+                if (HandleCoroutine != null)
+                {
+                    StopCoroutine(HandleCoroutine);
+                }
+                HandleCoroutine = StartCoroutine(Hit());
             }
 
         }
@@ -293,15 +310,22 @@ public class PoolMain : MonoBehaviour
     IEnumerator HandleCpuPlay()
     {
         poolCam.gameState = PoolCamBehaviour.GameState.Waiting;
+        yield return new WaitUntil(() => poolCam.doneCameraMove);
+        poolCam.doneCameraMove = false;
         if (firstBreak)
         {
             Debug.Log("fbr");
             hitPower = power.maxValue;
-            StartCoroutine(Hit());
+            yield return new WaitForSeconds(1.7f);
+            if (HandleCoroutine != null)
+            {
+                StopCoroutine(HandleCoroutine);
+            }
+            HandleCoroutine = StartCoroutine(Hit());
         }
         else
         {
-
+            yield return new WaitForSeconds(1f);
             do
             {
                 Debug.Log("selecting ball");
@@ -356,15 +380,30 @@ public class PoolMain : MonoBehaviour
                 cueDirection.y = 0;
                 cue.SetActive(true);
                 Quaternion newRotation = Quaternion.LookRotation(cueDirection);
-                cueAnchor.transform.rotation = Quaternion.Euler(0, newRotation.eulerAngles.y - 90, 0);
+                newRotation = Quaternion.Euler(0, newRotation.eulerAngles.y - 90, 0);
+
+                float rotationDuration = 0.5f; // Adjust for smoothness
+                float elapsedTime = 0;
+
+                Quaternion startRotation = cueAnchor.transform.rotation;
+
+                while (elapsedTime < rotationDuration)
+                {
+                    elapsedTime += Time.deltaTime;
+                    cueAnchor.transform.rotation = Quaternion.Slerp(startRotation, newRotation, elapsedTime / rotationDuration);
+                    yield return null;
+                }
             }
 
             yield return new WaitForSeconds(1f);
             hitPower = 80;
             
             yield return new WaitForSeconds(0.6f);
-
-            StartCoroutine(Hit());
+            if (HandleCoroutine != null)
+            {
+                StopCoroutine(HandleCoroutine);
+            }
+            HandleCoroutine = StartCoroutine(Hit());
         }
 
         yield return null;
@@ -498,7 +537,11 @@ public class PoolMain : MonoBehaviour
         cue.SetActive(false);
         gameAudio.PlayOneShot(cueHit);
         ballR.AddForceAtPosition(direction * hitPower, forceAt.position, ForceMode.Force);
-        StartCoroutine(ResetCue());
+        if (HandleCoroutine != null)
+        {
+            StopCoroutine(HandleCoroutine);
+        }
+        HandleCoroutine = StartCoroutine(ResetCue());
     }
 
     IEnumerator ResetCue()
@@ -531,7 +574,11 @@ public class PoolMain : MonoBehaviour
 
         if (isFoul)
         {
-            StartCoroutine(FoulReset());
+            if (HandleCoroutine != null)
+            {
+                StopCoroutine(HandleCoroutine);
+            }
+            HandleCoroutine = StartCoroutine(FoulReset());
             yield break;
         }
 
@@ -561,7 +608,11 @@ public class PoolMain : MonoBehaviour
         isWaiting = false;
         if (GameLogic.instance.players[GameLogic.instance.currentPlayer].name == "CPU")
         {
-            StartCoroutine(HandleCpuPlay());
+            if (HandleCoroutine != null)
+            {
+                StopCoroutine(HandleCoroutine);
+            }
+            HandleCoroutine = StartCoroutine(HandleCpuPlay());
         }
         else
         {

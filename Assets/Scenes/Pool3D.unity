@@ -2224,7 +2224,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 1
+  m_RootOrder: 3
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &65765400
 GameObject:
@@ -6334,7 +6334,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!114 &183263613
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -6414,7 +6414,7 @@ RectTransform:
   - {fileID: 1393113880}
   - {fileID: 1771405874}
   m_Father: {fileID: 0}
-  m_RootOrder: 2
+  m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
@@ -35150,7 +35150,7 @@ LineRenderer:
       m_Curve:
       - serializedVersion: 3
         time: 0
-        value: 0.008
+        value: 0.02
         inSlope: 0
         outSlope: 0
         tangentMode: 136
@@ -36851,7 +36851,7 @@ LineRenderer:
       m_Curve:
       - serializedVersion: 3
         time: 0
-        value: 0.008
+        value: 0.02
         inSlope: 0
         outSlope: 0
         tangentMode: 136
@@ -43184,6 +43184,7 @@ MonoBehaviour:
   swipeDirection: 0
   swipeSpeedX: 0
   swipeSpeedY: 0
+  doneCameraMove: 0
 --- !u!1 &1396310343
 GameObject:
   m_ObjectHideFlags: 0
@@ -55879,7 +55880,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &1761558056
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -56013,7 +56014,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 3
+  m_RootOrder: 2
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1766145593
 GameObject:
@@ -65294,7 +65295,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &2103406948
 Transform:
   m_ObjectHideFlags: 0
@@ -123208,7 +123209,7 @@ Rigidbody:
   m_UseGravity: 1
   m_IsKinematic: 0
   m_Interpolate: 0
-  m_Constraints: 4
+  m_Constraints: 0
   m_CollisionDetection: 2
 --- !u!114 &7904250166450906207
 MonoBehaviour:

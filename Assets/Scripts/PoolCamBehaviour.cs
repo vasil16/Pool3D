@@ -15,6 +15,8 @@ public class PoolCamBehaviour : MonoBehaviour
     [SerializeField] SwipeDirection swipeDirection;
     private GameState prevState = GameState.Break;
 
+    Coroutine actionCoroutine;
+
     bool timerRunning;
 
     private bool isZoomingIn = false;
@@ -82,16 +84,26 @@ public class PoolCamBehaviour : MonoBehaviour
                 break;
 
             case GameState.Aim:
-                StartCoroutine(FollowStick());
+                FollowStick();
                 break;
 
             case GameState.Waiting:
-                StartCoroutine(AfterHit());
+                if (actionCoroutine != null)
+                {
+                    StopCoroutine(actionCoroutine);
+                }
+                actionCoroutine = StartCoroutine(AfterHit());
                 return;
 
             case GameState.Reset:
                 if (gameState != prevState)
-                    StartCoroutine(ResetCam());
+                {
+                    if (actionCoroutine != null)
+                    {
+                        StopCoroutine(actionCoroutine);
+                    }
+                    actionCoroutine = StartCoroutine(ResetCam());
+                }
                 break;
         }
         CameraAction();
@@ -138,7 +150,11 @@ public class PoolCamBehaviour : MonoBehaviour
                 {
                     if (touch.phase == TouchPhase.Began)
                     {
-                        StartCoroutine(StartTouchTimer());
+                        if (actionCoroutine != null)
+                        {
+                            StopCoroutine(actionCoroutine);
+                        }
+                        actionCoroutine = StartCoroutine(StartTouchTimer());
                         touchStart = touch.position;
                     }
 
@@ -148,7 +164,7 @@ public class PoolCamBehaviour : MonoBehaviour
 
                         if (Mathf.Abs(deltaPos.x) > rotationThreshold || Mathf.Abs(deltaPos.y) > rotationThreshold)
                         {
-                            if (Mathf.Abs(deltaPos.y) > Mathf.Abs(deltaPos.x) && Mathf.Abs(deltaPos.y)>10)
+                            if (Mathf.Abs(deltaPos.y) > Mathf.Abs(deltaPos.x) && Mathf.Abs(deltaPos.y)>10&&gameState!=GameState.Reset)
                             {
                                 PoolMain.instance.updown = true;
 
@@ -187,7 +203,11 @@ public class PoolCamBehaviour : MonoBehaviour
                                     swipeDirection = touchDelta.y > 0 ? SwipeDirection.Up : SwipeDirection.Down;
                                 }
                                 touchDelta = touchStart = touchEnd = Vector2.zero;
-                                StartCoroutine(MoveEffect());
+                                if (actionCoroutine != null)
+                                {
+                                    StopCoroutine(actionCoroutine);
+                                }
+                                actionCoroutine = StartCoroutine(MoveEffect());
                             }
                         }
 
@@ -298,7 +318,11 @@ public class PoolCamBehaviour : MonoBehaviour
             if(touch.phase == TouchPhase.Began)
             {
                 touchStart = touch.position;
-                StartCoroutine(StartTouchTimer());
+                if (actionCoroutine != null)
+                {
+                    StopCoroutine(actionCoroutine);
+                }
+                actionCoroutine = StartCoroutine(StartTouchTimer());
             }
             if (touch.phase == TouchPhase.Ended && !cut && PoolMain.instance.firstBreak)
             {
@@ -312,7 +336,11 @@ public class PoolCamBehaviour : MonoBehaviour
                     
                     if (Mathf.Abs(swipeSpeedX) > 300)
                     {
-                        StartCoroutine(slideInOut());
+                        if (actionCoroutine != null)
+                        {
+                            StopCoroutine(actionCoroutine);
+                        }
+                        actionCoroutine = StartCoroutine(slideInOut());
                         cut = true;
                     }
                     return;
@@ -323,7 +351,11 @@ public class PoolCamBehaviour : MonoBehaviour
                                        
                     if (Mathf.Abs(swipeSpeedY) > 300)
                     {
-                        StartCoroutine(slideUpDown());
+                        if (actionCoroutine != null)
+                        {
+                            StopCoroutine(actionCoroutine);
+                        }
+                        actionCoroutine = StartCoroutine(slideUpDown());
                         cut = true;
                     }
                     return;
@@ -376,28 +408,19 @@ public class PoolCamBehaviour : MonoBehaviour
         cut = false;
     }
 
-    IEnumerator FollowStick()
+    void FollowStick()
     {
-        yield return null;
         transform.rotation = Quaternion.Euler(transform.eulerAngles.x, cueStick.eulerAngles.y, transform.eulerAngles.z);
     }
 
-    IEnumerator AfterHit()
+    public bool doneCameraMove;
+
+    public IEnumerator AfterHit()
     {
         float time = 0;
         float duration =.8f;
         Vector3 currentPos = transform.position;
         Quaternion currentRot = transform.rotation;
-
-        //for(int k =0; k<4;k++)
-        //{
-        //    if (Vector3.Distance(cpuWaitPositions[k], cueBall.transform.position) < 1)
-        //    {
-        //        cpuWaitPosition = cpuWaitPositions[k];
-        //        cpuWaitRotation = cpuWaitRotations[k];
-        //        break;
-        //    }
-        //}
 
         if(Vector3.Distance(cpuWaitPositions[1], cueBall.transform.position) <1)
         {
@@ -426,10 +449,12 @@ public class PoolCamBehaviour : MonoBehaviour
         while (time<=duration)
         {
             time += Time.deltaTime;
-            transform.position = Vector3.LerpUnclamped(currentPos, cpuWaitPosition, time / duration);
-            transform.rotation = Quaternion.SlerpUnclamped(currentRot, Quaternion.Euler(cpuWaitRotation), time / duration);
+            float t = Mathf.SmoothStep(0, 1, time / duration);
+            transform.position = Vector3.Lerp(currentPos, cpuWaitPosition, t);
+            transform.rotation = Quaternion.Slerp(currentRot, Quaternion.Euler(cpuWaitRotation), t);
             yield return null;
         }
+        doneCameraMove = true;
     }
 
     IEnumerator ResetCam()
@@ -441,13 +466,12 @@ public class PoolCamBehaviour : MonoBehaviour
         while (time <= duration)
         {
             time += Time.smoothDeltaTime;
-            float t = time / duration;
+            float t = Mathf.SmoothStep(0, 1, time / duration);
             transform.position = Vector3.Slerp(startPos, cueStick.position + stickFollowOffset, t);
             transform.rotation = Quaternion.Slerp(startRotation, Quaternion.Euler(0, cueStick.eulerAngles.y, 0), t);
             yield return null;
         }
         gameState = GameState.Aim;
-
     }
 }
 
