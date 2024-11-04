@@ -27321,14 +27321,14 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 868460840}
-  m_LocalRotation: {x: 0.14257188, y: 0.6925845, z: -0.14257187, w: 0.6925845}
-  m_LocalPosition: {x: -1.58, y: 1.1, z: 0}
+  m_LocalRotation: {x: 0.16347675, y: 0.68795013, z: -0.16347675, w: 0.68795013}
+  m_LocalPosition: {x: -2.18, y: 1.72, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 1393653971}
   m_RootOrder: 0
-  m_LocalEulerAnglesHint: {x: 23.264, y: 90, z: 0}
+  m_LocalEulerAnglesHint: {x: 26.734, y: 90, z: 0}
 --- !u!114 &868460842
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -27381,12 +27381,12 @@ Camera:
   serializedVersion: 2
   m_ClearFlags: 2
   m_BackGroundColor: {r: 0, g: 0, b: 0, a: 1}
-  m_projectionMatrixMode: 1
-  m_GateFitMode: 4
+  m_projectionMatrixMode: 2
+  m_GateFitMode: 2
   m_FOVAxisMode: 0
-  m_SensorSize: {x: 21, y: 15.2}
+  m_SensorSize: {x: 18.8, y: 18.7}
   m_LensShift: {x: 0, y: 0}
-  m_FocalLength: 30.47153
+  m_FocalLength: 16.194674
   m_NormalizedViewPortRect:
     serializedVersion: 2
     x: 0
@@ -27395,7 +27395,7 @@ Camera:
     height: 1
   near clip plane: 0.3
   far clip plane: 10
-  field of view: 44
+  field of view: 60.000004
   orthographic: 0
   orthographic size: 5
   m_Depth: 0
@@ -27427,7 +27427,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   referenceWidth: 1920
   referenceHeight: 1080
-  referenceFoV: 44
+  referenceFoV: 60
 --- !u!1 &871240051
 GameObject:
   m_ObjectHideFlags: 0
@@ -43154,10 +43154,10 @@ MonoBehaviour:
   dragRotateRect: {fileID: 889387954}
   ballFollowOffset: {x: 3.14, y: 0.91, z: -0.35}
   stickFollowOffset: {x: 0, y: 0, z: 0}
-  followRotation: {x: 0, y: 90, z: -69.259}
+  followRotation: {x: 0, y: 0, z: 0}
   initialRotation: {x: 0, y: 0, z: 0}
-  cpuWaitPosition: {x: 1.1599932, y: 0.9910884, z: -0.5}
-  cpuWaitRotation: {x: 0, y: 0, z: -21.753}
+  cpuWaitPosition: {x: 0, y: 0, z: 0}
+  cpuWaitRotation: {x: 0, y: 0, z: 0}
   cpuWaitPositions:
   - {x: 1.2, y: 0.77, z: -0.5}
   - {x: 1.93, y: 1.59, z: 0.67}

@@ -47,7 +47,6 @@ public class PoolMain : MonoBehaviour
 
     MaterialPropertyBlock _propBlock;
 
-    public Coroutine HandleCoroutine;
 
     private void Awake()
     {
@@ -155,11 +154,7 @@ public class PoolMain : MonoBehaviour
         if (GameLogic.instance.players[GameLogic.instance.currentPlayer].name == "CPU")
         {
             cpuMode = true;
-            if(HandleCoroutine!=null)
-            {
-                StopCoroutine(HandleCoroutine);
-            }
-            HandleCoroutine = StartCoroutine(HandleCpuPlay());
+            StartCoroutine(HandleCpuPlay());
         }
         else
         {
@@ -167,12 +162,7 @@ public class PoolMain : MonoBehaviour
             powerBar.SetActive(true);
             if (firstBreak)
             {
-                Debug.Log("fbr");
-                if (HandleCoroutine != null)
-                {
-                    StopCoroutine(HandleCoroutine);
-                }
-                HandleCoroutine = StartCoroutine(LookAtTarget(balls[0]));
+                StartCoroutine(LookAtTarget(balls[0]));
             }
         }
     }
@@ -197,20 +187,12 @@ public class PoolMain : MonoBehaviour
             pRay = poolCam.GetComponentInChildren<Camera>().ScreenPointToRay(touch.position);
             if (Physics.Raycast(pRay, out bHit, closeMask) && bHit.collider.gameObject.CompareTag("playBall") && !looked)
             {
-                if (HandleCoroutine != null)
-                {
-                    StopCoroutine(HandleCoroutine);
-                }
-                HandleCoroutine = StartCoroutine(LookAtTarget(bHit.collider.gameObject));
+                StartCoroutine(LookAtTarget(bHit.collider.gameObject));
                 looked = true;
             }
             if (touch.phase == TouchPhase.Ended && dragPower)
             {
-                if (HandleCoroutine != null)
-                {
-                    StopCoroutine(HandleCoroutine);
-                }
-                HandleCoroutine = StartCoroutine(Hit());
+                StartCoroutine(Hit());
             }
 
         }
@@ -317,11 +299,7 @@ public class PoolMain : MonoBehaviour
             Debug.Log("fbr");
             hitPower = power.maxValue;
             yield return new WaitForSeconds(1.7f);
-            if (HandleCoroutine != null)
-            {
-                StopCoroutine(HandleCoroutine);
-            }
-            HandleCoroutine = StartCoroutine(Hit());
+            StartCoroutine(Hit());
         }
         else
         {
@@ -399,11 +377,7 @@ public class PoolMain : MonoBehaviour
             hitPower = 80;
             
             yield return new WaitForSeconds(0.6f);
-            if (HandleCoroutine != null)
-            {
-                StopCoroutine(HandleCoroutine);
-            }
-            HandleCoroutine = StartCoroutine(Hit());
+            StartCoroutine(Hit());
         }
 
         yield return null;
@@ -537,18 +511,14 @@ public class PoolMain : MonoBehaviour
         cue.SetActive(false);
         gameAudio.PlayOneShot(cueHit);
         ballR.AddForceAtPosition(direction * hitPower, forceAt.position, ForceMode.Force);
-        if (HandleCoroutine != null)
-        {
-            StopCoroutine(HandleCoroutine);
-        }
-        HandleCoroutine = StartCoroutine(ResetCue());
+        StartCoroutine(ResetCue());
     }
 
     IEnumerator ResetCue()
     {
         dragPower = false;        
         yield return new WaitForSeconds(2f);
-
+        Debug.Log("call reset");
         ballR.constraints = RigidbodyConstraints.None;
         yield return new WaitUntil(BallStopped);
         yield return new WaitForSeconds(2f);        
@@ -574,11 +544,7 @@ public class PoolMain : MonoBehaviour
 
         if (isFoul)
         {
-            if (HandleCoroutine != null)
-            {
-                StopCoroutine(HandleCoroutine);
-            }
-            HandleCoroutine = StartCoroutine(FoulReset());
+            StartCoroutine(FoulReset());
             yield break;
         }
 
@@ -608,11 +574,7 @@ public class PoolMain : MonoBehaviour
         isWaiting = false;
         if (GameLogic.instance.players[GameLogic.instance.currentPlayer].name == "CPU")
         {
-            if (HandleCoroutine != null)
-            {
-                StopCoroutine(HandleCoroutine);
-            }
-            HandleCoroutine = StartCoroutine(HandleCpuPlay());
+            StartCoroutine(HandleCpuPlay());
         }
         else
         {
