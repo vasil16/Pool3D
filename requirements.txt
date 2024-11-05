@@ -1,0 +1,4 @@
+mlagents==0.28.0
+grpcio>=1.11.0,<2
+numpy<2.0,>=1.13.3
+pillow<12
