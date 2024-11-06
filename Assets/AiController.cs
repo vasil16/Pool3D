@@ -12,32 +12,27 @@ public class AiController : Agent
     public Transform[] pockets;
     public bool training;
 
-    //public override void OnEpisodeBegin()
-    //{
-    //    Debug.Log("ml beggg");
-    //    if (GameLogic.instance && GameLogic.instance.players[GameLogic.instance.currentPlayer].name == "CPU")
-    //    {
+    public override void OnEpisodeBegin()
+    {
+        Debug.Log("ml beggg");
+        if (GameLogic.instance && GameLogic.instance.players[GameLogic.instance.currentPlayer].name == "CPU")
+        {
 
-    //    }
-    //    else return;
-    //}
+        }
+    }
 
     public override void CollectObservations(VectorSensor sensor)
     {
-        // Add observations for cue ball position
         sensor.AddObservation(cueBall.position);
 
-        // Add observations for all balls
-        foreach (var ball in balls)
+        if(PoolMain.instance.lockedPocket!=null)
         {
-            sensor.AddObservation(ball.position);
-            sensor.AddObservation(ball.gameObject.activeInHierarchy ? 1f : 0f); // Is the ball active?
+            sensor.AddObservation(PoolMain.instance.lockedPocket.position);
         }
-
-        // Add observations for all pockets
-        foreach (var pocket in pockets)
+        if (PoolMain.instance.lockedBall != null)
         {
-            sensor.AddObservation(pocket.position);
+            sensor.AddObservation(PoolMain.instance.lockedBall.position);
+            sensor.AddObservation(PoolMain.instance.lockedBall.gameObject.activeInHierarchy ? 1f : 0f);
         }
     }
 
@@ -45,65 +40,53 @@ public class AiController : Agent
 
     public override void OnActionReceived(ActionBuffers actions)
     {
-        if (!GameLogic.instance) return;
-        string currentPlayerName = GameLogic.instance.players[GameLogic.instance.currentPlayer].name;
+        if (cpuActionInProgress||training) return;
+        StartCoroutine(cut(actions));
+    }
 
-        if (currentPlayerName == "CPU" && !cpuActionInProgress)
+    public override void Heuristic(in ActionBuffers actionsOut)
+    {
+        if(PoolMain.instance.waiting)
         {
-            Debug.Log("CPU's turn - taking action.");
-            cpuActionInProgress = true; // Prevent further calls until reset
-            if(training)
-            {
-                StartCoroutine(PoolMain.instance.HandleCpuPlay());
-            }
-            else
-            {
-                StartCoroutine(cut(actions));
-            }
+            Debug.Log("heu learn"); 
+            ActionSegment<float> continousActions = actionsOut.ContinuousActions;
+            continousActions[0] = PoolMain.instance.cueAnchor.transform.eulerAngles.x;
+            continousActions[1] = PoolMain.instance.cueAnchor.transform.eulerAngles.y;
+            continousActions[2] = PoolMain.instance.cueAnchor.transform.eulerAngles.z;
+            continousActions[3] = PoolMain.instance.hitPower;
+            PoolMain.instance.waiting = false;
         }
     }
 
     IEnumerator cut(ActionBuffers actions)
     {
+        cpuActionInProgress = true;
         yield return new WaitUntil(() => PoolMain.instance.cpuReady);
+
         Debug.Log("CPU playing");
-        TakeShot(actions);
+
+        float xRotation = actions.ContinuousActions[0];
+        float yRotation = actions.ContinuousActions[1];
+        float zRotation = actions.ContinuousActions[2];
+        float shotPower = actions.ContinuousActions[3];
+
+        Debug.Log("Rotation: X: " + xRotation + ", Y: " + yRotation + ", Z: " + zRotation + " Power: " + shotPower);
+
+        Vector3 targetDirection = new Vector3(xRotation, yRotation, zRotation);
+
+        yield return new WaitForSeconds(0);
+        PoolMain.instance.MakeCpuShot(shotPower, targetDirection);
+
+        cpuActionInProgress = false;
         PoolMain.instance.cpuReady = false;
     }
 
-    private void TakeShot(ActionBuffers actions)
-    {
-        // Agent decides shot parameters based on action values
-        int selectedBallIndex = actions.DiscreteActions[0];
-        int selectedPocketIndex = actions.DiscreteActions[1];
-        float xDir = actions.ContinuousActions[0];
-        float zDir = actions.ContinuousActions[1];
-
-        float shotPower = actions.ContinuousActions[2];
-
-        Debug.Log("power " + shotPower + " xdir "+ xDir+" zdir "+zDir);
-
-        Transform targetBall = balls[selectedBallIndex];
-        Transform targetPocket = pockets[selectedPocketIndex];
-
-        // Implement logic to aim and apply force based on agent's actions
-        PoolMain.instance.MakeCpuShot(shotPower, xDir, zDir);
-
-        // Reset `cpuActionInProgress` after shot is completed
-        cpuActionInProgress = false;
-    }
-
-    // Reset flag at end of turn or episode
-    public void ResetCpuActionFlag()
-    {
-        
-    }
-
-    public void EndLearn(bool success)
+    public void EndLearn(bool success, int reward)
     {
         cpuActionInProgress = false;
         EndEpisode();
-        AddReward(success ? 2 : -1);
+        //AddReward(success ? 2 : -1);
+        AddReward(reward);
     }
 }
 

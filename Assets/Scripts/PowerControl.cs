@@ -14,7 +14,11 @@ public class PowerControl :  Slider, IPointerUpHandler
 
     private void OnSliderPointerUp()
     {
-        Debug.Log("Slider pointer up event handled.");        
+        Debug.Log("Slider pointer up event handled.");
+        //if (GameLogic.instance.currentPlayer == GameLogic.CurrentPlayer.player2 && PoolMain.instance.cpuMode)
+        //{
+        //    PoolMain.instance.cpuReady = true;
+        //}
         StartCoroutine(PoolMain.instance.Hit());
     }
 

@@ -54,6 +54,17 @@ public class PoolMain : MonoBehaviour
         instance = this;
     }
 
+    public void choosePocket(int index)
+    {
+        lockedPocket = pockets[index].transform;
+        //cpuReady = true;
+    }
+
+    public void choosBall(int index)
+    {
+        lockedBall = balls[index].transform;
+    }
+
     void Start()
     {
         _propBlock = new MaterialPropertyBlock();
@@ -129,6 +140,7 @@ public class PoolMain : MonoBehaviour
     void Update()
     {
         if (!GameLogic.instance) return;
+        RenderTrajectory();        
         if (GameLogic.instance.players[GameLogic.instance.currentPlayer].name == "CPU")
         {
             return;
@@ -142,7 +154,6 @@ public class PoolMain : MonoBehaviour
             return;
         }
 
-        RenderTrajectory();        
     }
 
     public bool cpuReady;
@@ -158,9 +169,8 @@ public class PoolMain : MonoBehaviour
         {
             cpuMode = true;
             //StartCoroutine(HandleCpuPlay());
-            cpuReady = true;
         }
-        else
+        //else
         {
             spinObj.SetActive(true);
             powerBar.SetActive(true);
@@ -292,12 +302,8 @@ public class PoolMain : MonoBehaviour
     Vector3 lastPocketDirection;
     Vector3 lastHittingDirection;
 
-    Transform lockedBall;
+    public Transform lockedBall;
 
-    Vector3 cueBallPosition;
-    Vector3 chosenBallPosition;
-    Vector3 chosenPocketPosition;
-    Vector3 shotDirection;
     bool succesfulShot;
 
     public IEnumerator HandleCpuPlay()
@@ -370,12 +376,6 @@ public class PoolMain : MonoBehaviour
                 cueDirection.y = 0;
                 cue.SetActive(true);
                 
-                {
-                    chosenBallPosition = lockedBall.position;
-                    chosenPocketPosition = lockedPocket.position;
-                    cueBallPosition = cueBall.transform.position;
-                    shotDirection = cueDirection;
-                }
 
                 Quaternion newRotation = Quaternion.LookRotation(cueDirection);
                 newRotation = Quaternion.Euler(0, newRotation.eulerAngles.y - 90, 0);
@@ -403,15 +403,37 @@ public class PoolMain : MonoBehaviour
         yield return null;
     }
 
-    public void MakeCpuShot(float power, float xDir, float zDir)
+    public void MakeCpuShot(float power, Vector3 dir)
     {
-        Vector3 direction = new Vector3(xDir, 0, zDir).normalized;
+        StartCoroutine(CompleteShot(power, dir));
+    }
 
-        cue.SetActive(false);
+    IEnumerator CompleteShot(float power, Vector3 dir)
+    {
+        Vector3 cueDirection = dir;
+        cueDirection.y = 0;
+        cue.SetActive(true);
+
+
+        Quaternion newRotation = Quaternion.LookRotation(cueDirection);
+        newRotation = Quaternion.Euler(0, newRotation.eulerAngles.y - 90, 0);
+
+        float rotationDuration = 0.5f; // Adjust for smoothness
+        float elapsedTime = 0;
+
+        Quaternion startRotation = cueAnchor.transform.rotation;
+
+        while (elapsedTime < rotationDuration)
+        {
+            elapsedTime += Time.deltaTime;
+            cueAnchor.transform.rotation = Quaternion.Slerp(startRotation, newRotation, elapsedTime / rotationDuration);
+            yield return null;
+        }
 
         gameAudio.PlayOneShot(cueHit);
+        if (power == 0) power = 80;
 
-        ballR.AddForceAtPosition(direction * power, forceAt.position, ForceMode.Force);
+        ballR.AddForceAtPosition(dir * power, forceAt.position, ForceMode.Force);
 
         StartCoroutine(ResetCue());
     }
@@ -520,7 +542,7 @@ public class PoolMain : MonoBehaviour
     float slingDuration;
     public IEnumerator Hit()
     {
-        if (hitPower <= 5) yield break;
+        if (hitPower <= 5) yield break;        
 
         poolCam.gameState = PoolCamBehaviour.GameState.Hit;
         float time = 0;
@@ -547,9 +569,12 @@ public class PoolMain : MonoBehaviour
         StartCoroutine(ResetCue());
     }
 
+    public bool waiting;
+
     IEnumerator ResetCue()
     {
-        dragPower = false;        
+        dragPower = false;
+        waiting = true;
         yield return new WaitForSeconds(2f);
         Debug.Log("call reset");
         ballR.constraints = RigidbodyConstraints.None;
@@ -568,7 +593,14 @@ public class PoolMain : MonoBehaviour
         if (GameLogic.instance.currentPlayer == GameLogic.CurrentPlayer.player2 && cpuMode)
         {
             succesfulShot = isFoul == false && pocketed == true;
-            aiControl.EndLearn(succesfulShot);
+            int reward;
+            if (succesfulShot) reward = 5;
+            else
+            {
+                if (isFoul) reward = -3;
+                else reward = -1;
+            }
+            aiControl.EndLearn(succesfulShot,reward );
             //LogData(cueBallPosition, chosenBallPosition, chosenPocketPosition, shotDirection, succesfulShot);
         }
 
@@ -617,7 +649,7 @@ public class PoolMain : MonoBehaviour
             cpuReady = true;
             //StartCoroutine(HandleCpuPlay());
         }
-        else
+        //else
         {
             spinObj.SetActive(true);
             powerBar.SetActive(true);
