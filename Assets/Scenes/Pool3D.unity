@@ -2203,6 +2203,8 @@ MonoBehaviour:
   hitPower: 0
   dockOffset: 0
   cpuMode: 0
+  aiControl: {fileID: 7904250166450906209}
+  cpuReady: 0
   lockedPocket: {fileID: 0}
   hitPoint: {x: 0, y: 0, z: 0}
   pos: 0
@@ -110278,6 +110280,9 @@ GameObject:
   - component: {fileID: 7904250166450906206}
   - component: {fileID: 7904250166450906207}
   - component: {fileID: 7904250166450906208}
+  - component: {fileID: 7904250166450906210}
+  - component: {fileID: 7904250166450906209}
+  - component: {fileID: 7904250166450906211}
   m_Layer: 7
   m_Name: W_Ball
   m_TagString: cueBall
@@ -123240,6 +123245,91 @@ SphereCollider:
   serializedVersion: 2
   m_Radius: 0.03506836
   m_Center: {x: 0, y: 0, z: 0}
+--- !u!114 &7904250166450906209
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6118660678652711801}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 139d297c4dd8c44ed869ed67af5fc9f4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  agentParameters:
+    maxStep: 0
+  hasUpgradedFromAgentParameters: 1
+  MaxStep: 1
+  cueBall: {fileID: 7904250166450906204}
+  balls:
+  - {fileID: 1764652946680718842}
+  - {fileID: 3970656099032326769}
+  - {fileID: 957606941769515400}
+  - {fileID: 3898852868686932379}
+  - {fileID: 4354601907234241784}
+  - {fileID: 6820579325170544680}
+  - {fileID: 7305045896313566463}
+  - {fileID: 7574305134024747703}
+  - {fileID: 1772695699189139432}
+  - {fileID: 2699462693699459838}
+  - {fileID: 2333999950329113019}
+  - {fileID: 3181353524986992078}
+  - {fileID: 8639329744340264101}
+  - {fileID: 4292213313023604608}
+  - {fileID: 6191703041244909026}
+  pockets:
+  - {fileID: 2056188538}
+  - {fileID: 1574304550}
+  - {fileID: 2054050441}
+  - {fileID: 169756657}
+  - {fileID: 1175207449}
+  - {fileID: 1892346587}
+  training: 0
+--- !u!114 &7904250166450906210
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6118660678652711801}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5d1c4e0b1822b495aa52bc52839ecb30, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_BrainParameters:
+    VectorObservationSize: 81
+    NumStackedVectorObservations: 1
+    m_ActionSpec:
+      m_NumContinuousActions: 3
+      BranchSizes: 0f00000006000000
+    VectorActionSize: 
+    VectorActionDescriptions: []
+    VectorActionSpaceType: 0
+    hasUpgradedBrainParametersWithActionSpec: 1
+  m_Model: {fileID: 0}
+  m_InferenceDevice: 0
+  m_BehaviorType: 0
+  m_BehaviorName: Ai Control
+  TeamId: 0
+  m_UseChildSensors: 1
+  m_UseChildActuators: 1
+  m_ObservableAttributeHandling: 0
+--- !u!114 &7904250166450906211
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6118660678652711801}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3a5c9d521e5ef4759a8246a07d52221e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  DecisionPeriod: 20
+  TakeActionsBetweenDecisions: 1
 --- !u!4 &7905032997100257636
 Transform:
   m_ObjectHideFlags: 0

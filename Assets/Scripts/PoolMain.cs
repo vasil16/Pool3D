@@ -47,6 +47,7 @@ public class PoolMain : MonoBehaviour
 
     MaterialPropertyBlock _propBlock;
 
+    [SerializeField] AiController aiControl;
 
     private void Awake()
     {
@@ -144,6 +145,8 @@ public class PoolMain : MonoBehaviour
         RenderTrajectory();        
     }
 
+    public bool cpuReady;
+
     public void StartGame()
     {
         cueAnchor.transform.SetParent(cueBall.transform);
@@ -154,7 +157,8 @@ public class PoolMain : MonoBehaviour
         if (GameLogic.instance.players[GameLogic.instance.currentPlayer].name == "CPU")
         {
             cpuMode = true;
-            StartCoroutine(HandleCpuPlay());
+            //StartCoroutine(HandleCpuPlay());
+            cpuReady = true;
         }
         else
         {
@@ -167,7 +171,8 @@ public class PoolMain : MonoBehaviour
         }
     }
 
-    #region InputHandle
+    #region InputHandle    
+
     void HandleTouchInput()
     {
         foreach (Touch touch in Input.touches)
@@ -289,7 +294,13 @@ public class PoolMain : MonoBehaviour
 
     Transform lockedBall;
 
-    IEnumerator HandleCpuPlay()
+    Vector3 cueBallPosition;
+    Vector3 chosenBallPosition;
+    Vector3 chosenPocketPosition;
+    Vector3 shotDirection;
+    bool succesfulShot;
+
+    public IEnumerator HandleCpuPlay()
     {
         poolCam.gameState = PoolCamBehaviour.GameState.Waiting;
         yield return new WaitUntil(() => poolCam.doneCameraMove);
@@ -349,6 +360,7 @@ public class PoolMain : MonoBehaviour
             {
                 Debug.Log("Chosen ball: " + lockedBall.gameObject);
                 Debug.Log("Chosen pocket: " + lockedPocket.gameObject);
+                
 
                 Vector3 pocketDirection = (lockedPocket.transform.position - lockedBall.transform.position).normalized;
 
@@ -357,6 +369,14 @@ public class PoolMain : MonoBehaviour
                 Vector3 cueDirection = (hitPoint - cueBall.transform.position).normalized;
                 cueDirection.y = 0;
                 cue.SetActive(true);
+                
+                {
+                    chosenBallPosition = lockedBall.position;
+                    chosenPocketPosition = lockedPocket.position;
+                    cueBallPosition = cueBall.transform.position;
+                    shotDirection = cueDirection;
+                }
+
                 Quaternion newRotation = Quaternion.LookRotation(cueDirection);
                 newRotation = Quaternion.Euler(0, newRotation.eulerAngles.y - 90, 0);
 
@@ -381,6 +401,19 @@ public class PoolMain : MonoBehaviour
         }
 
         yield return null;
+    }
+
+    public void MakeCpuShot(float power, float xDir, float zDir)
+    {
+        Vector3 direction = new Vector3(xDir, 0, zDir).normalized;
+
+        cue.SetActive(false);
+
+        gameAudio.PlayOneShot(cueHit);
+
+        ballR.AddForceAtPosition(direction * power, forceAt.position, ForceMode.Force);
+
+        StartCoroutine(ResetCue());
     }
 
     Vector3 HitPoint(Vector3 ballPos, Vector3 pocketPos)
@@ -488,7 +521,7 @@ public class PoolMain : MonoBehaviour
     public IEnumerator Hit()
     {
         if (hitPower <= 5) yield break;
-        
+
         poolCam.gameState = PoolCamBehaviour.GameState.Hit;
         float time = 0;
         spinObj.SetActive(false);        
@@ -532,6 +565,13 @@ public class PoolMain : MonoBehaviour
         hitPower = 0;
         power.value = 0;
 
+        if (GameLogic.instance.currentPlayer == GameLogic.CurrentPlayer.player2 && cpuMode)
+        {
+            succesfulShot = isFoul == false && pocketed == true;
+            aiControl.EndLearn(succesfulShot);
+            //LogData(cueBallPosition, chosenBallPosition, chosenPocketPosition, shotDirection, succesfulShot);
+        }
+
         if (gameOver) yield break;
 
         if (!pocketed || isFoul)
@@ -574,7 +614,8 @@ public class PoolMain : MonoBehaviour
         isWaiting = false;
         if (GameLogic.instance.players[GameLogic.instance.currentPlayer].name == "CPU")
         {
-            StartCoroutine(HandleCpuPlay());
+            cpuReady = true;
+            //StartCoroutine(HandleCpuPlay());
         }
         else
         {
@@ -726,4 +767,36 @@ public class PoolMain : MonoBehaviour
         }
         return true;
     }
+
+    #region AiTraining
+
+    //void LogData(Vector3 cueBallPos, Vector3 targetBallPos, Vector3 targetPocketPos, Vector3 shotDirection, bool shotSuccessful)
+    //{
+    //    string filePath = "game_data.csv";
+
+    //    // Check if the file exists; if not, create it and write the header.
+    //    if (!System.IO.File.Exists(filePath))
+    //    {
+    //        // Write the header for the CSV
+    //        string header = "CueBallX,CueBallY,CueBallZ," +
+    //                        "TargetBallX,TargetBallY,TargetBallZ," +
+    //                        "TargetPocketX,TargetPocketY,TargetPocketZ," +
+    //                        "ShotDirectionX,ShotDirectionY,ShotDirectionZ," +
+    //                        "ShotSuccessful";
+    //        System.IO.File.WriteAllText(filePath, header + "\n");
+    //    }
+
+    //    // Convert positions and direction to a suitable format for logging (e.g., CSV)
+    //    string logEntry = $"{cueBallPos.x},{cueBallPos.y},{cueBallPos.z}," +
+    //                      $"{targetBallPos.x},{targetBallPos.y},{targetBallPos.z}," +
+    //                      $"{targetPocketPos.x},{targetPocketPos.y},{targetPocketPos.z}," +
+    //                      $"{shotDirection.x},{shotDirection.y},{shotDirection.z}," +
+    //                      $"{(shotSuccessful ? 1 : 0)}"; // 1 for successful, 0 for unsuccessful
+
+    //    // Append the log entry to the CSV file
+    //    System.IO.File.AppendAllText(filePath, logEntry + "\n");
+    //}
+
+
+    #endregion
 }
