@@ -51,9 +51,13 @@ public class AiController : Agent
             Debug.Log("heu learn"); 
             ActionSegment<float> continousActions = actionsOut.ContinuousActions;
             continousActions[0] = PoolMain.instance.cueAnchor.transform.eulerAngles.x;
+            Debug.Log("h 1 " + continousActions[0]); 
             continousActions[1] = PoolMain.instance.cueAnchor.transform.eulerAngles.y;
+            Debug.Log("h 2 " + continousActions[1]);
             continousActions[2] = PoolMain.instance.cueAnchor.transform.eulerAngles.z;
+            Debug.Log("h 3 " + continousActions[2]);
             continousActions[3] = PoolMain.instance.hitPower;
+            Debug.Log("h 4 " + continousActions[3]);
             PoolMain.instance.waiting = false;
         }
     }
