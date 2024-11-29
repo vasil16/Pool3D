@@ -15,13 +15,13 @@ public class PowerControl :  Slider, IPointerUpHandler
     private void OnSliderPointerUp()
     {
         Debug.Log("Slider pointer up event handled.");        
-        StartCoroutine(PoolMain.instance.Hit());
+        StartCoroutine(GamePlayController.instance.PlayShot());
     }
 
     public void sliderMech(float val)
     {
         modValue = Mathf.Lerp(-0.0308f, -0.097f, val / maxValue);
-        PoolMain.instance.cue.transform.localPosition = new Vector3(modValue, PoolMain.instance.cue.transform.localPosition.y, PoolMain.instance.cue.transform.localPosition.z);
-        PoolMain.instance.hitPower = val;
+        GamePlayController.instance.cue.transform.localPosition = new Vector3(modValue, GamePlayController.instance.cue.transform.localPosition.y, GamePlayController.instance.cue.transform.localPosition.z);
+        GamePlayController.instance.hitPower = val;
     }
 }

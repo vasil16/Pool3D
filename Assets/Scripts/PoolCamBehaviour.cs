@@ -15,6 +15,7 @@ public class PoolCamBehaviour : MonoBehaviour
     [SerializeField] SwipeDirection swipeDirection;
     private GameState prevState = GameState.Break;
 
+    GamePlayController playerController;
 
     bool timerRunning;
 
@@ -52,6 +53,7 @@ public class PoolCamBehaviour : MonoBehaviour
     {
         stickFollowOffset = transform.position - cueStick.position;
         ballFollowOffset = transform.position - cueBall.position;
+        playerController = GamePlayController.instance;
     }
 
 
@@ -108,7 +110,7 @@ public class PoolCamBehaviour : MonoBehaviour
         {
             foreach (Touch touch in Input.touches)
             {
-                if (PoolMain.instance.dragPower || Utils.IsPointerOverUIObject(touch.position)) return;
+                if (playerController.dragPower || Utils.IsPointerOverUIObject(touch.position)) return;
 
                 if (tCount == 2)
                 {
@@ -153,17 +155,17 @@ public class PoolCamBehaviour : MonoBehaviour
                         {
                             if (Mathf.Abs(deltaPos.y) > Mathf.Abs(deltaPos.x) && Mathf.Abs(deltaPos.y) > 10 && gameState != GameState.Reset)
                             {
-                                PoolMain.instance.updown = true;
+                                playerController.updown = true;
 
-                                float smoothRotation = deltaPos.y * rotationAmount;
+                                float smoothRotation = deltaPos.y * rotationAmount * Time.deltaTime;
                                 transform.rotation = Quaternion.Euler(transform.eulerAngles.x, transform.eulerAngles.y, transform.eulerAngles.z + smoothRotation);
                                 return;
                             }
                             else
                             {
-                                PoolMain.instance.updown = false;
-                                float smoothRotation = deltaPos.x * rotationAmount;
-                                PoolMain.instance.cueAnchor.transform.rotation = Quaternion.Euler(0, PoolMain.instance.cueAnchor.transform.eulerAngles.y + smoothRotation, 0);
+                                playerController.updown = false;
+                                float smoothRotation = deltaPos.x * rotationAmount * Time.deltaTime;
+                                playerController.cueAnchor.transform.rotation = Quaternion.Euler(0, playerController.cueAnchor.transform.eulerAngles.y + smoothRotation, 0);
                                 transform.rotation = Quaternion.Euler(transform.eulerAngles.x, transform.eulerAngles.y + smoothRotation, transform.eulerAngles.z);
                                 return;
                             }
@@ -225,12 +227,12 @@ public class PoolCamBehaviour : MonoBehaviour
             time -= Time.deltaTime;
             if (swipeDirection == SwipeDirection.Left)
             {
-                PoolMain.instance.cueAnchor.transform.rotation = Quaternion.Euler(0, transform.eulerAngles.y - (time * 0.8f), 0);
+                playerController.cueAnchor.transform.rotation = Quaternion.Euler(0, transform.eulerAngles.y - (time * 0.8f), 0);
                 transform.rotation = Quaternion.Euler(0, transform.eulerAngles.y - (time * 0.8f), transform.eulerAngles.z);
             }
             else if (swipeDirection == SwipeDirection.Right)
             {
-                PoolMain.instance.cueAnchor.transform.rotation = Quaternion.Euler(0, transform.eulerAngles.y + (time * 0.8f), 0);
+                playerController.cueAnchor.transform.rotation = Quaternion.Euler(0, transform.eulerAngles.y + (time * 0.8f), 0);
                 transform.rotation = Quaternion.Euler(0, transform.eulerAngles.y + (time * 0.8f), transform.eulerAngles.z);
             }
             else if (swipeDirection == SwipeDirection.Up)
@@ -294,7 +296,7 @@ public class PoolCamBehaviour : MonoBehaviour
             deltaPos = touch.deltaPosition;
             if (Utils.IsPointerOverUIObject(touch.position) && RectTransformUtility.RectangleContainsScreenPoint(dragRotateRect, touch.position))
             {
-                PoolMain.instance.cueAnchor.transform.rotation = Quaternion.Euler(0, PoolMain.instance.cueAnchor.transform.eulerAngles.y + (deltaPos.x * rotationAmount), 0);
+                playerController.cueAnchor.transform.rotation = Quaternion.Euler(0, playerController.cueAnchor.transform.eulerAngles.y + (deltaPos.x * rotationAmount), 0);
                 transform.rotation = Quaternion.Euler(transform.eulerAngles.x, transform.eulerAngles.y + (deltaPos.x * rotationAmount), transform.eulerAngles.z);
                 return;
             }
@@ -303,7 +305,7 @@ public class PoolCamBehaviour : MonoBehaviour
                 touchStart = touch.position;
                 StartCoroutine(StartTouchTimer());
             }
-            if (touch.phase == TouchPhase.Ended && !cut && PoolMain.instance.firstBreak)
+            if (touch.phase == TouchPhase.Ended && !cut && playerController.firstBreak)
             {
                 EndTouchTimer();
                 touchEnd = touch.position;

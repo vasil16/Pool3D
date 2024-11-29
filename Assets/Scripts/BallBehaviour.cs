@@ -15,38 +15,44 @@ public class BallBehaviour : MonoBehaviour
     [SerializeField] public int ballCode;
     [SerializeField] AudioClip ballHit, cushionHit;
 
+    GamePlayController playerController;
+
+    private void Awake()
+    {
+        playerController = GamePlayController.instance;
+    }
+
     private void OnCollisionEnter(Collision collision)
     {
-        //if (collision.gameObject.CompareTag("outer"))
-        //{
-        //    GetComponent<Rigidbody>().isKinematic = true;
-        //    transform.position = initPos;
-        //    GetComponent<Rigidbody>().isKinematic = false;
-        //}
-
-        //else
+        if(collision.gameObject.tag is "playBall" or "cueBall")
+        {
+            GameManager.instance.ballhitCount++;
+            GameManager.instance.PlayBallSound(ballHit);
+        }
 
         if (collision.gameObject.CompareTag("playBall"))
         {
-            if (!PoolMain.instance.firstBreak)
-            {
-                if(PoolMain.instance.gameAudio.isPlaying)
-                {
-                    PoolMain.instance.gameAudio.Stop();
-                }
-                PoolMain.instance.gameAudio.PlayOneShot(ballHit);
-            }
+            //if (!playerController.firstBreak)
+            //{
+            //    if(playerController.gameAudio.isPlaying)
+            //    {
+            //        playerController.gameAudio.Stop();
+            //    }
+            //    playerController.gameAudio.PlayOneShot(ballHit);
+            //}
+            
+
             if (ballType == BallType.white)
             {
-                if (!PoolMain.instance.spun && PoolMain.instance.hasSpin)
+                if (!playerController.spun && playerController.hasSpin)
                 {
-                    Debug.Log("spinn power " + PoolMain.instance.hitPower + "  dir " + PoolMain.instance.spinMark.transform.position);
-                    GetComponent<Rigidbody>().AddForce((transform.position - PoolMain.instance.spinMark.transform.position).normalized * PoolMain.instance.hitPower * 0.10f, ForceMode.Force);
-                    PoolMain.instance.spun = true;
+                    Debug.Log("spinn power " + playerController.hitPower + "  dir " + playerController.spinMark.transform.position);
+                    GetComponent<Rigidbody>().AddForce((transform.position - playerController.spinMark.transform.position).normalized * playerController.hitPower * 0.10f, ForceMode.Force);
+                    playerController.spun = true;
                 }
-                else if (!PoolMain.instance.spun)
+                else if (!playerController.spun)
                 {
-                    if (!PoolMain.instance.firstBreak)
+                    if (!playerController.firstBreak)
                     {
                         Debug.Log("cut on  " + gameObject.name + " with " + collision.gameObject.name);
                         //StartCoroutine(CutOff());
@@ -57,7 +63,7 @@ public class BallBehaviour : MonoBehaviour
         }
         else if (collision.gameObject.CompareTag("pocket"))
         {
-            PoolMain.instance.gameAudio.PlayOneShot(cushionHit);
+            playerController.gameAudio.PlayOneShot(cushionHit);
         }
 
     }

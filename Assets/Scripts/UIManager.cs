@@ -23,11 +23,11 @@ public class UIManager : MonoBehaviour
         gameplayPanel.SetActive(true);
         gameStartPanel.SetActive(true);
         gameLogic.SetActive(true);
-        GameLogic.instance.gameMode = index == 0 ? GameLogic.GameMode.players : GameLogic.GameMode.cpu;
+        GameManager.instance.gameMode = index == 0 ? GameManager.GameMode.players : GameManager.GameMode.cpu;
         if(index==1)
         {
             Debug.Log("vs cpu");
-            GameLogic.instance.SetCpu();
+            GameManager.instance.SetCpu();
         }
     }
    
