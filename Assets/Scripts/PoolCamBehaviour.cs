@@ -103,6 +103,31 @@ public class PoolCamBehaviour : MonoBehaviour
         prevState = gameState;
     }
 
+    public void SetInitialCameraAnim()
+    {
+        StartCoroutine(SetCamera());
+    }
+
+    IEnumerator SetCamera()
+    {
+        yield return null;
+
+        float duration = 1f, time = 0f;
+        Vector3 startPos = transform.GetChild(0).localPosition;
+        Vector3 endPos = new Vector3(-2.18f, 1.44f, 0);
+        float velocity = 0f;
+
+        while (time < duration)
+        {
+            time += Time.deltaTime;
+            float smoothT = Mathf.SmoothDamp(0, 1, ref velocity, duration);
+            transform.GetChild(0).localPosition = Vector3.Lerp(startPos, endPos, time/duration);
+            yield return null; 
+        }
+
+        transform.GetChild(0).localPosition = endPos;
+    }
+
     void CameraAction()
     {
         if (gameState == GameState.Waiting) return;

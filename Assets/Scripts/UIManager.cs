@@ -24,7 +24,8 @@ public class UIManager : MonoBehaviour
         gameStartPanel.SetActive(true);
         gameLogic.SetActive(true);
         GameManager.instance.gameMode = index == 0 ? GameManager.GameMode.players : GameManager.GameMode.cpu;
-        if(index==1)
+        GameObject.FindObjectOfType<PoolCamBehaviour>().SetInitialCameraAnim();
+        if (index==1)
         {
             Debug.Log("vs cpu");
             GameManager.instance.SetCpu();

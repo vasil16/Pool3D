@@ -716,7 +716,7 @@ public class GamePlayController : MonoBehaviour
         foreach (GameObject ball in balls)
         {
             Rigidbody ballRb = ball.GetComponent<Rigidbody>();
-            if (ball.activeInHierarchy && ballRb.velocity != Vector3.zero || ballRb.angularVelocity != Vector3.zero)
+            if (ball.activeInHierarchy && ballRb.linearVelocity != Vector3.zero || ballRb.angularVelocity != Vector3.zero)
             {
                 return false;
             }

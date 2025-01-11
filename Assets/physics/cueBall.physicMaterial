@@ -9,6 +9,6 @@ PhysicMaterial:
   m_Name: cueBall
   dynamicFriction: 0.05
   staticFriction: 0
-  bounciness: 0.89
+  bounciness: 0.32
   frictionCombine: 3
   bounceCombine: 2

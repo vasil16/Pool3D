@@ -26,6 +26,7 @@ public class BallBehaviour : MonoBehaviour
     {
         if(collision.gameObject.tag is "playBall" or "cueBall")
         {
+            if (!GameManager.instance) return;
             GameManager.instance.ballhitCount++;
             GameManager.instance.PlayBallSound(ballHit);
         }
@@ -72,7 +73,7 @@ public class BallBehaviour : MonoBehaviour
     IEnumerator CutOff()
     {
         yield return new WaitForSeconds(0.1f);
-        Vector3 relVelocity = gameObject.GetComponent<Rigidbody>().velocity;
-        gameObject.GetComponent<Rigidbody>().velocity = (relVelocity * 0.06f);
+        Vector3 relVelocity = gameObject.GetComponent<Rigidbody>().linearVelocity;
+        gameObject.GetComponent<Rigidbody>().linearVelocity = (relVelocity * 0.06f);
     }
 }
