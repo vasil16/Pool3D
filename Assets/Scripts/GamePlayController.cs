@@ -119,21 +119,23 @@ public class GamePlayController : MonoBehaviour
         cueAnchor.transform.localPosition = Vector3.zero;
         cueAnchor.transform.SetParent(null);
         cue.SetActive(true);
+        spinObj.SetActive(true);
+        powerBar.SetActive(true);
+        if (firstBreak)
+        {
+            StartCoroutine(LookAtTarget(balls[0]));
+        }
+        
+    }
 
-        if (manager.players[manager.currentPlayer].name == "CPU")
-        {
-            cpuMode = true;
-            StartCoroutine(HandleCpuPlay());
-        }
-        else
-        {
-            spinObj.SetActive(true);
-            powerBar.SetActive(true);
-            if (firstBreak)
-            {
-                StartCoroutine(LookAtTarget(balls[0]));
-            }
-        }
+    public void StartCPUMode()
+    {
+        cueAnchor.transform.SetParent(cueBall.transform);
+        cueAnchor.transform.localPosition = Vector3.zero;
+        cueAnchor.transform.SetParent(null);
+        cue.SetActive(true);
+        cpuMode = true;
+        StartCoroutine(HandleCpuPlay());             
     }
 
     #region InputHandle
@@ -502,7 +504,8 @@ public class GamePlayController : MonoBehaviour
 
         if (!pocketed || isFoul)
         {
-            manager.currentPlayer = manager.currentPlayer == GameManager.CurrentPlayer.player1 ? GameManager.CurrentPlayer.player2 : GameManager.CurrentPlayer.player1;
+            //manager.currentPlayer = manager.currentPlayer == GameManager.CurrentPlayer.player1 ? GameManager.CurrentPlayer.player2 : GameManager.CurrentPlayer.player1;
+            manager.currentPlayer = manager.GetOpponent(manager.currentPlayer);
         }
 
         playerIndicator[(int)manager.currentPlayer].SetActive(true);

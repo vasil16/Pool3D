@@ -47,8 +47,7 @@ public class GameManager : MonoBehaviour
 
     private void Start()
     {
-        SetupPlayers();
-        StartCoroutine(Toss());
+        SetupPlayers();        
     }
 
     private void SetupPlayers()
@@ -57,10 +56,12 @@ public class GameManager : MonoBehaviour
         player2 = new Player(gameMode == GameMode.cpu ? "CPU" : "Player 2", p2Balls);
         players[CurrentPlayer.player1] = player1;
         players[CurrentPlayer.player2] = player2;
+        StartCoroutine(Toss());
     }
 
     private IEnumerator Toss()
     {
+        Debug.Log("toss tt");
         yield return null;
         int rand = UnityEngine.Random.Range(0, 2);
         currentPlayer = (CurrentPlayer)rand;
@@ -72,6 +73,10 @@ public class GameManager : MonoBehaviour
 
         placeBallPop.SetActive(players[currentPlayer].name != "CPU");
         tossTxt.gameObject.SetActive(false);
+        if (players[currentPlayer].name=="CPU")
+        {
+            playerController.StartCPUMode();
+        }
     }
 
     private IEnumerator LerpTextAlpha(Text text, float startAlpha, float endAlpha, float duration)
@@ -134,6 +139,7 @@ public class GameManager : MonoBehaviour
         //        PoolMain.instance.cpuBalls.Add(ball);
         //    }
         //}
+        //playerController.StartGame();
     }
 
     public void PlayBallSound(AudioClip clip)
