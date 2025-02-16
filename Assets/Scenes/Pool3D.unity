@@ -382,7 +382,7 @@ MonoBehaviour:
   m_HandleRect: {fileID: 1460896039}
   m_Direction: 3
   m_MinValue: 0
-  m_MaxValue: 217.45
+  m_MaxValue: 217
   m_WholeNumbers: 0
   m_Value: 0
   m_OnValueChanged:
@@ -1785,7 +1785,7 @@ RectTransform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 283158220}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 3.26}
+  m_LocalPosition: {x: 0, y: 0, z: 3.244}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -1793,7 +1793,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -3.46, y: 2.428119}
+  m_AnchoredPosition: {x: -3.46, y: 3.711}
   m_SizeDelta: {x: 9.07, y: 5}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &283158222
@@ -2492,127 +2492,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1658934153}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &496448954
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 496448957}
-  - component: {fileID: 496448956}
-  - component: {fileID: 496448955}
-  m_Layer: 0
-  m_Name: Directional Light
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 0
---- !u!114 &496448955
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 496448954}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 474bcb49853aa07438625e644c072ee6, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_Version: 3
-  m_UsePipelineSettings: 1
-  m_AdditionalLightsShadowResolutionTier: 2
-  m_LightLayerMask: 1
-  m_RenderingLayers: 1
-  m_CustomShadowLayers: 0
-  m_ShadowLayerMask: 1
-  m_ShadowRenderingLayers: 1
-  m_LightCookieSize: {x: 1, y: 1}
-  m_LightCookieOffset: {x: 0, y: 0}
-  m_SoftShadowQuality: 0
---- !u!108 &496448956
-Light:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 496448954}
-  m_Enabled: 1
-  serializedVersion: 11
-  m_Type: 1
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
-  m_Intensity: 1
-  m_Range: 10
-  m_SpotAngle: 30
-  m_InnerSpotAngle: 21.80208
-  m_CookieSize: 10
-  m_Shadows:
-    m_Type: 1
-    m_Resolution: -1
-    m_CustomResolution: -1
-    m_Strength: 1
-    m_Bias: 0.05
-    m_NormalBias: 0.4
-    m_NearPlane: 0.2
-    m_CullingMatrixOverride:
-      e00: 1
-      e01: 0
-      e02: 0
-      e03: 0
-      e10: 0
-      e11: 1
-      e12: 0
-      e13: 0
-      e20: 0
-      e21: 0
-      e22: 1
-      e23: 0
-      e30: 0
-      e31: 0
-      e32: 0
-      e33: 1
-    m_UseCullingMatrixOverride: 0
-  m_Cookie: {fileID: 0}
-  m_DrawHalo: 0
-  m_Flare: {fileID: 0}
-  m_RenderMode: 0
-  m_CullingMask:
-    serializedVersion: 2
-    m_Bits: 128
-  m_RenderingLayerMask: 1
-  m_Lightmapping: 4
-  m_LightShadowCasterMode: 0
-  m_AreaSize: {x: 1, y: 1}
-  m_BounceIntensity: 1
-  m_ColorTemperature: 6570
-  m_UseColorTemperature: 0
-  m_BoundingSphereOverride: {x: 0, y: 0, z: 0, w: 0}
-  m_UseBoundingSphereOverride: 0
-  m_UseViewFrustumForShadowCasterCull: 1
-  m_ForceVisible: 0
-  m_ShadowRadius: 0
-  m_ShadowAngle: 0
-  m_LightUnit: 1
-  m_LuxAtDistance: 1
-  m_EnableSpotReflector: 1
---- !u!4 &496448957
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 496448954}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0.34799674, y: 0.096105166, z: 0.24766386, w: 0.8990688}
-  m_LocalPosition: {x: 2.737786, y: 0.7753657, z: -0.72354364}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 35.32, y: 25.027, z: 38.886}
 --- !u!1 &519021536
 GameObject:
   m_ObjectHideFlags: 0
@@ -3417,7 +3296,7 @@ Transform:
   m_GameObject: {fileID: 688338247}
   serializedVersion: 2
   m_LocalRotation: {x: 0.5, y: 0.5, z: 0.5, w: 0.5}
-  m_LocalPosition: {x: -0.03, y: 1.47, z: -3.33}
+  m_LocalPosition: {x: -0.03, y: 2.42, z: -3.33}
   m_LocalScale: {x: 0.0065458147, y: 0.831048, z: 0.1323245}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -3921,6 +3800,7 @@ MonoBehaviour:
   lineRendererOffset: {x: 0, y: 0, z: 0}
   cueOgPos: {x: 0, y: 0, z: 0}
   cueOgRot: {x: 0, y: 0, z: 0}
+  spinMarkOffset: {x: -0.0292, y: -0.004842341, z: 0}
   deltaPosition: {x: 0, y: 0}
   deltaPos: {x: 0, y: 0}
   targetBall: {fileID: 0}
@@ -3962,7 +3842,7 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 256
   gameAudio: {fileID: 912140724}
-  cueHit: {fileID: 8300000, guid: e0648705f94724afab7c8e32b21ec961, type: 3}
+  cueHit: {fileID: 8300000, guid: 8765122426b4d421fb27ad6e63b6a554, type: 3}
   rolling: {fileID: 8300000, guid: bd8f55c9b1cc849fb873dbd7a4ca940c, type: 3}
   cue: {fileID: 2103406947}
   spinMark: {fileID: 437914042}
@@ -3978,6 +3858,7 @@ MonoBehaviour:
   isFoul: 0
   firstBreak: 1
   gameOver: 0
+  touchDisabled: 0
   time: 0
   duration: 0
   hitPower: 0
@@ -4188,7 +4069,7 @@ Transform:
   m_GameObject: {fileID: 868460840}
   serializedVersion: 2
   m_LocalRotation: {x: 0.109997034, y: 0.69578695, z: -0.10953269, w: 0.701273}
-  m_LocalPosition: {x: -2.49, y: 1.08, z: 0.08}
+  m_LocalPosition: {x: -2.49, y: 1.08, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -4311,7 +4192,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   referenceWidth: 1920
   referenceHeight: 1080
-  referenceFoV: 92.77953
+  referenceFoV: 98.6
 --- !u!1 &889387953
 GameObject:
   m_ObjectHideFlags: 0
@@ -5941,7 +5822,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 90, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 3.81, y: 2.44}
+  m_AnchoredPosition: {x: 3.81, y: 3}
   m_SizeDelta: {x: 9.07, y: 5}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1199614209
@@ -8324,7 +8205,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 2147483647
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!33 &1559019907
 MeshFilter:
   m_ObjectHideFlags: 0
@@ -8523,7 +8404,7 @@ RectTransform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1559543390}
   m_LocalRotation: {x: 0, y: 1, z: 0, w: 0}
-  m_LocalPosition: {x: 0, y: 0, z: -3.27}
+  m_LocalPosition: {x: 0, y: 0, z: -3.31}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -8531,7 +8412,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 180, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 3.58, y: 2.53}
+  m_AnchoredPosition: {x: 3.58, y: 3.15}
   m_SizeDelta: {x: 9.07, y: 5}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1559543392
@@ -36538,8 +36419,8 @@ Rigidbody:
   m_GameObject: {fileID: 2846095618325756788}
   serializedVersion: 4
   m_Mass: 0.16
-  m_Drag: 0.2
-  m_AngularDrag: 0.54
+  m_Drag: 0.5
+  m_AngularDrag: 0.5
   m_CenterOfMass: {x: 0, y: 0, z: 0}
   m_InertiaTensor: {x: 1, y: 1, z: 1}
   m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
@@ -36555,7 +36436,7 @@ Rigidbody:
   m_IsKinematic: 0
   m_Interpolate: 0
   m_Constraints: 0
-  m_CollisionDetection: 2
+  m_CollisionDetection: 1
 --- !u!114 &3342078542404008896
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -36570,7 +36451,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   ballType: 1
   ballCode: 2
-  ballHit: {fileID: 8300000, guid: 9fcb214e095c046fba3740ca2888e47d, type: 3}
+  ballHit: {fileID: 8300000, guid: 985308ec2916b4af1ae23b6788c2df5a, type: 3}
   cushionHit: {fileID: 8300000, guid: 1da7aaefad7d84521886212b870223eb, type: 3}
 --- !u!135 &3342078542404008897
 SphereCollider:
@@ -40669,8 +40550,8 @@ Rigidbody:
   m_GameObject: {fileID: 894367849538620896}
   serializedVersion: 4
   m_Mass: 0.16
-  m_Drag: 0.2
-  m_AngularDrag: 0.54
+  m_Drag: 0.5
+  m_AngularDrag: 0.5
   m_CenterOfMass: {x: 0, y: 0, z: 0}
   m_InertiaTensor: {x: 1, y: 1, z: 1}
   m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
@@ -40686,7 +40567,7 @@ Rigidbody:
   m_IsKinematic: 0
   m_Interpolate: 0
   m_Constraints: 0
-  m_CollisionDetection: 2
+  m_CollisionDetection: 1
 --- !u!114 &3898606400999735023
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -40701,7 +40582,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   ballType: 0
   ballCode: 2
-  ballHit: {fileID: 8300000, guid: 9fcb214e095c046fba3740ca2888e47d, type: 3}
+  ballHit: {fileID: 8300000, guid: 985308ec2916b4af1ae23b6788c2df5a, type: 3}
   cushionHit: {fileID: 8300000, guid: 1da7aaefad7d84521886212b870223eb, type: 3}
 --- !u!135 &3898606400999735024
 SphereCollider:
@@ -53471,8 +53352,8 @@ Rigidbody:
   m_GameObject: {fileID: 1165470346844940496}
   serializedVersion: 4
   m_Mass: 0.16
-  m_Drag: 0.2
-  m_AngularDrag: 0.54
+  m_Drag: 0.5
+  m_AngularDrag: 0.5
   m_CenterOfMass: {x: 0, y: 0, z: 0}
   m_InertiaTensor: {x: 1, y: 1, z: 1}
   m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
@@ -53488,7 +53369,7 @@ Rigidbody:
   m_IsKinematic: 0
   m_Interpolate: 0
   m_Constraints: 0
-  m_CollisionDetection: 2
+  m_CollisionDetection: 1
 --- !u!114 &5638275926542845083
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -53503,7 +53384,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   ballType: 1
   ballCode: 0
-  ballHit: {fileID: 8300000, guid: 9fcb214e095c046fba3740ca2888e47d, type: 3}
+  ballHit: {fileID: 8300000, guid: 985308ec2916b4af1ae23b6788c2df5a, type: 3}
   cushionHit: {fileID: 8300000, guid: 1da7aaefad7d84521886212b870223eb, type: 3}
 --- !u!135 &5638275926542845084
 SphereCollider:
@@ -54295,8 +54176,8 @@ Rigidbody:
   m_GameObject: {fileID: 1905434357377256353}
   serializedVersion: 4
   m_Mass: 0.16
-  m_Drag: 0.2
-  m_AngularDrag: 0.54
+  m_Drag: 0.5
+  m_AngularDrag: 0.5
   m_CenterOfMass: {x: 0, y: 0, z: 0}
   m_InertiaTensor: {x: 1, y: 1, z: 1}
   m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
@@ -54312,7 +54193,7 @@ Rigidbody:
   m_IsKinematic: 0
   m_Interpolate: 0
   m_Constraints: 0
-  m_CollisionDetection: 2
+  m_CollisionDetection: 1
 --- !u!114 &5720988162085801875
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -54327,7 +54208,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   ballType: 1
   ballCode: 3
-  ballHit: {fileID: 8300000, guid: 9fcb214e095c046fba3740ca2888e47d, type: 3}
+  ballHit: {fileID: 8300000, guid: 985308ec2916b4af1ae23b6788c2df5a, type: 3}
   cushionHit: {fileID: 8300000, guid: 1da7aaefad7d84521886212b870223eb, type: 3}
 --- !u!135 &5720988162085801876
 SphereCollider:
@@ -60481,8 +60362,8 @@ Rigidbody:
   m_GameObject: {fileID: 1306463691487630751}
   serializedVersion: 4
   m_Mass: 0.16
-  m_Drag: 0.2
-  m_AngularDrag: 0.54
+  m_Drag: 0.5
+  m_AngularDrag: 0.5
   m_CenterOfMass: {x: 0, y: 0, z: 0}
   m_InertiaTensor: {x: 1, y: 1, z: 1}
   m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
@@ -60498,7 +60379,7 @@ Rigidbody:
   m_IsKinematic: 0
   m_Interpolate: 0
   m_Constraints: 0
-  m_CollisionDetection: 2
+  m_CollisionDetection: 1
 --- !u!114 &6603181659836592737
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -60513,7 +60394,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   ballType: 0
   ballCode: 6
-  ballHit: {fileID: 8300000, guid: 9fcb214e095c046fba3740ca2888e47d, type: 3}
+  ballHit: {fileID: 8300000, guid: 985308ec2916b4af1ae23b6788c2df5a, type: 3}
   cushionHit: {fileID: 8300000, guid: 1da7aaefad7d84521886212b870223eb, type: 3}
 --- !u!135 &6603181659836592738
 SphereCollider:
@@ -61973,8 +61854,8 @@ Rigidbody:
   m_GameObject: {fileID: 4997376540231994547}
   serializedVersion: 4
   m_Mass: 0.16
-  m_Drag: 0.2
-  m_AngularDrag: 0.54
+  m_Drag: 0.5
+  m_AngularDrag: 0.5
   m_CenterOfMass: {x: 0, y: 0, z: 0}
   m_InertiaTensor: {x: 1, y: 1, z: 1}
   m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
@@ -61990,7 +61871,7 @@ Rigidbody:
   m_IsKinematic: 0
   m_Interpolate: 0
   m_Constraints: 0
-  m_CollisionDetection: 2
+  m_CollisionDetection: 1
 --- !u!114 &6820579325170544683
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -62005,7 +61886,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   ballType: 1
   ballCode: 5
-  ballHit: {fileID: 8300000, guid: 9fcb214e095c046fba3740ca2888e47d, type: 3}
+  ballHit: {fileID: 8300000, guid: 985308ec2916b4af1ae23b6788c2df5a, type: 3}
   cushionHit: {fileID: 8300000, guid: 1da7aaefad7d84521886212b870223eb, type: 3}
 --- !u!135 &6820579325170544684
 SphereCollider:
@@ -65569,8 +65450,8 @@ Rigidbody:
   m_GameObject: {fileID: 3245080038996343618}
   serializedVersion: 4
   m_Mass: 0.16
-  m_Drag: 0.2
-  m_AngularDrag: 0.54
+  m_Drag: 0.5
+  m_AngularDrag: 0.5
   m_CenterOfMass: {x: 0, y: 0, z: 0}
   m_InertiaTensor: {x: 1, y: 1, z: 1}
   m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
@@ -65586,7 +65467,7 @@ Rigidbody:
   m_IsKinematic: 0
   m_Interpolate: 0
   m_Constraints: 0
-  m_CollisionDetection: 2
+  m_CollisionDetection: 1
 --- !u!114 &7305045896313566466
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -65601,7 +65482,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   ballType: 1
   ballCode: 6
-  ballHit: {fileID: 8300000, guid: 9fcb214e095c046fba3740ca2888e47d, type: 3}
+  ballHit: {fileID: 8300000, guid: 985308ec2916b4af1ae23b6788c2df5a, type: 3}
   cushionHit: {fileID: 8300000, guid: 1da7aaefad7d84521886212b870223eb, type: 3}
 --- !u!135 &7305045896313566467
 SphereCollider:
@@ -66301,8 +66182,8 @@ Rigidbody:
   m_GameObject: {fileID: 3790202127648157689}
   serializedVersion: 4
   m_Mass: 0.16
-  m_Drag: 0.2
-  m_AngularDrag: 0.54
+  m_Drag: 0.5
+  m_AngularDrag: 0.5
   m_CenterOfMass: {x: 0, y: 0, z: 0}
   m_InertiaTensor: {x: 1, y: 1, z: 1}
   m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
@@ -66318,7 +66199,7 @@ Rigidbody:
   m_IsKinematic: 0
   m_Interpolate: 0
   m_Constraints: 0
-  m_CollisionDetection: 2
+  m_CollisionDetection: 1
 --- !u!114 &7390446099682070831
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -66333,7 +66214,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   ballType: 0
   ballCode: 3
-  ballHit: {fileID: 8300000, guid: 9fcb214e095c046fba3740ca2888e47d, type: 3}
+  ballHit: {fileID: 8300000, guid: 985308ec2916b4af1ae23b6788c2df5a, type: 3}
   cushionHit: {fileID: 8300000, guid: 1da7aaefad7d84521886212b870223eb, type: 3}
 --- !u!135 &7390446099682070832
 SphereCollider:
@@ -67601,8 +67482,8 @@ Rigidbody:
   m_GameObject: {fileID: 1682753904184303274}
   serializedVersion: 4
   m_Mass: 0.16
-  m_Drag: 0.2
-  m_AngularDrag: 0.54
+  m_Drag: 0.5
+  m_AngularDrag: 0.5
   m_CenterOfMass: {x: 0, y: 0, z: 0}
   m_InertiaTensor: {x: 1, y: 1, z: 1}
   m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
@@ -67618,7 +67499,7 @@ Rigidbody:
   m_IsKinematic: 0
   m_Interpolate: 0
   m_Constraints: 0
-  m_CollisionDetection: 2
+  m_CollisionDetection: 1
 --- !u!114 &7574305134024747706
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -67633,7 +67514,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   ballType: 3
   ballCode: 0
-  ballHit: {fileID: 8300000, guid: 9fcb214e095c046fba3740ca2888e47d, type: 3}
+  ballHit: {fileID: 8300000, guid: 985308ec2916b4af1ae23b6788c2df5a, type: 3}
   cushionHit: {fileID: 8300000, guid: 1da7aaefad7d84521886212b870223eb, type: 3}
 --- !u!135 &7574305134024747707
 SphereCollider:
@@ -68766,8 +68647,8 @@ Rigidbody:
   m_GameObject: {fileID: 5552476363325519137}
   serializedVersion: 4
   m_Mass: 0.16
-  m_Drag: 0.2
-  m_AngularDrag: 0.54
+  m_Drag: 0.5
+  m_AngularDrag: 0.5
   m_CenterOfMass: {x: 0, y: 0, z: 0}
   m_InertiaTensor: {x: 1, y: 1, z: 1}
   m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
@@ -68783,7 +68664,7 @@ Rigidbody:
   m_IsKinematic: 0
   m_Interpolate: 0
   m_Constraints: 0
-  m_CollisionDetection: 2
+  m_CollisionDetection: 1
 --- !u!114 &7687273896660388501
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -68798,7 +68679,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   ballType: 1
   ballCode: 4
-  ballHit: {fileID: 8300000, guid: 9fcb214e095c046fba3740ca2888e47d, type: 3}
+  ballHit: {fileID: 8300000, guid: 985308ec2916b4af1ae23b6788c2df5a, type: 3}
   cushionHit: {fileID: 8300000, guid: 1da7aaefad7d84521886212b870223eb, type: 3}
 --- !u!135 &7687273896660388502
 SphereCollider:
@@ -70485,9 +70366,9 @@ Transform:
   m_GameObject: {fileID: 6118660678652711801}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 1.2, y: 0.77, z: -0.5}
+  m_LocalPosition: {x: 1.2, y: 0.768756, z: -0.5}
   m_LocalScale: {x: 0.82, y: 0.82, z: 0.82}
-  m_ConstrainProportionsScale: 1
+  m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 7119974018409897193}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -70500,8 +70381,8 @@ Rigidbody:
   m_GameObject: {fileID: 6118660678652711801}
   serializedVersion: 4
   m_Mass: 0.18
-  m_Drag: 0.2
-  m_AngularDrag: 0.54
+  m_Drag: 0.5
+  m_AngularDrag: 0.5
   m_CenterOfMass: {x: 0, y: 0, z: 0}
   m_InertiaTensor: {x: 1, y: 1, z: 1}
   m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
@@ -70532,7 +70413,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   ballType: 2
   ballCode: 0
-  ballHit: {fileID: 8300000, guid: 9fcb214e095c046fba3740ca2888e47d, type: 3}
+  ballHit: {fileID: 8300000, guid: e8784199e85dc4daeb351cbac832f689, type: 3}
   cushionHit: {fileID: 8300000, guid: 1da7aaefad7d84521886212b870223eb, type: 3}
 --- !u!135 &7904250166450906208
 SphereCollider:
@@ -74811,8 +74692,8 @@ Rigidbody:
   m_GameObject: {fileID: 8552020169114793873}
   serializedVersion: 4
   m_Mass: 0.16
-  m_Drag: 0.2
-  m_AngularDrag: 0.54
+  m_Drag: 0.5
+  m_AngularDrag: 0.5
   m_CenterOfMass: {x: 0, y: 0, z: 0}
   m_InertiaTensor: {x: 1, y: 1, z: 1}
   m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
@@ -74828,7 +74709,7 @@ Rigidbody:
   m_IsKinematic: 0
   m_Interpolate: 0
   m_Constraints: 0
-  m_CollisionDetection: 2
+  m_CollisionDetection: 1
 --- !u!114 &8552020169114793876
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -74843,7 +74724,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   ballType: 0
   ballCode: 1
-  ballHit: {fileID: 8300000, guid: 9fcb214e095c046fba3740ca2888e47d, type: 3}
+  ballHit: {fileID: 8300000, guid: 985308ec2916b4af1ae23b6788c2df5a, type: 3}
   cushionHit: {fileID: 8300000, guid: 1da7aaefad7d84521886212b870223eb, type: 3}
 --- !u!135 &8552020169114793877
 SphereCollider:
@@ -76269,8 +76150,8 @@ Rigidbody:
   m_GameObject: {fileID: 7577703398275925002}
   serializedVersion: 4
   m_Mass: 0.16
-  m_Drag: 0.2
-  m_AngularDrag: 0.54
+  m_Drag: 0.5
+  m_AngularDrag: 0.5
   m_CenterOfMass: {x: 0, y: 0, z: 0}
   m_InertiaTensor: {x: 1, y: 1, z: 1}
   m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
@@ -76286,7 +76167,7 @@ Rigidbody:
   m_IsKinematic: 0
   m_Interpolate: 0
   m_Constraints: 0
-  m_CollisionDetection: 2
+  m_CollisionDetection: 1
 --- !u!114 &8657555610628098512
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -76301,7 +76182,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   ballType: 0
   ballCode: 5
-  ballHit: {fileID: 8300000, guid: 9fcb214e095c046fba3740ca2888e47d, type: 3}
+  ballHit: {fileID: 8300000, guid: 985308ec2916b4af1ae23b6788c2df5a, type: 3}
   cushionHit: {fileID: 8300000, guid: 1da7aaefad7d84521886212b870223eb, type: 3}
 --- !u!135 &8657555610628098513
 SphereCollider:
@@ -78722,8 +78603,8 @@ Rigidbody:
   m_GameObject: {fileID: 7522924723394501555}
   serializedVersion: 4
   m_Mass: 0.16
-  m_Drag: 0.2
-  m_AngularDrag: 0.54
+  m_Drag: 0.5
+  m_AngularDrag: 0.5
   m_CenterOfMass: {x: 0, y: 0, z: 0}
   m_InertiaTensor: {x: 1, y: 1, z: 1}
   m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
@@ -78739,7 +78620,7 @@ Rigidbody:
   m_IsKinematic: 0
   m_Interpolate: 0
   m_Constraints: 0
-  m_CollisionDetection: 2
+  m_CollisionDetection: 1
 --- !u!114 &8929586816150956508
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -78754,7 +78635,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   ballType: 0
   ballCode: 4
-  ballHit: {fileID: 8300000, guid: 9fcb214e095c046fba3740ca2888e47d, type: 3}
+  ballHit: {fileID: 8300000, guid: 985308ec2916b4af1ae23b6788c2df5a, type: 3}
   cushionHit: {fileID: 8300000, guid: 1da7aaefad7d84521886212b870223eb, type: 3}
 --- !u!135 &8929586816150956509
 SphereCollider:
@@ -79389,8 +79270,8 @@ Rigidbody:
   m_GameObject: {fileID: 6932236601176857663}
   serializedVersion: 4
   m_Mass: 0.16
-  m_Drag: 0.2
-  m_AngularDrag: 0.54
+  m_Drag: 0.5
+  m_AngularDrag: 0.5
   m_CenterOfMass: {x: 0, y: 0, z: 0}
   m_InertiaTensor: {x: 1, y: 1, z: 1}
   m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
@@ -79406,7 +79287,7 @@ Rigidbody:
   m_IsKinematic: 0
   m_Interpolate: 0
   m_Constraints: 0
-  m_CollisionDetection: 2
+  m_CollisionDetection: 1
 --- !u!114 &9010903651071513205
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -79421,7 +79302,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   ballType: 1
   ballCode: 1
-  ballHit: {fileID: 8300000, guid: 9fcb214e095c046fba3740ca2888e47d, type: 3}
+  ballHit: {fileID: 8300000, guid: 985308ec2916b4af1ae23b6788c2df5a, type: 3}
   cushionHit: {fileID: 8300000, guid: 1da7aaefad7d84521886212b870223eb, type: 3}
 --- !u!135 &9010903651071513206
 SphereCollider:
@@ -80676,8 +80557,8 @@ Rigidbody:
   m_GameObject: {fileID: 1259212214175192673}
   serializedVersion: 4
   m_Mass: 0.16
-  m_Drag: 0.2
-  m_AngularDrag: 0.54
+  m_Drag: 0.5
+  m_AngularDrag: 0.5
   m_CenterOfMass: {x: 0, y: 0, z: 0}
   m_InertiaTensor: {x: 1, y: 1, z: 1}
   m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
@@ -80693,7 +80574,7 @@ Rigidbody:
   m_IsKinematic: 0
   m_Interpolate: 0
   m_Constraints: 0
-  m_CollisionDetection: 2
+  m_CollisionDetection: 1
 --- !u!114 &9149081972895308543
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -80708,7 +80589,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   ballType: 0
   ballCode: 0
-  ballHit: {fileID: 8300000, guid: 9fcb214e095c046fba3740ca2888e47d, type: 3}
+  ballHit: {fileID: 8300000, guid: 985308ec2916b4af1ae23b6788c2df5a, type: 3}
   cushionHit: {fileID: 8300000, guid: 1da7aaefad7d84521886212b870223eb, type: 3}
 --- !u!135 &9149081972895308544
 SphereCollider:
@@ -81346,4 +81227,3 @@ SceneRoots:
   - {fileID: 1964687430}
   - {fileID: 134774026}
   - {fileID: 1494537487}
-  - {fileID: 496448957}

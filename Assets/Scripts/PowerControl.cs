@@ -2,9 +2,14 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
-public class PowerControl :  Slider, IPointerUpHandler
+public class PowerControl :  Slider, IPointerUpHandler, IPointerDownHandler
 {
     float modValue;
+
+    public override void OnPointerDown(PointerEventData eventData)
+    {
+        GamePlayController.instance.touchDisabled = true;
+    }
 
     public override void OnPointerUp(PointerEventData eventData)
     {
@@ -14,6 +19,7 @@ public class PowerControl :  Slider, IPointerUpHandler
 
     private void OnSliderPointerUp()
     {
+        GamePlayController.instance.touchDisabled = false;
         Debug.Log("Slider pointer up event handled.");        
         StartCoroutine(GamePlayController.instance.PlayShot());
     }

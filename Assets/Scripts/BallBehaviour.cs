@@ -56,6 +56,7 @@ public class BallBehaviour : MonoBehaviour
                     if (!playerController.firstBreak)
                     {
                         Debug.Log("cut on  " + gameObject.name + " with " + collision.gameObject.name);
+                        GetComponent<Rigidbody>().linearVelocity *= 0.4f;
                         //StartCoroutine(CutOff());
                         //PoolMain.instance.spun = true;
                     }

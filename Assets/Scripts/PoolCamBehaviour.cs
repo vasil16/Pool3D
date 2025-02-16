@@ -54,6 +54,8 @@ public class PoolCamBehaviour : MonoBehaviour
         stickFollowOffset = transform.position - cueStick.position;
         ballFollowOffset = transform.position - cueBall.position;
         playerController = GamePlayController.instance;
+        minFov = cam.fieldOfView - 10;
+        maxFov = cam.fieldOfView + 10;
     }
 
 
@@ -135,7 +137,7 @@ public class PoolCamBehaviour : MonoBehaviour
         {
             foreach (Touch touch in Input.touches)
             {
-                if (playerController.dragPower || Utils.IsPointerOverUIObject(touch.position)) return;
+                if (playerController.touchDisabled || Utils.IsPointerOverUIObject(touch.position)) return;
 
                 if (tCount == 2)
                 {

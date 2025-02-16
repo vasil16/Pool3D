@@ -15,7 +15,7 @@ public class Pocket : MonoBehaviour
 
     private void OnCollisionEnter(Collision other)
     {
-        playerController.gameAudio.PlayOneShot(pocketClip);
+        if(!playerController.isFoul)playerController.gameAudio.PlayOneShot(pocketClip);
         BallBehaviour pocketedBall = other.gameObject.GetComponent<BallBehaviour>();
         other.gameObject.GetComponent<Rigidbody>().constraints = RigidbodyConstraints.None;
 

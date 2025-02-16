@@ -144,7 +144,7 @@ public class GameManager : MonoBehaviour
 
     public void PlayBallSound(AudioClip clip)
     {
-        if(ballhitCount%2==0)
+        if(ballhitCount%2==0 && !playerController.isFoul)
         {
             playerController.gameAudio.PlayOneShot(clip);
         }

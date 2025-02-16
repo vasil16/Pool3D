@@ -10,7 +10,7 @@ public class GamePlayController : MonoBehaviour
     public List<GameObject> balls, cpuBalls;
 
     [SerializeField] Vector4 clampTableBreak, clampTableNormal;
-    [SerializeField] private Vector3 lineRendererOffset, cueOgPos, cueOgRot;
+    [SerializeField] private Vector3 lineRendererOffset, cueOgPos, cueOgRot, spinMarkOffset;
     [SerializeField] private Vector2 deltaPosition, deltaPos;
     [SerializeField] private GameObject targetBall, cueBall, powerBar, aimDock, spinObj;
     [SerializeField] private float rotationSpeed = 0.1f, powerMultiplier, maxDistance = 3, secMax = 2, cueBallRadius, ballRadius, ballYpos, dockYpos, extensionLength;
@@ -28,7 +28,7 @@ public class GamePlayController : MonoBehaviour
 
     public GameObject cue, spinMark, cueAnchor;
     public bool isBreak = true;
-    public bool dragPower, spun, hasSpin, isWaiting, pocketed, firstPot, updown, isFoul, firstBreak, gameOver;
+    public bool dragPower, spun, hasSpin, isWaiting, pocketed, firstPot, updown, isFoul, firstBreak, gameOver, touchDisabled;
     private bool looked;
     private int maxBounces = 2;
     private int rand;
@@ -53,7 +53,8 @@ public class GamePlayController : MonoBehaviour
     {
         cueOgPos = cue.transform.localPosition;
         ballR = cueBall.GetComponent<Rigidbody>();
-        cueBallRadius = cueBall.GetComponent<MeshRenderer>().bounds.extents.x;
+        //cueBallRadius = cueBall.GetComponent<MeshRenderer>().bounds.extents.x;
+        cueBallRadius = cueBall.GetComponent<SphereCollider>().radius * cueBall.transform.localScale.x;
         ballRadius = balls[2].GetComponent<MeshRenderer>().bounds.extents.x;
         PlayerPrefs.DeleteAll();
     }
@@ -138,9 +139,11 @@ public class GamePlayController : MonoBehaviour
         StartCoroutine(HandleCpuPlay());             
     }
 
+
     #region InputHandle
     void HandleTouchInput()
     {
+        if (touchDisabled) return;
         foreach (Touch touch in Input.touches)
         {
             if (Utils.IsPointerOverUIObject(touch.position))
@@ -220,8 +223,10 @@ public class GamePlayController : MonoBehaviour
             float normalizedX = localSpinRectPoint.x / radius;
             float normalizedY = localSpinRectPoint.y / radius;
 
-            Vector3 newSpinMarkPosition = new Vector3(normalizedY * 0.03f, spinMark.transform.localPosition.y, normalizedX * 0.03f * -1);
+            Vector3 newSpinMarkPosition = new Vector3(spinMark.transform.localPosition.x, normalizedY * 0.03f, normalizedX * 0.03f * -1);
             spinMark.transform.localPosition = newSpinMarkPosition;
+            newSpinMarkPosition = spinMark.transform.position;
+            spinMark.transform.position = cueBall.GetComponent<MeshRenderer>().bounds.ClosestPoint(newSpinMarkPosition);
             spinIndicator.anchoredPosition = new Vector2(normalizedX * 50, normalizedY * 50);
         }
     }
@@ -230,7 +235,6 @@ public class GamePlayController : MonoBehaviour
     {
         time = 0;
         duration = 1.1f;
-
         targetBall = obj;
         Vector3 direction = targetBall.transform.position - cueAnchor.transform.position;
         direction.y = 0;
@@ -259,6 +263,16 @@ public class GamePlayController : MonoBehaviour
     Vector3 lastHittingDirection;
 
     Transform lockedBall;
+
+    IEnumerator HandleCpuCueBallPlace()
+    {
+        cueBall.transform.localPosition = new Vector3(1.2f, .768f, -.5f);
+        cueAnchor.transform.SetParent(cueBall.transform);
+        cueAnchor.transform.localPosition = Vector3.zero;
+        cueAnchor.transform.SetParent(null);
+        StartCoroutine(HandleCpuPlay());
+        yield return null;
+    }
 
     IEnumerator HandleCpuPlay()
     {
@@ -480,10 +494,14 @@ public class GamePlayController : MonoBehaviour
         Vector3 direction = cueAnchor.transform.right.normalized;
         cue.SetActive(false);
         gameAudio.PlayOneShot(cueHit);
-        forceAt.position = spinMark.transform.position;
-        ballR.AddForceAtPosition(direction * hitPower, forceAt.position, ForceMode.Force);
+        //forceAt.position = spinMark.transform.position;
+        Vector3 offset = forceAt.position - spinMark.transform.position;  // Offset from ball center
+        Vector3 spinDirection = Vector3.Cross(direction, offset.normalized); // Perpendicular to hit offset
+        ballR.AddForceAtPosition(direction * hitPower * .008f, spinMark.transform.position, ForceMode.Impulse);
+        ballR.AddTorque(spinDirection * hitPower * 0.008f, ForceMode.Impulse);
         StartCoroutine(ResetCue());
     }
+
 
     IEnumerator ResetCue()
     {
@@ -491,10 +509,10 @@ public class GamePlayController : MonoBehaviour
         yield return new WaitForSeconds(2f);
         yield return new WaitUntil(BallStopped);
         yield return new WaitForSeconds(2f);
-
+        ballR.linearVelocity = ballR.angularVelocity = Vector3.zero;
         spinIndicator.anchoredPosition = Vector2.zero;
         spinRect.anchoredPosition = Vector2.zero;
-        spinMark.transform.localPosition = Vector3.zero;
+        spinMark.transform.localPosition = spinMarkOffset;
         spun = false;
         hasSpin = false;
         hitPower = 0;
@@ -504,7 +522,6 @@ public class GamePlayController : MonoBehaviour
 
         if (!pocketed || isFoul)
         {
-            //manager.currentPlayer = manager.currentPlayer == GameManager.CurrentPlayer.player1 ? GameManager.CurrentPlayer.player2 : GameManager.CurrentPlayer.player1;
             manager.currentPlayer = manager.GetOpponent(manager.currentPlayer);
         }
 
@@ -513,7 +530,7 @@ public class GamePlayController : MonoBehaviour
 
         if (isFoul)
         {
-            StartCoroutine(FoulReset());
+            StartCoroutine(FoulReset());            
             yield break;
         }
 
@@ -560,9 +577,16 @@ public class GamePlayController : MonoBehaviour
         cueBall.transform.localRotation = Quaternion.Euler(-90, 0, 0);
         poolCam.transform.rotation = Quaternion.Euler(0, 0, 0);
         cueBall.GetComponent<Rigidbody>().isKinematic = false;
-        manager.startPanel.SetActive(true);
-        manager.placeBallPop.SetActive(true);
-        poolCam.gameState = PoolCamBehaviour.GameState.Break;
+        if (manager.players[manager.currentPlayer].name =="CPU")
+        {
+            StartCoroutine(HandleCpuCueBallPlace());
+        }
+        else
+        {
+            manager.startPanel.SetActive(true);
+            manager.placeBallPop.SetActive(true);
+            poolCam.gameState = PoolCamBehaviour.GameState.Break;
+        }
         isFoul = false;
         yield return null;
     }
@@ -655,6 +679,7 @@ public class GamePlayController : MonoBehaviour
             {
                 // Calculate exact contact point
                 Vector3 contactPoint = hit.point + (hit.normal * cueBallRadius);
+                Vector3 otherBallContactPoint = hit.point + (hit.normal * ballRadius);
 
                 // Set cue ball trajectory
                 lineRenderer.positionCount = points;
@@ -668,7 +693,7 @@ public class GamePlayController : MonoBehaviour
                     Vector3 hitBallPos = hit.collider.transform.position;
 
                     // Calculate collision vectors
-                    Vector3 collisionNormal = (hitBallPos - contactPoint).normalized;
+                    Vector3 collisionNormal = (hitBallPos - otherBallContactPoint).normalized;
 
                     // Calculate the impulse direction using physics formula
                     float dotProduct = Vector3.Dot(aimForward, collisionNormal);
