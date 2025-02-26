@@ -495,8 +495,8 @@ public class GamePlayController : MonoBehaviour
         cue.SetActive(false);
         gameAudio.PlayOneShot(cueHit);
         //forceAt.position = spinMark.transform.position;
-        Vector3 offset = forceAt.position - spinMark.transform.position;  // Offset from ball center
-        Vector3 spinDirection = Vector3.Cross(direction, offset.normalized); // Perpendicular to hit offset
+        Vector3 offset = forceAt.position - spinMark.transform.position;
+        Vector3 spinDirection = Vector3.Cross(direction, offset.normalized);
         ballR.AddForceAtPosition(direction * hitPower * .008f, spinMark.transform.position, ForceMode.Impulse);
         ballR.AddTorque(spinDirection * hitPower * 0.008f, ForceMode.Impulse);
         StartCoroutine(ResetCue());

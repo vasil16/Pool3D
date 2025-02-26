@@ -48,7 +48,7 @@ public class BallBehaviour : MonoBehaviour
                 if (!playerController.spun && playerController.hasSpin)
                 {
                     Debug.Log("spinn power " + playerController.hitPower + "  dir " + playerController.spinMark.transform.position);
-                    GetComponent<Rigidbody>().AddForce((transform.position - playerController.spinMark.transform.position).normalized * playerController.hitPower * 0.10f, ForceMode.Force);
+                    //GetComponent<Rigidbody>().AddForce((transform.position - playerController.spinMark.transform.position).normalized * playerController.hitPower * 0.10f, ForceMode.Force);
                     playerController.spun = true;
                 }
                 else if (!playerController.spun)
@@ -56,7 +56,7 @@ public class BallBehaviour : MonoBehaviour
                     if (!playerController.firstBreak)
                     {
                         Debug.Log("cut on  " + gameObject.name + " with " + collision.gameObject.name);
-                        GetComponent<Rigidbody>().linearVelocity *= 0.4f;
+                        //GetComponent<Rigidbody>().linearVelocity *= 0.4f;
                         //StartCoroutine(CutOff());
                         //PoolMain.instance.spun = true;
                     }
