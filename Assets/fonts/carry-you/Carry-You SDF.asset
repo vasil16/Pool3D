@@ -2610,7 +2610,6 @@ Material:
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords:
-  - BEVEL_ON
   - GLOW_ON
   m_InvalidKeywords: []
   m_LightmapFlags: 4
@@ -2718,7 +2717,7 @@ Texture2D:
   m_Name: Carry-You SDF Atlas
   m_ImageContentsHash:
     serializedVersion: 2
-    Hash: 00000000000000000000000000000000
+    Hash: a10c6d2c6ef311ff01d360bb007e1f6a
   m_IsAlphaChannelOptional: 0
   serializedVersion: 3
   m_Width: 512

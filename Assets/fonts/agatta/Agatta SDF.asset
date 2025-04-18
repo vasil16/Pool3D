@@ -62,7 +62,7 @@ Material:
     - _FaceUVSpeedY: 0
     - _GlowInner: 0.206
     - _GlowOffset: -0.25
-    - _GlowOuter: 0.245
+    - _GlowOuter: 0.473
     - _GlowPower: 0.594
     - _GradientScale: 6
     - _LightAngle: 3.1416
@@ -2620,7 +2620,7 @@ Texture2D:
   m_Name: Agatta SDF Atlas
   m_ImageContentsHash:
     serializedVersion: 2
-    Hash: 00000000000000000000000000000000
+    Hash: 0a2e2ab4b327cd052deed5749e3ad407
   m_IsAlphaChannelOptional: 0
   serializedVersion: 3
   m_Width: 512
