@@ -20,16 +20,16 @@ public class UIManager : MonoBehaviour
 
     void AnimateUIEntry()
     {
-        title.DOAnchorPos(titleActivePos,1f).SetEase(Ease.Linear);
+        title.DOAnchorPos(titleActivePos,1f).SetEase(Ease.InOutBack);
         button1.DOAnchorPos(button1ActivePos, .8f).SetDelay(0.4f);
         button2.DOAnchorPos(button2ActivePos, .8f).SetDelay(0.2f);
     }
 
     void AnimateUIExit(Action callBack=null)
     {
-        title.DOAnchorPos(titlehiddenPos, 1f).SetEase(Ease.Linear).SetDelay(0.4f);
-        button1.DOAnchorPos(button1HiddenPos, 1.2f);
-        button2.DOAnchorPos(button2HiddenPos, 1.3f).SetDelay(0.2f).OnComplete(()=>
+        title.DOAnchorPos(titlehiddenPos, 1f).SetEase(Ease.InOutBack).SetDelay(0.4f);
+        button1.DOAnchorPos(button1HiddenPos, .8f).SetDelay(0.1f);
+        button2.DOAnchorPos(button2HiddenPos, .8f).SetDelay(0.2f).OnComplete(()=>
         {
             callBack.Invoke();
         });

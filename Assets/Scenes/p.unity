@@ -4218,7 +4218,7 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 256
   gameAudio: {fileID: 912140724}
-  cueHit: {fileID: 8300000, guid: 8765122426b4d421fb27ad6e63b6a554, type: 3}
+  cueHit: {fileID: 8300000, guid: 4bab2036a1b224307a6962f1f0c8dd97, type: 3}
   rolling: {fileID: 8300000, guid: bd8f55c9b1cc849fb873dbd7a4ca940c, type: 3}
   cue: {fileID: 2103406947}
   spinMark: {fileID: 437914042}
@@ -4249,6 +4249,17 @@ MonoBehaviour:
   newDir: {x: 0, y: 0, z: 0}
   direction: {x: 0, y: 0, z: 0}
   returnVector: {x: 0, y: 0, z: 0}
+  maxStepDistance: 10
+  targetExtensionLength: 5
+  collisionLayers:
+    serializedVersion: 2
+    m_Bits: 384
+  cushionLayer:
+    serializedVersion: 2
+    m_Bits: 256
+  playBallLayer:
+    serializedVersion: 2
+    m_Bits: 128
 --- !u!4 &829709662
 Transform:
   m_ObjectHideFlags: 0
@@ -36889,7 +36900,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   ballType: 1
   ballCode: 2
-  ballHit: {fileID: 8300000, guid: 985308ec2916b4af1ae23b6788c2df5a, type: 3}
+  ballHit: {fileID: 8300000, guid: 60a362644716c447bb1dc7413cfc90ea, type: 3}
   cushionHit: {fileID: 8300000, guid: 1da7aaefad7d84521886212b870223eb, type: 3}
 --- !u!135 &3342078542404008897
 SphereCollider:
@@ -41020,7 +41031,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   ballType: 0
   ballCode: 2
-  ballHit: {fileID: 8300000, guid: 985308ec2916b4af1ae23b6788c2df5a, type: 3}
+  ballHit: {fileID: 8300000, guid: 60a362644716c447bb1dc7413cfc90ea, type: 3}
   cushionHit: {fileID: 8300000, guid: 1da7aaefad7d84521886212b870223eb, type: 3}
 --- !u!135 &3898606400999735024
 SphereCollider:
@@ -53822,7 +53833,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   ballType: 1
   ballCode: 0
-  ballHit: {fileID: 8300000, guid: 985308ec2916b4af1ae23b6788c2df5a, type: 3}
+  ballHit: {fileID: 8300000, guid: 60a362644716c447bb1dc7413cfc90ea, type: 3}
   cushionHit: {fileID: 8300000, guid: 1da7aaefad7d84521886212b870223eb, type: 3}
 --- !u!135 &5638275926542845084
 SphereCollider:
@@ -54646,7 +54657,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   ballType: 1
   ballCode: 3
-  ballHit: {fileID: 8300000, guid: 985308ec2916b4af1ae23b6788c2df5a, type: 3}
+  ballHit: {fileID: 8300000, guid: 60a362644716c447bb1dc7413cfc90ea, type: 3}
   cushionHit: {fileID: 8300000, guid: 1da7aaefad7d84521886212b870223eb, type: 3}
 --- !u!135 &5720988162085801876
 SphereCollider:
@@ -60832,7 +60843,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   ballType: 0
   ballCode: 6
-  ballHit: {fileID: 8300000, guid: 985308ec2916b4af1ae23b6788c2df5a, type: 3}
+  ballHit: {fileID: 8300000, guid: 60a362644716c447bb1dc7413cfc90ea, type: 3}
   cushionHit: {fileID: 8300000, guid: 1da7aaefad7d84521886212b870223eb, type: 3}
 --- !u!135 &6603181659836592738
 SphereCollider:
@@ -62324,7 +62335,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   ballType: 1
   ballCode: 5
-  ballHit: {fileID: 8300000, guid: 985308ec2916b4af1ae23b6788c2df5a, type: 3}
+  ballHit: {fileID: 8300000, guid: 60a362644716c447bb1dc7413cfc90ea, type: 3}
   cushionHit: {fileID: 8300000, guid: 1da7aaefad7d84521886212b870223eb, type: 3}
 --- !u!135 &6820579325170544684
 SphereCollider:
@@ -65920,7 +65931,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   ballType: 1
   ballCode: 6
-  ballHit: {fileID: 8300000, guid: 985308ec2916b4af1ae23b6788c2df5a, type: 3}
+  ballHit: {fileID: 8300000, guid: 60a362644716c447bb1dc7413cfc90ea, type: 3}
   cushionHit: {fileID: 8300000, guid: 1da7aaefad7d84521886212b870223eb, type: 3}
 --- !u!135 &7305045896313566467
 SphereCollider:
@@ -66652,7 +66663,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   ballType: 0
   ballCode: 3
-  ballHit: {fileID: 8300000, guid: 985308ec2916b4af1ae23b6788c2df5a, type: 3}
+  ballHit: {fileID: 8300000, guid: 60a362644716c447bb1dc7413cfc90ea, type: 3}
   cushionHit: {fileID: 8300000, guid: 1da7aaefad7d84521886212b870223eb, type: 3}
 --- !u!135 &7390446099682070832
 SphereCollider:
@@ -67952,7 +67963,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   ballType: 3
   ballCode: 0
-  ballHit: {fileID: 8300000, guid: 985308ec2916b4af1ae23b6788c2df5a, type: 3}
+  ballHit: {fileID: 8300000, guid: 60a362644716c447bb1dc7413cfc90ea, type: 3}
   cushionHit: {fileID: 8300000, guid: 1da7aaefad7d84521886212b870223eb, type: 3}
 --- !u!135 &7574305134024747707
 SphereCollider:
@@ -69117,7 +69128,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   ballType: 1
   ballCode: 4
-  ballHit: {fileID: 8300000, guid: 985308ec2916b4af1ae23b6788c2df5a, type: 3}
+  ballHit: {fileID: 8300000, guid: 60a362644716c447bb1dc7413cfc90ea, type: 3}
   cushionHit: {fileID: 8300000, guid: 1da7aaefad7d84521886212b870223eb, type: 3}
 --- !u!135 &7687273896660388502
 SphereCollider:
@@ -75162,7 +75173,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   ballType: 0
   ballCode: 1
-  ballHit: {fileID: 8300000, guid: 985308ec2916b4af1ae23b6788c2df5a, type: 3}
+  ballHit: {fileID: 8300000, guid: 60a362644716c447bb1dc7413cfc90ea, type: 3}
   cushionHit: {fileID: 8300000, guid: 1da7aaefad7d84521886212b870223eb, type: 3}
 --- !u!135 &8552020169114793877
 SphereCollider:
@@ -76620,7 +76631,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   ballType: 0
   ballCode: 5
-  ballHit: {fileID: 8300000, guid: 985308ec2916b4af1ae23b6788c2df5a, type: 3}
+  ballHit: {fileID: 8300000, guid: 60a362644716c447bb1dc7413cfc90ea, type: 3}
   cushionHit: {fileID: 8300000, guid: 1da7aaefad7d84521886212b870223eb, type: 3}
 --- !u!135 &8657555610628098513
 SphereCollider:
@@ -79073,7 +79084,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   ballType: 0
   ballCode: 4
-  ballHit: {fileID: 8300000, guid: 985308ec2916b4af1ae23b6788c2df5a, type: 3}
+  ballHit: {fileID: 8300000, guid: 60a362644716c447bb1dc7413cfc90ea, type: 3}
   cushionHit: {fileID: 8300000, guid: 1da7aaefad7d84521886212b870223eb, type: 3}
 --- !u!135 &8929586816150956509
 SphereCollider:
@@ -79740,7 +79751,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   ballType: 1
   ballCode: 1
-  ballHit: {fileID: 8300000, guid: 985308ec2916b4af1ae23b6788c2df5a, type: 3}
+  ballHit: {fileID: 8300000, guid: 60a362644716c447bb1dc7413cfc90ea, type: 3}
   cushionHit: {fileID: 8300000, guid: 1da7aaefad7d84521886212b870223eb, type: 3}
 --- !u!135 &9010903651071513206
 SphereCollider:
@@ -81028,7 +81039,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   ballType: 0
   ballCode: 0
-  ballHit: {fileID: 8300000, guid: 985308ec2916b4af1ae23b6788c2df5a, type: 3}
+  ballHit: {fileID: 8300000, guid: 60a362644716c447bb1dc7413cfc90ea, type: 3}
   cushionHit: {fileID: 8300000, guid: 1da7aaefad7d84521886212b870223eb, type: 3}
 --- !u!135 &9149081972895308544
 SphereCollider:
@@ -81145,7 +81156,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 54240f879a32e40e89c076a84a13f119, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  pocketClip: {fileID: 8300000, guid: 9d7131d8745234aa395c7c1618f38cac, type: 3}
+  pocketClip: {fileID: 8300000, guid: 7ea63e6663bac4356a6ebd21fe5c3d69, type: 3}
 --- !u!65 &9160544120388240428
 BoxCollider:
   m_ObjectHideFlags: 0

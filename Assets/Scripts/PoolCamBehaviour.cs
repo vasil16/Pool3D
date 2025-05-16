@@ -195,7 +195,7 @@ public class PoolCamBehaviour : MonoBehaviour
                                 playerController.cueAnchor.transform.rotation = Quaternion.Euler(0, playerController.cueAnchor.transform.eulerAngles.y + smoothRotation, 0);
                                 transform.rotation = Quaternion.Euler(transform.eulerAngles.x, transform.eulerAngles.y + smoothRotation, transform.eulerAngles.z);
                                 return;
-                            }
+                            }                            
                         }
                     }
 
@@ -264,11 +264,11 @@ public class PoolCamBehaviour : MonoBehaviour
             }
             else if (swipeDirection == SwipeDirection.Up)
             {
-                transform.rotation = Quaternion.Euler(0, transform.eulerAngles.y, transform.eulerAngles.z + (time * 0.8f));
+                transform.rotation = Quaternion.Euler(0, transform.eulerAngles.y,transform.eulerAngles.z + (time * 0.8f));
             }
             else if (swipeDirection == SwipeDirection.Down)
             {
-                transform.rotation = Quaternion.Euler(0, transform.eulerAngles.y, transform.eulerAngles.z - (time * 0.8f));
+                transform.rotation = Quaternion.Euler(0, transform.eulerAngles.y,transform.eulerAngles.z - (time * 0.8f)    );
             }
             yield return null;
         }

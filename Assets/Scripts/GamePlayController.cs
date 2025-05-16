@@ -10,10 +10,10 @@ public class GamePlayController : MonoBehaviour
     public List<GameObject> balls, cpuBalls;
 
     [SerializeField] Vector4 clampTableBreak, clampTableNormal;
-    [SerializeField] private Vector3 lineRendererOffset, cueOgPos, cueOgRot, spinMarkOffset;
+    [SerializeField] private Vector3 cueOgPos, cueOgRot, spinMarkOffset;
     [SerializeField] private Vector2 deltaPosition, deltaPos;
     [SerializeField] private GameObject targetBall, cueBall, powerBar, aimDock, spinObj;
-    [SerializeField] private float rotationSpeed = 0.1f, powerMultiplier, maxDistance = 3, secMax = 2, cueBallRadius, ballRadius, ballYpos, dockYpos, extensionLength;
+    [SerializeField] private float rotationSpeed = 0.1f, powerMultiplier, cueBallRadius, ballRadius, ballYpos, dockYpos;
     [SerializeField] private Camera povCam;
     [SerializeField] private Transform forceAt;
     [SerializeField] private LineRenderer lineRenderer, linePlay;
@@ -30,7 +30,6 @@ public class GamePlayController : MonoBehaviour
     public bool isBreak = true;
     public bool dragPower, spun, hasSpin, isWaiting, pocketed, firstPot, updown, isFoul, firstBreak, gameOver, touchDisabled;
     private bool looked;
-    private int maxBounces = 2;
     private int rand;
 
     private Rigidbody ballR;
@@ -530,6 +529,7 @@ public class GamePlayController : MonoBehaviour
 
         if (isFoul)
         {
+            pocketed = false;
             StartCoroutine(FoulReset());            
             yield break;
         }
@@ -594,148 +594,103 @@ public class GamePlayController : MonoBehaviour
     #endregion
 
     #region aimlinerender
-    int points = 1;
     [SerializeField] float collDistance;
     [SerializeField] Vector3 fallPoint, newDir;
     public Vector3 direction, returnVector;
 
-    //void RenderTrajectory()
-    //{
-    //    Vector3 startPosition = cueBall.transform.position;
-    //    Vector3 aimForward = cueAnchor.transform.right;
-    //    Vector3 normalDir = aimForward.normalized;
 
-    //    lineRenderer.positionCount = 1;
-    //    lineRenderer.SetPosition(0, startPosition);
-    //    points = 1;
+    private List<Vector3> linePoints = new List<Vector3>();
+    public float maxStepDistance = 10f;      // Max distance for each raycast step
+    public float targetExtensionLength = 0.2f; // How far to draw the target ball line
 
-    //    Vector3 castOrigin = (ballR.position);
-
-    //    if (Physics.SphereCast(castOrigin, cueBallRadius, aimForward, out RaycastHit hit, 180f, ~LayerMask.GetMask("plane")))
-    //    {
-    //        points++;
-    //        if (points <= maxBounces)
-    //        {
-    //            collDistance = hit.distance;
-    //            fallPoint = startPosition + aimForward * collDistance;
-
-    //            Vector3 contactPoint = fallPoint - (aimForward * (cueBallRadius / 4));
-    //            lineRenderer.positionCount = points;
-    //            lineRenderer.SetPosition(points - 1, contactPoint);
-
-    //            if (hit.collider.CompareTag("playBall"))
-    //            {
-    //                aimDock.SetActive(true);
-    //                aimDock.transform.position = contactPoint;
-
-    //                Vector3 hitBallCenter = hit.collider.transform.position;
-
-    //                Vector3 collisionToCenter = (hitBallCenter - hit.point).normalized;
-
-    //                linePlay.positionCount = 2;
-    //                linePlay.SetPosition(0, hitBallCenter);
-
-    //                if (Physics.SphereCast(hitBallCenter, ballRadius, collisionToCenter, out RaycastHit hitBallPath, extensionLength))
-    //                {
-    //                    linePlay.SetPosition(1, hitBallPath.point);
-    //                }
-    //                else
-    //                {
-    //                    linePlay.SetPosition(1, hitBallCenter + (collisionToCenter * extensionLength));
-    //                }
-    //            }
-    //            else
-    //            {
-    //                aimDock.SetActive(false);
-    //                linePlay.positionCount = 0;
-    //            }
-    //        }
-    //    }
-    //    else
-    //    {
-    //        aimDock.SetActive(false);
-    //        Vector3 endPoint = startPosition + (normalDir * 180f);
-    //        lineRenderer.positionCount = 2;
-    //        lineRenderer.SetPosition(1, endPoint);
-    //        linePlay.positionCount = 0;
-    //    }
-    //}
+    [Header("Layer Masks")] // Optional header
+    [Tooltip("Layers that the trajectory prediction should interact with (Balls, Cushions)")]
+    public LayerMask collisionLayers; // Assign in Inspector (MUST INCLUDE BALLS AND CUSHIONS)
+    [Tooltip("The specific layer assigned to cushions/table edges")]
+    public LayerMask cushionLayer;    // Assign in Inspector (Cushions ONLY)
+    [Tooltip("The specific layer assigned to playable balls (excluding cue ball initially)")]
+    public LayerMask playBallLayer;   // Assign in Inspector (Playable Balls ONLY)
 
     void RenderTrajectory()
     {
-        Vector3 startPosition = cueBall.transform.position;
-        Vector3 aimForward = cueAnchor.transform.right;
+        // 1. Reset lines and dock at the very beginning
+        linePoints.Clear();
+        if (linePlay != null) linePlay.positionCount = 0;
+        if (aimDock != null) aimDock.SetActive(false);
 
-        // Reset line renderers
-        lineRenderer.positionCount = 1;
-        lineRenderer.SetPosition(0, startPosition);
-        points = 1;
-
-        // Use exact sphere cast from cue ball position
-        if (Physics.SphereCast(startPosition, cueBallRadius, aimForward, out RaycastHit hit, 180f, ~LayerMask.GetMask("plane")))
+        // Ensure essential components are assigned
+        if (cueBall == null || cueAnchor == null || lineRenderer == null)
         {
-            points++;
-            if (points <= maxBounces)
+            // Debug.LogError("RenderTrajectory: Essential components are not assigned.");
+            return;
+        }
+
+        // 2. Get initial position and direction
+        Vector3 currentPosition = cueBall.transform.position;
+        Vector3 currentDirection = cueAnchor.transform.right.normalized;
+
+        linePoints.Add(currentPosition); // Add the start point of the cue ball's path
+
+        // 3. Perform a single SphereCast for the cue ball's path
+        if (Physics.SphereCast(currentPosition, cueBallRadius, currentDirection, out RaycastHit hit, maxStepDistance, collisionLayers))
+        {
+            // Cue ball hit something. Its line stops at the contact point.
+            Vector3 cueBallSurfaceContactPoint = currentPosition + currentDirection * hit.distance;
+            linePoints.Add(cueBallSurfaceContactPoint);
+
+            GameObject hitObject = hit.collider.gameObject;
+            int hitLayerValue = 1 << hitObject.layer;
+
+            if ((playBallLayer.value & hitLayerValue) != 0)
             {
-                // Calculate exact contact point
-                Vector3 contactPoint = hit.point + (hit.normal * cueBallRadius);
-                Vector3 otherBallContactPoint = hit.point + (hit.normal * ballRadius);
+                Vector3 hitBallCenter = hit.collider.transform.position;
+                Vector3 cueBallCenterAtImpact = currentPosition + currentDirection * hit.distance;
+                Vector3 collisionNormal = (hitBallCenter - cueBallCenterAtImpact).normalized;
 
-                // Set cue ball trajectory
-                lineRenderer.positionCount = points;
-                lineRenderer.SetPosition(points - 1, contactPoint);
+                Vector3 velocityAlongNormal = Vector3.Project(currentDirection, collisionNormal);
+                Vector3 newTargetBallDirection = velocityAlongNormal.normalized;
 
-                if (hit.collider.CompareTag("playBall"))
+                if (linePlay != null) // Render target ball path if linePlay is assigned
+                {
+                    RenderTargetBallPath(hitBallCenter, newTargetBallDirection);
+                }
+
+                if (aimDock != null) // Activate and position aimDock if assigned
                 {
                     aimDock.SetActive(true);
-                    aimDock.transform.position = contactPoint;
-
-                    Vector3 hitBallPos = hit.collider.transform.position;
-
-                    // Calculate collision vectors
-                    Vector3 collisionNormal = (hitBallPos - otherBallContactPoint).normalized;
-
-                    // Calculate the impulse direction using physics formula
-                    float dotProduct = Vector3.Dot(aimForward, collisionNormal);
-                    Vector3 impactVector = aimForward - (2 * dotProduct * collisionNormal);
-
-                    // Calculate the target ball's new direction
-                    Vector3 targetBallDirection = (2 * dotProduct * collisionNormal).normalized;
-
-                    // Render target ball trajectory
-                    linePlay.positionCount = 2;
-                    linePlay.SetPosition(0, hitBallPos);
-
-                    // Check for any obstacles in target ball's path
-                    if (Physics.SphereCast(hitBallPos, ballRadius, targetBallDirection, out RaycastHit targetHit, extensionLength, ~LayerMask.GetMask("plane")))
-                    {
-                        Vector3 targetEndPoint = targetHit.point + (targetHit.normal * ballRadius);
-                        linePlay.SetPosition(1, targetEndPoint);
-                    }
-                    else
-                    {
-                        // If no obstacle, extend the line by specified length
-                        Vector3 targetEndPoint = hitBallPos + (targetBallDirection * extensionLength);
-                        linePlay.SetPosition(1, targetEndPoint);
-                    }
-                }
-                else
-                {
-                    aimDock.SetActive(false);
-                    linePlay.positionCount = 0;
+                    Vector3 targetBallSurfacePoint = hitBallCenter - collisionNormal * ballRadius;
+                    aimDock.transform.position = targetBallSurfacePoint;
                 }
             }
         }
+        else 
+        {
+            linePoints.Add(currentPosition + currentDirection * maxStepDistance);
+        }
+
+        lineRenderer.positionCount = linePoints.Count;
+        lineRenderer.SetPositions(linePoints.ToArray());
+    }
+
+    void RenderTargetBallPath(Vector3 startPos, Vector3 direction)
+    {
+        if (linePlay == null) return; // Safety check
+
+        linePlay.positionCount = 2;
+        linePlay.SetPosition(0, startPos);
+        if (Physics.SphereCast(startPos, ballRadius, direction, out RaycastHit targetHit, targetExtensionLength, collisionLayers))
+        {
+            // Target ball hits something, line ends at contact point
+            Vector3 targetBallSurfaceContact = startPos + direction * targetHit.distance;
+            linePlay.SetPosition(1, targetBallSurfaceContact);
+        }
         else
         {
-            // If no collision, show straight line
-            aimDock.SetActive(false);
-            Vector3 endPoint = startPosition + (aimForward * 180f);
-            lineRenderer.positionCount = 2;
-            lineRenderer.SetPosition(1, endPoint);
-            linePlay.positionCount = 0;
+            // Target ball doesn't hit anything, extend line by targetExtensionLength
+            linePlay.SetPosition(1, startPos + direction * targetExtensionLength);
         }
     }
+
     #endregion
 
 
