@@ -323,8 +323,8 @@ public class PoolCamBehaviour : MonoBehaviour
             deltaPos = touch.deltaPosition;
             if (Utils.IsPointerOverUIObject(touch.position) && RectTransformUtility.RectangleContainsScreenPoint(dragRotateRect, touch.position))
             {
-                playerController.cueAnchor.transform.rotation = Quaternion.Euler(0, playerController.cueAnchor.transform.eulerAngles.y + (deltaPos.x * rotationAmount), 0);
-                transform.rotation = Quaternion.Euler(transform.eulerAngles.x, transform.eulerAngles.y + (deltaPos.x * rotationAmount), transform.eulerAngles.z);
+                playerController.cueAnchor.transform.rotation = Quaternion.Euler(0, playerController.cueAnchor.transform.eulerAngles.y + (deltaPos.x * rotationAmount * Time.deltaTime), 0);
+                transform.rotation = Quaternion.Euler(transform.eulerAngles.x, transform.eulerAngles.y + (deltaPos.x * rotationAmount * Time.deltaTime), transform.eulerAngles.z);
                 return;
             }
             if (touch.phase == TouchPhase.Began)
