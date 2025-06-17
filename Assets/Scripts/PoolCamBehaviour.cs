@@ -164,13 +164,16 @@ public class PoolCamBehaviour : MonoBehaviour
                                 playerController.updown = true;
 
                                 float smoothRotation = deltaPos.y * rotationAmount * Time.deltaTime;
-                                transform.rotation = Quaternion.Euler(transform.eulerAngles.x, transform.eulerAngles.y, transform.eulerAngles.z + smoothRotation);
+                                float z = transform.eulerAngles.z;
+                                if (z > 180f) z -= 360f;
+                                float rotationZ = Mathf.Clamp(z + smoothRotation, -45f,15f);
+                                transform.rotation = Quaternion.Euler(transform.eulerAngles.x, transform.eulerAngles.y, rotationZ);
                                 return;
                             }
                             else
                             {
                                 playerController.updown = false;
-                                float smoothRotation = deltaPos.x * rotationAmount * Time.deltaTime;
+                                float smoothRotation = deltaPos.x * rotationAmount * Time.deltaTime;                                
                                 playerController.cueAnchor.transform.rotation = Quaternion.Euler(0, playerController.cueAnchor.transform.eulerAngles.y + smoothRotation, 0);
                                 transform.rotation = Quaternion.Euler(transform.eulerAngles.x, transform.eulerAngles.y + smoothRotation, transform.eulerAngles.z);
                                 return;
@@ -257,7 +260,7 @@ public class PoolCamBehaviour : MonoBehaviour
     {
         Ease ease = Ease.OutSine;
         float duration = .5f;
-        float rotationAmt = 10f;
+        float rotationAmt = 15f;
         if (swipeDirection == SwipeDirection.Left)
         {
             playerController.cueAnchor.transform.DORotateQuaternion(Quaternion.Euler(0, transform.eulerAngles.y - rotationAmt,0), duration).SetEase(ease);
@@ -268,13 +271,13 @@ public class PoolCamBehaviour : MonoBehaviour
             playerController.cueAnchor.transform.DORotateQuaternion(Quaternion.Euler(0, transform.eulerAngles.y + rotationAmt, 0), duration).SetEase(ease);
             transform.DORotateQuaternion(Quaternion.Euler(0, transform.eulerAngles.y + rotationAmt, transform.eulerAngles.z), duration).SetEase(ease);
         }
-        else if (swipeDirection == SwipeDirection.Up)
+        else if (swipeDirection == SwipeDirection.Up || swipeDirection == SwipeDirection.Down)
         {
-            transform.DORotateQuaternion (Quaternion.Euler(0, transform.eulerAngles.y, transform.eulerAngles.z + rotationAmt),duration).SetEase(ease);
-        }
-        else if (swipeDirection == SwipeDirection.Down)
-        {
-            transform.DORotateQuaternion (Quaternion.Euler(0, transform.eulerAngles.y, transform.eulerAngles.z - rotationAmt),duration).SetEase(ease);
+            float z = transform.eulerAngles.z;
+            if (z > 180f) z -= 360f;
+            float direction = swipeDirection == SwipeDirection.Up ? 1f : -1f;
+            float targetZ = Mathf.Clamp(z + rotationAmt * direction, -45f, 15f);
+            transform.DORotateQuaternion(Quaternion.Euler(0, transform.eulerAngles.y, targetZ),duration).SetEase(ease);
         }
         yield return null;
         

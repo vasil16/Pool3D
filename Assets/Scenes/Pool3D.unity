@@ -1279,10 +1279,10 @@ MonoBehaviour:
   button2: {fileID: 1359565883}
   titleActivePos: {x: 0, y: 52}
   titlehiddenPos: {x: 0, y: 828}
-  button1ActivePos: {x: 0, y: -216.6278}
-  button1HiddenPos: {x: 0, y: -707}
-  button2ActivePos: {x: 0, y: -378}
-  button2HiddenPos: {x: 0, y: -833}
+  button1ActivePos: {x: -315, y: 344}
+  button1HiddenPos: {x: 279, y: 344}
+  button2ActivePos: {x: -315, y: 189}
+  button2HiddenPos: {x: 279, y: 189}
 --- !u!1 &186681682
 GameObject:
   m_ObjectHideFlags: 0
@@ -6074,10 +6074,10 @@ RectTransform:
   - {fileID: 342900658}
   m_Father: {fileID: 1761063377}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0.5, y: 0.5}
-  m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: -833}
-  m_SizeDelta: {x: 445.3849, y: 102.5659}
+  m_AnchorMin: {x: 1, y: 0}
+  m_AnchorMax: {x: 1, y: 0}
+  m_AnchoredPosition: {x: 279, y: 189}
+  m_SizeDelta: {x: 445.3849, y: 102.56592}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1359565886
 MonoBehaviour:
@@ -9872,10 +9872,10 @@ RectTransform:
   - {fileID: 1253560450}
   m_Father: {fileID: 1761063377}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0.5, y: 0.5}
-  m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: -707}
-  m_SizeDelta: {x: 445.3849, y: 102.5659}
+  m_AnchorMin: {x: 1, y: 0}
+  m_AnchorMax: {x: 1, y: 0}
+  m_AnchoredPosition: {x: 279, y: 344}
+  m_SizeDelta: {x: 445.3849, y: 102.56592}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &2091403451
 MonoBehaviour:
@@ -69052,9 +69052,9 @@ MeshCollider:
     serializedVersion: 2
     m_Bits: 0
   m_LayerOverridePriority: 0
-  m_IsTrigger: 1
+  m_IsTrigger: 0
   m_ProvidesContacts: 0
-  m_Enabled: 1
+  m_Enabled: 0
   serializedVersion: 5
   m_Convex: 1
   m_CookingOptions: 30
