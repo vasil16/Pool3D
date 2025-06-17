@@ -118,6 +118,8 @@ public class GameManager : MonoBehaviour
 
     public void ClosePlacePop()
     {
+        if (!playerController.CueBallValid()) return;
+        
         foreach (GameObject ball in playerController.balls)
         {
             ball.GetComponent<Rigidbody>().isKinematic = false;

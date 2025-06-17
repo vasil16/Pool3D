@@ -165,7 +165,7 @@ PlayerSettings:
   applicationIdentifier:
     Android: com.xD.pool3d
     Standalone: com.Unity-Technologies.com.unity.template.urp-blank
-    iPhone: com.xd.ios.pool3d
+    iPhone: com.xd.pool3d
   buildNumber:
     Standalone: 0
     VisionOS: 0

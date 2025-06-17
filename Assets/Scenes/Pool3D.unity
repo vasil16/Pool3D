@@ -3494,6 +3494,7 @@ MonoBehaviour:
   playBallLayer:
     serializedVersion: 2
     m_Bits: 128
+  aimWidth: -0.01
 --- !u!4 &829709662
 Transform:
   m_ObjectHideFlags: 0
@@ -6380,7 +6381,7 @@ MonoBehaviour:
   minFov: 15
   maxFov: 90
   zoomSpeed: 0.115
-  rotationAmount: 1
+  rotationAmount: 0.5
   rotationThreshold: 1
   gameState: 0
   swipeDirection: 0

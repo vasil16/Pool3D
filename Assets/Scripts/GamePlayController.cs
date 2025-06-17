@@ -2,6 +2,8 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
+using DG.Tweening;
+
 
 public class GamePlayController : MonoBehaviour
 {
@@ -233,21 +235,24 @@ public class GamePlayController : MonoBehaviour
     IEnumerator LookAtTarget(GameObject obj)
     {
         time = 0;
-        duration = 1.1f;
+        duration = .8f;
         targetBall = obj;
         Vector3 direction = targetBall.transform.position - cueAnchor.transform.position;
         direction.y = 0;
         direction.Normalize();
 
         Quaternion newRotation = Quaternion.LookRotation(direction);
+        cueAnchor.transform.DORotateQuaternion(Quaternion.Euler(0, newRotation.eulerAngles.y - 90, 0), duration).SetEase(Ease.OutSine);
 
-        while (time < duration)
-        {
-            time += Time.deltaTime;
-            float t = Mathf.SmoothStep(0, 1, time / duration);
-            cueAnchor.transform.rotation = Quaternion.Slerp(cueAnchor.transform.rotation, Quaternion.Euler(0, newRotation.eulerAngles.y - 90, 0), t);
-            yield return null;
-        }
+
+        //while (time < duration)
+        //{
+        //    time += Time.deltaTime;
+        //    float t = Mathf.SmoothStep(0, 1, time / duration);
+        //    cueAnchor.transform.rotation = Quaternion.Slerp(cueAnchor.transform.rotation, Quaternion.Euler(0, newRotation.eulerAngles.y - 90, 0), t);
+        //    yield return null;
+        //}
+        yield return null;
         looked = false;
     }
 
@@ -479,13 +484,15 @@ public class GamePlayController : MonoBehaviour
 
         slingDuration = Mathf.Lerp(0.4f, 0.24f, hitPower / power.maxValue);
 
-        while (time <= slingDuration)
-        {
-            time += Time.smoothDeltaTime;
-            float t = Mathf.SmoothStep(0, 1, time / slingDuration);
-            cue.transform.localPosition = Vector3.Lerp(startPos, cueOgPos, t);
-            yield return null;
-        }
+        //while (time <= slingDuration)
+        //{
+        //    time += Time.smoothDeltaTime;
+        //    float t = Mathf.SmoothStep(0, 1, time / slingDuration);
+        //    cue.transform.localPosition = Vector3.Lerp(startPos, cueOgPos, t);
+        //    yield return null;
+        //}
+
+        cue.transform.DOLocalMove(cueOgPos, slingDuration).SetEase(Ease.OutSine);
 
         isWaiting = true;
         powerBar.SetActive(false);
@@ -591,6 +598,19 @@ public class GamePlayController : MonoBehaviour
         yield return null;
     }
 
+    public bool CueBallValid()
+    {
+        for(int i=0;i<balls.Count-1;i++)
+        {
+            if (balls[i].GetComponent<MeshRenderer>().bounds.Contains(cueBall.transform.position))
+            {
+                Debug.Log("issue");
+                return false;
+            }
+        }
+        return true;
+    }
+
     #endregion
 
     #region aimlinerender
@@ -601,7 +621,7 @@ public class GamePlayController : MonoBehaviour
 
     private List<Vector3> linePoints = new List<Vector3>();
     public float maxStepDistance = 10f;
-    public float targetExtensionLength = 0.2f;
+    public float targetExtensionLength = 0.01f;
 
     [Header("Layer Masks")]
     [Tooltip("Layers that the trajectory prediction should interact with (Balls, Cushions)")]
@@ -610,6 +630,8 @@ public class GamePlayController : MonoBehaviour
     public LayerMask cushionLayer;
     [Tooltip("The specific layer assigned to playable balls (excluding cue ball initially)")]
     public LayerMask playBallLayer;
+
+    public float aimWidth= 0.03f;
 
     void RenderTrajectory()
     {
@@ -653,7 +675,8 @@ public class GamePlayController : MonoBehaviour
                 {
                     aimDock.SetActive(true);
                     Vector3 targetBallSurfacePoint = hitBallCenter - collisionNormal * ballRadius*2;
-                    aimDock.transform.position = lineCue.GetPosition(lineCue.positionCount - 1);
+                    Vector3 dockPos = currentPosition + currentDirection * (hit.distance-aimWidth);
+                    aimDock.transform.position = dockPos;
                     //aimDock.transform.position = targetBallSurfacePoint;
                 }
             }
@@ -673,15 +696,16 @@ public class GamePlayController : MonoBehaviour
 
         linePath.positionCount = 2;
         linePath.SetPosition(0, startPos);
-        if (Physics.SphereCast(startPos, ballRadius, direction, out RaycastHit targetHit, targetExtensionLength, collisionLayers))
+        linePath.SetPosition(1, startPos + direction * 0.3f);
+        if (Physics.SphereCast(startPos, ballRadius, direction, out RaycastHit targetHit, .1f, playBallLayer))
         {
             Vector3 targetBallSurfaceContact = startPos + direction * targetHit.distance;
             linePath.SetPosition(1, targetBallSurfaceContact);
         }
-        else
-        {
-            linePath.SetPosition(1, startPos + direction * .003f);
-        }
+        //else
+        //{
+        //    linePath.SetPosition(1, startPos + direction * .00000001f);
+        //}
     }
 
     #endregion

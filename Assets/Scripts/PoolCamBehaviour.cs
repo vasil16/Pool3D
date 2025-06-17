@@ -1,5 +1,7 @@
 using System.Collections;
 using UnityEngine;
+using DG.Tweening;
+
 
 public class PoolCamBehaviour : MonoBehaviour
 {
@@ -21,14 +23,6 @@ public class PoolCamBehaviour : MonoBehaviour
 
     private bool isZoomingIn = false;
     private bool isZoomingOut = false;
-
-
-    enum Target
-    {
-        CueBall,
-        CueStuck,
-        Null
-    }
 
     public enum GameState
     {
@@ -61,16 +55,6 @@ public class PoolCamBehaviour : MonoBehaviour
 
     void Update()
     {
-        //if (isZoomingIn)
-        //{
-        //    ZoomIn();
-        //}
-
-        //if (isZoomingOut)
-        //{
-        //    ZoomOut();
-        //}
-
         tCount = Input.touchCount;
 
         switch (gameState)
@@ -78,13 +62,6 @@ public class PoolCamBehaviour : MonoBehaviour
             case GameState.Break:
                 Break();
                 return;
-
-            //case GameState.Hit:
-            //    if (gameState != prevState)
-            //    {
-            //        //StartCoroutine(FollowBall());
-            //    }
-            //    break;
 
             case GameState.Aim:
                 FollowStick();
@@ -119,15 +96,17 @@ public class PoolCamBehaviour : MonoBehaviour
         Vector3 endPos = new Vector3(-2.18f, 1.44f, 0);
         float velocity = 0f;
 
-        while (time < duration)
-        {
-            time += Time.deltaTime;
-            float smoothT = Mathf.SmoothDamp(0, 1, ref velocity, duration);
-            transform.GetChild(0).localPosition = Vector3.Lerp(startPos, endPos, time/duration);
-            yield return null; 
-        }
+        //while (time < duration)
+        //{
+        //    time += Time.deltaTime;
+        //    float smoothT = Mathf.SmoothDamp(0, 1, ref velocity, duration);
+        //    transform.GetChild(0).localPosition = Vector3.Lerp(startPos, endPos, time/duration);
+        //    yield return null; 
+        //}
 
-        transform.GetChild(0).localPosition = endPos;
+        transform.GetChild(0).DOLocalMove(endPos, 1f);
+
+        //transform.GetChild(0).localPosition = endPos;
     }
 
     void CameraAction()
@@ -246,33 +225,61 @@ public class PoolCamBehaviour : MonoBehaviour
         timerRunning = false;
     }
 
+    //IEnumerator MoveEffect()
+    //{
+    //    float time = 1;
+    //    while (time >= 0)
+    //    {
+    //        time -= Time.deltaTime;
+    //        if (swipeDirection == SwipeDirection.Left)
+    //        {
+    //            playerController.cueAnchor.transform.rotation = Quaternion.Euler(0, transform.eulerAngles.y - (time * 0.8f), 0);
+    //            transform.rotation = Quaternion.Euler(0, transform.eulerAngles.y - (time * 0.8f), transform.eulerAngles.z);
+    //        }
+    //        else if (swipeDirection == SwipeDirection.Right)
+    //        {
+    //            playerController.cueAnchor.transform.rotation = Quaternion.Euler(0, transform.eulerAngles.y + (time * 0.8f), 0);
+    //            transform.rotation = Quaternion.Euler(0, transform.eulerAngles.y + (time * 0.8f), transform.eulerAngles.z);
+    //        }
+    //        else if (swipeDirection == SwipeDirection.Up)
+    //        {
+    //            transform.rotation = Quaternion.Euler(0, transform.eulerAngles.y,transform.eulerAngles.z + (time * 0.8f));
+    //        }
+    //        else if (swipeDirection == SwipeDirection.Down)
+    //        {
+    //            transform.rotation = Quaternion.Euler(0, transform.eulerAngles.y,transform.eulerAngles.z - (time * 0.8f)    );
+    //        }
+    //        yield return null;
+    //    }
+    //}
+
     IEnumerator MoveEffect()
     {
-        float time = 1;
-        while (time >= 0)
+        Ease ease = Ease.OutSine;
+        float duration = .5f;
+        float rotationAmt = 10f;
+        if (swipeDirection == SwipeDirection.Left)
         {
-            time -= Time.deltaTime;
-            if (swipeDirection == SwipeDirection.Left)
-            {
-                playerController.cueAnchor.transform.rotation = Quaternion.Euler(0, transform.eulerAngles.y - (time * 0.8f), 0);
-                transform.rotation = Quaternion.Euler(0, transform.eulerAngles.y - (time * 0.8f), transform.eulerAngles.z);
-            }
-            else if (swipeDirection == SwipeDirection.Right)
-            {
-                playerController.cueAnchor.transform.rotation = Quaternion.Euler(0, transform.eulerAngles.y + (time * 0.8f), 0);
-                transform.rotation = Quaternion.Euler(0, transform.eulerAngles.y + (time * 0.8f), transform.eulerAngles.z);
-            }
-            else if (swipeDirection == SwipeDirection.Up)
-            {
-                transform.rotation = Quaternion.Euler(0, transform.eulerAngles.y,transform.eulerAngles.z + (time * 0.8f));
-            }
-            else if (swipeDirection == SwipeDirection.Down)
-            {
-                transform.rotation = Quaternion.Euler(0, transform.eulerAngles.y,transform.eulerAngles.z - (time * 0.8f)    );
-            }
-            yield return null;
+            playerController.cueAnchor.transform.DORotateQuaternion(Quaternion.Euler(0, transform.eulerAngles.y - rotationAmt,0), duration).SetEase(ease);
+            transform.DORotateQuaternion (Quaternion.Euler(0, transform.eulerAngles.y - rotationAmt, transform.eulerAngles.z),duration).SetEase(ease);
         }
+        else if (swipeDirection == SwipeDirection.Right)
+        {
+            playerController.cueAnchor.transform.DORotateQuaternion(Quaternion.Euler(0, transform.eulerAngles.y + rotationAmt, 0), duration).SetEase(ease);
+            transform.DORotateQuaternion(Quaternion.Euler(0, transform.eulerAngles.y + rotationAmt, transform.eulerAngles.z), duration).SetEase(ease);
+        }
+        else if (swipeDirection == SwipeDirection.Up)
+        {
+            transform.DORotateQuaternion (Quaternion.Euler(0, transform.eulerAngles.y, transform.eulerAngles.z + rotationAmt),duration).SetEase(ease);
+        }
+        else if (swipeDirection == SwipeDirection.Down)
+        {
+            transform.DORotateQuaternion (Quaternion.Euler(0, transform.eulerAngles.y, transform.eulerAngles.z - rotationAmt),duration).SetEase(ease);
+        }
+        yield return null;
+        
     }
+
 
     #region Zoom
 
@@ -364,7 +371,7 @@ public class PoolCamBehaviour : MonoBehaviour
         }
     }
 
-    IEnumerator slideInOut()
+    IEnumerator slideInOut(int index=0)
     {
         float actualZPos = transform.position.z;
         float zOffset = touchDelta.x < 0 ? 0.03f : -0.03f;
@@ -383,26 +390,31 @@ public class PoolCamBehaviour : MonoBehaviour
             transform.position = new Vector3(transform.position.x, transform.position.y, Mathf.Lerp(zOffset, actualZPos, t2 / dur));
             yield return null;
         }
+        //transform.DOMoveZ(zOffset, .2f).SetEase(Ease.OutSine).OnComplete(() =>
+        //{
+        //    transform.DOMoveZ(actualZPos, .8f).SetEase(Ease.OutSine).OnComplete(() => cut = false);
+        //});
+        //yield return null;
         cut = false;
     }
 
     IEnumerator slideUpDown()
     {
-        float actualZPos = transform.position.x;
-        float zOffset = touchDelta.y < 0 ? 0.03f : -0.03f;
-        zOffset += actualZPos;
+        float actualXPos = transform.position.x;
+        float xOffset = touchDelta.y < 0 ? -0.03f : 0.03f;
+        xOffset += actualXPos;
         float duration = 0.1f, dur = 0.4f;
         float time = 0, t2 = 0;
         while (time <= duration)
         {
             time += Time.deltaTime;
-            transform.position = new Vector3(Mathf.Lerp(actualZPos, zOffset, time / duration), transform.position.y, transform.position.z);
+            transform.position = new Vector3(Mathf.Lerp(actualXPos, xOffset, time / duration), transform.position.y, transform.position.z);
             yield return null;
         }
         while (t2 <= dur)
         {
             t2 += Time.deltaTime;
-            transform.position = new Vector3(Mathf.Lerp(zOffset, actualZPos, t2 / dur), transform.position.y, transform.position.z);
+            transform.position = new Vector3(Mathf.Lerp(xOffset, actualXPos, t2 / dur), transform.position.y, transform.position.z);
             yield return null;
         }
         cut = false;
@@ -417,8 +429,8 @@ public class PoolCamBehaviour : MonoBehaviour
 
     public IEnumerator AfterHit()
     {
-        float time = 0;
-        float duration = .8f;
+        //float time = 0;
+        float duration = 1f;
         Vector3 currentPos = transform.position;
         Quaternion currentRot = transform.rotation;
 
@@ -446,31 +458,38 @@ public class PoolCamBehaviour : MonoBehaviour
             cpuWaitRotation = cpuWaitRotations[0];
         }
 
-        while (time <= duration)
-        {
-            time += Time.deltaTime;
-            float t = Mathf.SmoothStep(0, 1, time / duration);
-            transform.position = Vector3.Lerp(currentPos, cpuWaitPosition, t);
-            transform.rotation = Quaternion.Slerp(currentRot, Quaternion.Euler(cpuWaitRotation), t);
-            yield return null;
-        }
-        doneCameraMove = true;
+        //while (time <= duration)
+        //{
+        //    time += Time.deltaTime;
+        //    float t = Mathf.SmoothStep(0, 1, time / duration);
+        //    transform.position = Vector3.Lerp(currentPos, cpuWaitPosition, t);
+        //    transform.rotation = Quaternion.Slerp(currentRot, Quaternion.Euler(cpuWaitRotation), t);
+        //    yield return null;
+        //}
+
+        transform.DORotate(cpuWaitRotation, duration).SetEase(Ease.OutSine);
+        transform.DOMove(cpuWaitPosition, duration).SetEase(Ease.OutSine).OnComplete(()=>doneCameraMove=true);
+        yield return null;
+        //doneCameraMove = true;
     }
 
     IEnumerator ResetCam()
     {
         Vector3 startPos = transform.position;
         Quaternion startRotation = transform.rotation;
-        float time = 0;
+        //float time = 0;
         float duration = 0.3f;
-        while (time <= duration)
-        {
-            time += Time.smoothDeltaTime;
-            float t = Mathf.SmoothStep(0, 1, time / duration);
-            transform.position = Vector3.Slerp(startPos, cueStick.position + stickFollowOffset, t);
-            transform.rotation = Quaternion.Slerp(startRotation, Quaternion.Euler(0, cueStick.eulerAngles.y, 0), t);
-            yield return null;
-        }
-        gameState = GameState.Aim;
+        //while (time <= duration)
+        //{
+        //    time += Time.smoothDeltaTime;
+        //    float t = Mathf.SmoothStep(0, 1, time / duration);
+        //    transform.position = Vector3.Slerp(startPos, cueStick.position + stickFollowOffset, t);
+        //    transform.rotation = Quaternion.Slerp(startRotation, Quaternion.Euler(0, cueStick.eulerAngles.y, 0), t);
+        //    yield return null;
+        //}
+        transform.DORotateQuaternion(Quaternion.Euler(0, cueStick.eulerAngles.y, 0), duration).SetEase(Ease.OutSine);
+        transform.DOMove(cueStick.position + stickFollowOffset, duration).SetEase(Ease.OutSine).OnComplete(() => gameState = GameState.Aim);
+        yield return null;
+        //gameState = GameState.Aim;
     }
 }
