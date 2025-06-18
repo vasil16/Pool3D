@@ -64,6 +64,7 @@ public class PoolCamBehaviour : MonoBehaviour
                 return;
 
             case GameState.Aim:
+                playerController.RenderTrajectory();
                 FollowStick();
                 break;
 
@@ -256,9 +257,12 @@ public class PoolCamBehaviour : MonoBehaviour
     //    }
     //}
 
+    //public Ease easeType;
+
     IEnumerator MoveEffect()
     {
         Ease ease = Ease.OutSine;
+        //ease = easeType;
         float duration = .5f;
         float rotationAmt = 15f;
         if (swipeDirection == SwipeDirection.Left)

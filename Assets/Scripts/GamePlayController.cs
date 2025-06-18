@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
 using DG.Tweening;
+using System;
 
 
 public class GamePlayController : MonoBehaviour
@@ -57,6 +58,7 @@ public class GamePlayController : MonoBehaviour
         //cueBallRadius = cueBall.GetComponent<MeshRenderer>().bounds.extents.x;
         cueBallRadius = cueBall.GetComponent<SphereCollider>().radius * cueBall.transform.localScale.x;
         ballRadius = balls[2].GetComponent<MeshRenderer>().bounds.extents.x;
+        //ballRadius = balls[2].GetComponent<SphereCollider>().radius * balls[2].transform.localScale.x;
         PlayerPrefs.DeleteAll();
     }
 
@@ -102,17 +104,7 @@ public class GamePlayController : MonoBehaviour
     void Update()
     {
         if (!manager || manager.players[manager.currentPlayer].name == "CPU") return;
-
         HandleTouchInput();
-        if (isWaiting)
-        {
-            lineCue.positionCount = 0;
-            linePath.positionCount = 0;
-            aimDock.SetActive(false);
-            return;
-        }
-
-        RenderTrajectory();
     }
 
     public void StartGame()
@@ -473,6 +465,7 @@ public class GamePlayController : MonoBehaviour
 
     #region GameMech
     float slingDuration;
+
     public IEnumerator PlayShot()
     {
         if (hitPower <= 5) yield break;
@@ -504,7 +497,8 @@ public class GamePlayController : MonoBehaviour
         Vector3 offset = forceAt.position - spinMark.transform.position;
         Vector3 spinDirection = Vector3.Cross(direction, offset.normalized);
         ballR.AddForceAtPosition(direction * hitPower * .008f, spinMark.transform.position, ForceMode.Impulse);
-        ballR.AddTorque(spinDirection * hitPower * 0.008f, ForceMode.Impulse);
+        //ballR.AddTorque(spinDirection * hitPower * 0.008f, ForceMode.Impulse);
+        DisableLine();
         StartCoroutine(ResetCue());
     }
 
@@ -544,7 +538,7 @@ public class GamePlayController : MonoBehaviour
         pocketed = false;
         isBreak = false;
         firstBreak = false;
-        rand = Random.Range(0, balls.Count - 1);
+        rand = UnityEngine.Random.Range(0, balls.Count - 1);
         targetBall = balls[rand];
 
         cueAnchor.transform.SetParent(cueBall.transform);
@@ -633,8 +627,15 @@ public class GamePlayController : MonoBehaviour
 
     public float aimWidth= 0.03f;
 
-    void RenderTrajectory()
+    public void DisableLine()
     {
+        lineCue.positionCount = 0;
+        linePath.positionCount = 0;
+        aimDock.SetActive(false);
+    }
+
+    public void RenderTrajectory()
+    { 
         linePoints.Clear();
         if (linePath != null) linePath.positionCount = 0;
         if (aimDock != null) aimDock.SetActive(false);
@@ -674,10 +675,8 @@ public class GamePlayController : MonoBehaviour
                 if (aimDock != null)
                 {
                     aimDock.SetActive(true);
-                    Vector3 targetBallSurfacePoint = hitBallCenter - collisionNormal * ballRadius*2;
                     Vector3 dockPos = currentPosition + currentDirection * (hit.distance-aimWidth);
                     aimDock.transform.position = dockPos;
-                    //aimDock.transform.position = targetBallSurfacePoint;
                 }
             }
         }
@@ -696,20 +695,86 @@ public class GamePlayController : MonoBehaviour
 
         linePath.positionCount = 2;
         linePath.SetPosition(0, startPos);
-        linePath.SetPosition(1, startPos + direction * 0.3f);
-        if (Physics.SphereCast(startPos, ballRadius, direction, out RaycastHit targetHit, .1f, playBallLayer))
+        linePath.SetPosition(1, startPos + direction * 0.2f);
+        if (Physics.SphereCast(startPos, ballRadius, direction, out RaycastHit targetHit, .1f, collisionLayers))
         {
-            Vector3 targetBallSurfaceContact = startPos + direction * targetHit.distance;
+            Vector3 targetBallSurfaceContact = startPos + direction * .2f;
             linePath.SetPosition(1, targetBallSurfaceContact);
         }
         //else
         //{
         //    linePath.SetPosition(1, startPos + direction * .00000001f);
         //}
-    }
+    }    
 
     #endregion
 
+    #region helpers
+
+    //public float velocityThreshold = 0.01f;
+    //public float settleTime = 0.5f;
+    //public float checkInterval = 0.1f;
+
+    //public event Action OnAllBallsStopped;
+
+    //private Coroutine checkRoutine;
+
+    //public void BeginMonitoring()
+    //{
+    //    if (checkRoutine != null)
+    //        StopCoroutine(checkRoutine);
+
+    //    checkRoutine = StartCoroutine(CheckBallsRoutine());
+    //}
+
+    //private IEnumerator CheckBallsRoutine()
+    //{
+    //    float timer = 0f;
+
+    //    while (true)
+    //    {
+    //        bool allBelowThreshold = true;
+
+    //        foreach (GameObject ball in balls)
+    //        {
+    //            Rigidbody rb = ball.GetComponent<Rigidbody>();
+    //            if (!rb || !rb.gameObject.activeInHierarchy)
+    //                continue;
+
+    //            if (rb.velocity.sqrMagnitude > velocityThreshold * velocityThreshold ||
+    //                rb.angularVelocity.sqrMagnitude > velocityThreshold * velocityThreshold)
+    //            {
+    //                allBelowThreshold = false;
+    //                break;
+    //            }
+    //        }
+
+    //        if (allBelowThreshold)
+    //        {
+    //            timer += checkInterval;
+    //            if (timer >= settleTime)
+    //                break;
+    //        }
+    //        else
+    //        {
+    //            timer = 0f;
+    //        }
+
+    //        yield return new WaitForSeconds(checkInterval);
+    //    }
+
+    //    checkRoutine = null;
+    //    OnAllBallsStopped?.Invoke();
+    //}
+
+    //public void StopMonitoring()
+    //{
+    //    if (checkRoutine != null)
+    //    {
+    //        StopCoroutine(checkRoutine);
+    //        checkRoutine = null;
+    //    }
+    //}
 
     public bool BallStopped()
     {
@@ -723,4 +788,6 @@ public class GamePlayController : MonoBehaviour
         }
         return true;
     }
+
+    #endregion
 }
