@@ -270,200 +270,213 @@ public class GamePlayController : MonoBehaviour
         yield return null;
     }
 
+    public List<CpuShotOption> debugShotOptions = new List<CpuShotOption>();
+
     IEnumerator HandleCpuPlay()
     {
         poolCam.gameState = PoolCamBehaviour.GameState.Waiting;
         yield return new WaitUntil(() => poolCam.doneCameraMove);
         poolCam.doneCameraMove = false;
+
         if (firstBreak)
         {
-            Debug.Log("fbr");
             hitPower = power.maxValue;
             yield return new WaitForSeconds(1.7f);
             StartCoroutine(PlayShot());
+            yield break;
+        }
+
+        yield return new WaitForSeconds(1f);
+        var bestShot = EvaluateAllPossibleShots();
+
+        if (bestShot == null)
+        {
+            Debug.Log("No valid shots.");
+            yield break;
+        }
+
+        lockedBall = bestShot.ball;
+        lockedPocket = bestShot.pocket;
+        hitPoint = bestShot.hitPoint;
+
+        Debug.Log($"CPU selected: {lockedBall.name} -> {lockedPocket.name}, Score: {bestShot.score:F2}");
+
+        Vector3 cueDirection = (hitPoint - cueBall.transform.position).normalized;
+        cueDirection.y = 0;
+        cue.SetActive(true);
+        Quaternion newRotation = Quaternion.LookRotation(cueDirection);
+        newRotation = Quaternion.Euler(0, newRotation.eulerAngles.y - 90, 0);
+
+        float elapsedTime = 0f;
+        float rotationDuration = 0.5f;
+        Quaternion startRotation = cueAnchor.transform.rotation;
+
+        while (elapsedTime < rotationDuration)
+        {
+            elapsedTime += Time.deltaTime;
+            cueAnchor.transform.rotation = Quaternion.Slerp(startRotation, newRotation, elapsedTime / rotationDuration);
+            yield return null;
+        }
+
+        yield return new WaitForSeconds(1f);
+        //hitPower = 80f;
+        Vector3 cueDir = (hitPoint - cueBall.transform.position).normalized;
+        float basePower = 120f;
+        float cueBallFactor = 1.2f;
+        float ballToPocketFactor = 1.8f;
+        float anglePenalty = Mathf.Clamp01(1f - Mathf.Abs(Vector3.Dot(cueDir.normalized, (lockedPocket.position - lockedBall.position).normalized)));
+
+        float cueDistance = Vector3.Distance(cueBall.transform.position, hitPoint);
+        float ballDistance = Vector3.Distance(lockedBall.position, lockedPocket.position);
+
+        // Main power equation
+        float calculatedPower = basePower + (cueDistance * cueBallFactor) + (ballDistance * ballToPocketFactor) + (anglePenalty * 40f);
+
+        // Clamp to prevent overhit
+        hitPower = Mathf.Clamp(calculatedPower, 50f, 200f);
+        yield return new WaitForSeconds(0.6f);
+        StartCoroutine(PlayShot());
+    }
+
+    CpuShotOption EvaluateAllPossibleShots()
+    {
+        List<GameObject> cpuPlayableBalls;
+        if (manager.player2.pocketedBalls.Count == 7)
+        {
+            cpuPlayableBalls =  new()
+            {
+                balls[7]
+            };
         }
         else
         {
-            yield return new WaitForSeconds(1f);
-            do
-            {
-                Debug.Log("selecting ball");
-
-                if (firstPot)
-                {
-                    System.Random random = new System.Random();
-                    //int randomIndex = Random.Range(0, balls.Count-1);
-                    int randomIndex = random.Next(0, balls.Count - 1);
-                    lockedBall = balls[randomIndex].transform;
-                }
-                else
-                {
-                    //int randomIndex = Random.Range(0, cpuBalls.Count);
-                    System.Random random = new System.Random();
-                    int randomIndex = random.Next(0, cpuBalls.Count);
-                    lockedBall = cpuBalls[randomIndex].transform;
-                }
-
-                if (lockedBall.gameObject.activeInHierarchy && BallPlayable(lockedBall.gameObject))
-                {
-                    if (lockedBall.GetComponent<BallBehaviour>().ballType == BallBehaviour.BallType.black && manager.player2.pocketedBalls.Count != 7)
-                    {
-                        playableBallFound = false;
-                    }
-                    else
-                    {
-                        playableBallFound = true;
-                        Debug.Log("Playable ball found: " + lockedBall.gameObject.name);
-                    }
-                }
-                yield return null;
-            }
-            while (!playableBallFound);
-
-            if (lockedPocket == null)
-            {
-                Debug.Log("No pocket selected");
-                direction = lockedBall.transform.position - cueBall.transform.position;
-            }
-
-            else
-            {
-                Debug.Log("Chosen ball: " + lockedBall.gameObject);
-                Debug.Log("Chosen pocket: " + lockedPocket.gameObject);
-
-                Vector3 pocketDirection = (lockedPocket.transform.position - lockedBall.transform.position).normalized;
-
-                hitPoint = lockedBall.transform.position - (pocketDirection * (ballRadius + cueBallRadius));
-
-                Vector3 cueDirection = (hitPoint - cueBall.transform.position).normalized;
-                cueDirection.y = 0;
-                cue.SetActive(true);
-                Quaternion newRotation = Quaternion.LookRotation(cueDirection);
-                newRotation = Quaternion.Euler(0, newRotation.eulerAngles.y - 90, 0);
-
-                float rotationDuration = 0.5f; // Adjust for smoothness
-                float elapsedTime = 0;
-
-                Quaternion startRotation = cueAnchor.transform.rotation;
-
-                while (elapsedTime < rotationDuration)
-                {
-                    elapsedTime += Time.deltaTime;
-                    cueAnchor.transform.rotation = Quaternion.Slerp(startRotation, newRotation, elapsedTime / rotationDuration);
-                    yield return null;
-                }
-            }
-
-            yield return new WaitForSeconds(1f);
-            hitPower = 80;
-
-            yield return new WaitForSeconds(0.6f);
-            StartCoroutine(PlayShot());
+            cpuPlayableBalls = firstPot ? balls : cpuBalls;
         }
-        yield return null;
+        debugShotOptions.Clear();
+        List<CpuShotOption> shotOptions = new List<CpuShotOption>();
+
+        foreach (GameObject ball in cpuPlayableBalls)
+        {
+            if (!ball.activeInHierarchy) continue;         
+
+            foreach (GameObject pocket in pockets)
+            {
+                if (!IsShotPossible(ball, pocket)) continue;
+
+                Vector3 cueToBall = (ball.transform.position - cueBall.transform.position).normalized;
+                Vector3 ballToPocket = (pocket.transform.position - ball.transform.position).normalized;
+
+                float cueAlignment = Vector3.Dot(cueToBall, ballToPocket);
+                if (cueAlignment < 0.5f) continue;
+
+                Vector3 hitPoint = HitPoint(ball.transform.position, pocket.transform.position);
+                float cueDist = Vector3.Distance(cueBall.transform.position, hitPoint);
+
+                Vector3 cueDir = (hitPoint - cueBall.transform.position).normalized;
+                if (Physics.SphereCast(cueBall.transform.position, cueBallRadius * 0.95f, cueDir, out RaycastHit hit, cueDist))
+                {
+                    if (hit.collider.CompareTag("playBall") && hit.collider.transform != ball.transform)
+                    {
+                        Debug.Log($"⚠️ Blocked on final aim: {ball.name} to {pocket.name} by {hit.collider.name}");
+                        continue; // reject this shot
+                    }
+                }
+
+                float pocketDist = Vector3.Distance(ball.transform.position, pocket.transform.position);
+                float alignment = Vector3.Dot(cueToBall, ballToPocket);
+
+                float score = (alignment * 100f) + (cueAlignment * 80f) - (cueDist * 1.2f) - (pocketDist * 1.5f);
+
+                CpuShotOption option = new CpuShotOption(ball.transform, pocket.transform, hitPoint, cueDist, pocketDist, alignment, cueAlignment, score);
+                shotOptions.Add(option);
+                debugShotOptions.Add(option);
+
+                Debug.DrawLine(cueBall.transform.position, hitPoint, Color.green, 2f);
+                Debug.DrawLine(ball.transform.position, pocket.transform.position, Color.yellow, 2f);
+            }
+        }
+
+        if (shotOptions.Count > 0)
+        {
+            shotOptions.Sort((a, b) => b.score.CompareTo(a.score));
+            return shotOptions[0];
+        }
+        else
+        {
+            foreach (GameObject ball in cpuPlayableBalls)
+            {
+                if (!ball.activeInHierarchy) continue;
+
+                foreach (GameObject pocket in pockets)
+                {
+                    Vector3 dir = (pocket.transform.position - ball.transform.position).normalized;
+                    Vector3 fallbackHitPoint = ball.transform.position - dir * (2 * ballRadius);
+
+                    float cueToBallDist = Vector3.Distance(cueBall.transform.position, fallbackHitPoint);
+                    float ballToPocketDist = Vector3.Distance(ball.transform.position, pocket.transform.position);
+                    float alignment = Vector3.Dot((ball.transform.position - cueBall.transform.position).normalized, dir);
+                    float cueAlign = alignment;
+
+                    float fallbackScore = -1000f; // super low to mark it as fallback
+
+                    var fallbackShot = new CpuShotOption(ball.transform, pocket.transform, fallbackHitPoint,
+                        cueToBallDist, ballToPocketDist, alignment, cueAlign, fallbackScore);
+
+                    debugShotOptions.Add(fallbackShot);
+                    return fallbackShot;
+                }
+            }
+        }
+        return null;
     }
+
+    bool IsShotPossible(GameObject ball, GameObject pocket)
+    {
+        // Ball to pocket
+        Vector3 ballToPocket = (pocket.transform.position - ball.transform.position).normalized;
+        RaycastHit[] pocketHits = ball.GetComponent<Rigidbody>().SweepTestAll(ballToPocket);
+
+        foreach (RaycastHit hit in pocketHits)
+        {
+            if (hit.collider.CompareTag("playBall") || hit.collider.CompareTag("cushion"))
+                return false;
+        }
+
+        // Cue to ball
+        Vector3 cueDir = (ball.transform.position - cueBall.transform.position).normalized;
+        float cueDist = Vector3.Distance(cueBall.transform.position, ball.transform.position);
+
+        if (Physics.SphereCast(cueBall.transform.position, cueBallRadius * 0.95f, cueDir, out RaycastHit hitCue, cueDist))
+        {
+            if (hitCue.collider.CompareTag("playBall") && hitCue.transform.gameObject != ball)
+                return false;
+        }
+
+        // Angle logic
+        Vector3 cueToBall = (ball.transform.position - cueBall.transform.position).normalized;
+        Vector3 ballToPocketDir = (pocket.transform.position - ball.transform.position).normalized;
+
+        float dot = Vector3.Dot(cueToBall, ballToPocketDir);
+        return dot > 0.3f;
+    }
+
 
     Vector3 HitPoint(Vector3 ballPos, Vector3 pocketPos)
     {
-        Vector3 pocketDirection = (pocketPos - ballPos).normalized;
+        Vector3 ballToPocket = (pocketPos - ballPos).normalized;
 
-        Vector3 newPoint = ballPos - (pocketDirection * (ballRadius + cueBallRadius));
-        return newPoint;
+        // Ghost ball position = where cue ball center should be to send object ball into pocket
+        Vector3 ghostBallPos = ballPos - ballToPocket * (2f * ballRadius);
+
+        return ghostBallPos;
     }
 
-
-    public bool pos = false;
-
-    bool BallPlayable(GameObject ball = null)
-    {
-        pos = false;
-        for (int i = 0; i < 6; i++)
-        {
-            GameObject activePocket = pockets[i];
-
-            Vector3 pocketDirection = (activePocket.transform.position - ball.transform.position).normalized;
-            RaycastHit[] hitResultsPocket = ball.GetComponent<Rigidbody>().SweepTestAll(pocketDirection);
-
-            bool isPocketBlocked = false;
-            foreach (RaycastHit hit in hitResultsPocket)
-            {
-                if (hit.collider.CompareTag("playBall") || hit.collider.CompareTag("cushion"))
-                {
-                    Debug.Log("Pocket blocked for " + ball.name + " for " + activePocket.name + " by " + hit.transform.gameObject.name);
-                    isPocketBlocked = true;
-                    break;
-                }
-            }
-
-            if (isPocketBlocked)
-            {
-                continue;
-            }
-
-            Vector3 hittingDirection = (HitPoint(ball.transform.position, activePocket.transform.position) - cueBall.transform.position).normalized;
-            RaycastHit[] hitResultsCue = Physics.SphereCastAll(cueBall.transform.position, cueBallRadius, hittingDirection);
-
-            bool isCueBlocked = false;
-            foreach (RaycastHit hit in hitResultsCue)
-            {
-                if ((hit.collider.CompareTag("playBall") && hit.transform.gameObject.name != ball.gameObject.name))
-                {
-                    Debug.Log("cue ball blocked for " + ball.name + " for " + activePocket.name + " by " + hit.transform.gameObject.name);
-                    isCueBlocked = true;
-                    break;
-                }
-            }
-
-            if (isCueBlocked)
-            {
-                continue;
-            }
-
-            if (!IsPocketInFrontOfBallAndCue(ball, activePocket))
-            {
-                Debug.Log("no pockets for " + ball.name + " for " + activePocket.name);
-                continue;
-            }
-
-            lastPocketDirection = activePocket.transform.position;
-            lastHittingDirection = ball.transform.position;
-            lockedPocket = activePocket.transform;
-            pos = true;
-
-            Debug.Log("Pocket chosen for " + ball.name + ": " + activePocket.name);
-            return true;
-        }
-        return pos;
-    }
-
-
-    bool IsPocketInFrontOfBallAndCue(GameObject ball, GameObject activePocket)
-    {
-        Vector3 ballToPocket;
-        Vector3 cueToBall;
-
-        ballToPocket = (activePocket.transform.position - ball.transform.position).normalized;
-        cueToBall = (ball.transform.position - cueBall.transform.position).normalized;
-
-        bool isPocketInFrontOfBall = Vector3.Dot(ballToPocket, (ball.transform.position - cueBall.transform.position).normalized) > 0;
-
-        // If the pocket is in front of the ball, check if the ball is in front of the cue ball
-        if (isPocketInFrontOfBall)
-        {
-            Debug.Log("dir first");
-            return Vector3.Dot(cueToBall, (activePocket.transform.position - ball.transform.position).normalized) > 0;
-        }
-        else
-        {
-            Debug.Log("dir second");
-            // If the pocket is behind the ball, check if the cue ball is in front of the selected ball
-            return Vector3.Dot(cueToBall, ballToPocket) > 0;
-        }
-    }
 
     #endregion
 
     #region GameMech
+
+    Vector3 testDirectionPoint;
     float slingDuration;
 
     public IEnumerator PlayShot()
@@ -496,8 +509,12 @@ public class GamePlayController : MonoBehaviour
         //forceAt.position = spinMark.transform.position;
         Vector3 offset = forceAt.position - spinMark.transform.position;
         Vector3 spinDirection = Vector3.Cross(direction, offset.normalized);
+
         ballR.AddForceAtPosition(direction * hitPower * .008f, spinMark.transform.position, ForceMode.Impulse);
-        //ballR.AddTorque(spinDirection * hitPower * 0.008f, ForceMode.Impulse);
+
+        Debug.DrawRay(cueBall.transform.position, direction * 2f, Color.red, 3f); // Actual applied direction
+        Debug.DrawRay(cueBall.transform.position, cueAnchor.transform.right * 2f, Color.cyan, 3f); // Aim line direction
+        ballR.AddTorque(spinDirection * hitPower * 0.008f, ForceMode.Impulse);
         DisableLine();
         StartCoroutine(ResetCue());
     }
@@ -634,16 +651,17 @@ public class GamePlayController : MonoBehaviour
         aimDock.SetActive(false);
     }
 
+    [Range(-0.2f, 0.2f)]
+    public float visualInaccuracyOffset = 0.05f; // +ve shifts right, -ve shifts left
+
     public void RenderTrajectory()
-    { 
+    {
         linePoints.Clear();
         if (linePath != null) linePath.positionCount = 0;
         if (aimDock != null) aimDock.SetActive(false);
 
         if (cueBall == null || cueAnchor == null || lineCue == null)
-        {
             return;
-        }
 
         Vector3 currentPosition = cueBall.transform.position;
         Vector3 currentDirection = cueAnchor.transform.right.normalized;
@@ -653,6 +671,7 @@ public class GamePlayController : MonoBehaviour
         if (Physics.SphereCast(currentPosition, cueBallRadius, currentDirection, out RaycastHit hit, maxStepDistance, collisionLayers))
         {
             Vector3 cueBallSurfaceContactPoint = currentPosition + currentDirection * hit.distance;
+            Debug.DrawRay(hit.point, hit.point - hit.collider.transform.position, Color.red);
             linePoints.Add(cueBallSurfaceContactPoint);
 
             GameObject hitObject = hit.collider.gameObject;
@@ -662,50 +681,51 @@ public class GamePlayController : MonoBehaviour
             {
                 Vector3 hitBallCenter = hit.collider.transform.position;
                 Vector3 cueBallCenterAtImpact = currentPosition + currentDirection * hit.distance;
-                Vector3 collisionNormal = (hitBallCenter - cueBallCenterAtImpact).normalized;
 
-                Vector3 velocityAlongNormal = Vector3.Project(currentDirection, collisionNormal);
-                Vector3 newTargetBallDirection = velocityAlongNormal.normalized;
+                // The correct travel direction
+                Vector3 objectBallTravelDir = (hitBallCenter - cueBallCenterAtImpact).normalized;
+
+                // Apply visual offset (left or right)
+                Vector3 sideOffset = Vector3.Cross(Vector3.up, objectBallTravelDir).normalized;
+                Vector3 adjustedDirection = (objectBallTravelDir + sideOffset * visualInaccuracyOffset).normalized;
 
                 if (linePath != null)
                 {
-                    RenderTargetBallPath(hitBallCenter, newTargetBallDirection);
+                    RenderTargetBallPath(hitBallCenter, objectBallTravelDir);
+                    //RenderTargetBallPath(hit.collider.transform.position, hit.point);
                 }
 
                 if (aimDock != null)
                 {
                     aimDock.SetActive(true);
-                    Vector3 dockPos = currentPosition + currentDirection * (hit.distance-aimWidth);
+                    Vector3 dockPos = currentPosition + currentDirection * (hit.distance - aimWidth);
                     aimDock.transform.position = dockPos;
                 }
             }
         }
-        else 
+        else
         {
             linePoints.Add(currentPosition + currentDirection * maxStepDistance);
         }
 
         lineCue.positionCount = linePoints.Count;
+        testDirectionPoint = lineCue.GetPosition(lineCue.positionCount - 1);
         lineCue.SetPositions(linePoints.ToArray());
     }
 
     void RenderTargetBallPath(Vector3 startPos, Vector3 direction)
     {
-        if (linePath == null) return; 
-
+        if (linePath == null) return;
         linePath.positionCount = 2;
         linePath.SetPosition(0, startPos);
         linePath.SetPosition(1, startPos + direction * 0.2f);
+
         if (Physics.SphereCast(startPos, ballRadius, direction, out RaycastHit targetHit, .1f, collisionLayers))
         {
             Vector3 targetBallSurfaceContact = startPos + direction * .2f;
             linePath.SetPosition(1, targetBallSurfaceContact);
         }
-        //else
-        //{
-        //    linePath.SetPosition(1, startPos + direction * .00000001f);
-        //}
-    }    
+    }
 
     #endregion
 
@@ -791,3 +811,39 @@ public class GamePlayController : MonoBehaviour
 
     #endregion
 }
+
+#region helperClass
+
+[System.Serializable]
+public class CpuShotOption
+{
+    public string ballName;
+    public string pocketName;
+    public Transform ball;
+    public Transform pocket;
+    public Vector3 hitPoint;
+    public float cueToBallDistance;
+    public float ballToPocketDistance;
+    public float alignment;
+    public float cueAlignment;
+    public float score;
+
+    public CpuShotOption(
+        Transform ball, Transform pocket, Vector3 hitPoint,
+        float cueToBallDistance, float ballToPocketDistance,
+        float alignment, float cueAlignment, float score)
+    {
+        this.ball = ball;
+        this.pocket = pocket;
+        this.hitPoint = hitPoint;
+        this.ballName = ball.name;
+        this.pocketName = pocket.name;
+        this.cueToBallDistance = cueToBallDistance;
+        this.ballToPocketDistance = ballToPocketDistance;
+        this.alignment = alignment;
+        this.cueAlignment = cueAlignment;
+        this.score = score;
+    }
+}
+#endregion
+

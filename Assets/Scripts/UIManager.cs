@@ -6,7 +6,8 @@ using DG.Tweening;
 public class UIManager : MonoBehaviour
 {
     
-    [SerializeField] GameObject homePanel, gameplayPanel, gameStartPanel, gameLogic;
+    [SerializeField] RectTransform homePanel,playPanel , gameplayPanel, gameStartPanel;
+    [SerializeField] GameObject gameLogic;
     int index;
 
     [Header("MainMenu")]
@@ -15,7 +16,7 @@ public class UIManager : MonoBehaviour
 
     private void Start()
     {
-        AnimateUIEntry();
+        //AnimateUIEntry();
     }
 
     void AnimateUIEntry()
@@ -40,16 +41,17 @@ public class UIManager : MonoBehaviour
         foreach(Transform t in homePanel.transform)
         {
             this.index = index;
-            AnimateUIExit(PlayButtonCallback);            
+            //AnimateUIExit(PlayButtonCallback);
+            PlayButtonCallback();
         }
     }
 
     void PlayButtonCallback()
     {
-        homePanel.SetActive(false);
-        gameplayPanel.SetActive(true);
-        gameStartPanel.SetActive(true);
-        gameLogic.SetActive(true);
+        homePanel.gameObject.SetActive(false);
+        gameplayPanel.gameObject.SetActive(true);
+        gameStartPanel.gameObject.SetActive(true);
+        gameLogic.gameObject.SetActive(true);
         GameManager.instance.gameMode = index == 0 ? GameManager.GameMode.players : GameManager.GameMode.cpu;
         //GameObject.FindObjectOfType<PoolCamBehaviour>().SetInitialCameraAnim();
         if (index==1)
@@ -57,6 +59,13 @@ public class UIManager : MonoBehaviour
             Debug.Log("vs cpu");
             GameManager.instance.SetCpu();
         }
+    }
+
+    public void OpenPlayPanel()
+    {
+        homePanel.DOAnchorPos(new Vector2(-2000, 0), 0.7f).SetEase(Ease.InBack).OnComplete(()=>homePanel.gameObject.SetActive(false));
+        playPanel.gameObject.SetActive(true);
+        playPanel.DOAnchorPos(new Vector2(0, 0), 0.7f).SetEase(Ease.InBack);
     }
    
 }
