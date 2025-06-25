@@ -79,7 +79,7 @@ public class GameManager : MonoBehaviour
         player2 = new Player(p2, p2Balls, netPlayer2);
         players[CurrentPlayer.player1] = player1;
         players[CurrentPlayer.player2] = player2;
-        StartCoroutine(Toss());
+        StartCoroutine(TossOnline());
     }
 
     private IEnumerator Toss()
@@ -88,13 +88,6 @@ public class GameManager : MonoBehaviour
         yield return null;
         int rand = UnityEngine.Random.Range(0, 2);
         currentPlayer = (CurrentPlayer)rand;
-
-        if (gameMode == GameMode.online && runner.IsServer)
-        {
-            playerController.manager = this;
-            players[currentPlayer].netPlayer.IsTurn = true;
-            players[GetOpponent(currentPlayer)].netPlayer.IsTurn = false;
-        }
 
         playerController.isWaiting = true;
         playerIndicator[rand].SetActive(true);
@@ -108,7 +101,30 @@ public class GameManager : MonoBehaviour
         {
             playerController.StartCPUMode();
         }
+    }
 
+    private IEnumerator TossOnline()
+    {
+        Debug.Log("toss tt");
+        yield return null;
+        int rand = UnityEngine.Random.Range(0, 2);
+        currentPlayer = (CurrentPlayer)rand;
+
+        playerController.manager = this;
+        players[currentPlayer].netPlayer.IsTurn = true;
+        players[GetOpponent(currentPlayer)].netPlayer.IsTurn = false;
+
+        playerController.isWaiting = true;
+        playerIndicator[rand].SetActive(true);
+
+        tossTxt.text = $"{players[currentPlayer].name} will break";
+        yield return LerpTextAlpha(tossTxt, 0, 1, 2);
+
+        if(IsLocalPlayersTurn())
+        {
+            placeBallPop.SetActive(players[currentPlayer].name != "CPU");
+        }
+        tossTxt.gameObject.SetActive(false);
     }
 
     private IEnumerator LerpTextAlpha(Text text, float startAlpha, float endAlpha, float duration)

@@ -56,7 +56,6 @@ public class GamePlayController : MonoBehaviour
         ballR = cueBall.GetComponent<Rigidbody>();
         cueBallRadius = cueBall.GetComponent<SphereCollider>().radius * cueBall.transform.localScale.x;
         ballRadius = balls[2].GetComponent<MeshRenderer>().bounds.extents.x;
-        PlayerPrefs.DeleteAll();
     }
 
     #region helperGizmos
@@ -101,7 +100,14 @@ public class GamePlayController : MonoBehaviour
     void Update()
     {
         if (!manager || manager.players[manager.currentPlayer].name == "CPU") return;
-        HandleTouchInput();
+        if(manager.gameMode==GameManager.GameMode.online)
+        {
+
+        }
+        else
+        {
+            HandleTouchInput();
+        }
     }
 
     public void StartGame()

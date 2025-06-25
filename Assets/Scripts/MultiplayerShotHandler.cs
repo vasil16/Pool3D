@@ -69,7 +69,7 @@ public class MultiplayerShotHandler : MonoBehaviour
         cueAnchor.transform.SetParent(cueBall.transform);
         cueAnchor.transform.localPosition = Vector3.zero;
         cueAnchor.transform.SetParent(null);
-        //if your turn
+
         if (manager.IsLocalPlayersTurn())
         {
             cue.SetActive(true);
@@ -80,7 +80,7 @@ public class MultiplayerShotHandler : MonoBehaviour
                 StartCoroutine(LookAtTarget(balls[0]));
             }
         }
-        //if end
+
     }
 
     #region InputHandle
