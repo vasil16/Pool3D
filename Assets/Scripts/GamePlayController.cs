@@ -5,7 +5,6 @@ using TMPro;
 using DG.Tweening;
 using System;
 
-
 public class GamePlayController : MonoBehaviour
 {
     public static GamePlayController instance;
@@ -24,7 +23,7 @@ public class GamePlayController : MonoBehaviour
     [SerializeField] private PowerControl power;
     [SerializeField] private RectTransform spinRect, circleRect, spinIndicator;
     [SerializeField] public TextMeshProUGUI player1Txt, player2Txt;
-    [SerializeField] public GameObject[] playerIndicator, pockets;
+    [SerializeField] public GameObject[] pockets;
     [SerializeField] LayerMask closeMask;
     [SerializeField] public AudioSource gameAudio;
     [SerializeField] public AudioClip cueHit, rolling;
@@ -55,10 +54,8 @@ public class GamePlayController : MonoBehaviour
     {
         cueOgPos = cue.transform.localPosition;
         ballR = cueBall.GetComponent<Rigidbody>();
-        //cueBallRadius = cueBall.GetComponent<MeshRenderer>().bounds.extents.x;
         cueBallRadius = cueBall.GetComponent<SphereCollider>().radius * cueBall.transform.localScale.x;
         ballRadius = balls[2].GetComponent<MeshRenderer>().bounds.extents.x;
-        //ballRadius = balls[2].GetComponent<SphereCollider>().radius * balls[2].transform.localScale.x;
         PlayerPrefs.DeleteAll();
     }
 
@@ -476,7 +473,6 @@ public class GamePlayController : MonoBehaviour
 
     #region GameMech
 
-    Vector3 testDirectionPoint;
     float slingDuration;
 
     public IEnumerator PlayShot()
@@ -484,19 +480,10 @@ public class GamePlayController : MonoBehaviour
         if (hitPower <= 5) yield break;
 
         poolCam.gameState = PoolCamBehaviour.GameState.Hit;
-        float time = 0;
         spinObj.SetActive(false);
         Vector3 startPos = cue.transform.localPosition;
 
         slingDuration = Mathf.Lerp(0.4f, 0.24f, hitPower / power.maxValue);
-
-        //while (time <= slingDuration)
-        //{
-        //    time += Time.smoothDeltaTime;
-        //    float t = Mathf.SmoothStep(0, 1, time / slingDuration);
-        //    cue.transform.localPosition = Vector3.Lerp(startPos, cueOgPos, t);
-        //    yield return null;
-        //}
 
         cue.transform.DOLocalMove(cueOgPos, slingDuration).SetEase(Ease.OutSine);
 
@@ -506,16 +493,30 @@ public class GamePlayController : MonoBehaviour
         Vector3 direction = cueAnchor.transform.right.normalized;
         cue.SetActive(false);
         gameAudio.PlayOneShot(cueHit);
-        //forceAt.position = spinMark.transform.position;
         Vector3 offset = forceAt.position - spinMark.transform.position;
         Vector3 spinDirection = Vector3.Cross(direction, offset.normalized);
 
         ballR.AddForceAtPosition(direction * hitPower * .008f, spinMark.transform.position, ForceMode.Impulse);
 
-        Debug.DrawRay(cueBall.transform.position, direction * 2f, Color.red, 3f); // Actual applied direction
-        Debug.DrawRay(cueBall.transform.position, cueAnchor.transform.right * 2f, Color.cyan, 3f); // Aim line direction
         ballR.AddTorque(spinDirection * hitPower * 0.008f, ForceMode.Impulse);
         DisableLine();
+        StartCoroutine(ResetCue());
+    }
+
+    public void PlaySyncedShot(Vector3 direction, float power, Vector3 spin)
+    {
+        spinObj.SetActive(false);
+        cue.SetActive(false);
+        powerBar.SetActive(false);
+
+        gameAudio.PlayOneShot(cueHit);
+
+        Vector3 offset = forceAt.position - spin;
+        Vector3 spinDirection = Vector3.Cross(direction, offset.normalized);
+
+        ballR.AddForceAtPosition(direction * power * .008f, spin, ForceMode.Impulse);
+        ballR.AddTorque(spinDirection * power * 0.008f, ForceMode.Impulse);
+
         StartCoroutine(ResetCue());
     }
 
@@ -539,11 +540,10 @@ public class GamePlayController : MonoBehaviour
 
         if (!pocketed || isFoul)
         {
-            manager.currentPlayer = manager.GetOpponent(manager.currentPlayer);
+            manager.SwitchTurn();
         }
 
-        playerIndicator[(int)manager.currentPlayer].SetActive(true);
-        playerIndicator[(int)manager.GetOpponent(manager.currentPlayer)].SetActive(false);
+        manager.SetIndicator();
 
         if (isFoul)
         {
@@ -709,7 +709,6 @@ public class GamePlayController : MonoBehaviour
         }
 
         lineCue.positionCount = linePoints.Count;
-        testDirectionPoint = lineCue.GetPosition(lineCue.positionCount - 1);
         lineCue.SetPositions(linePoints.ToArray());
     }
 

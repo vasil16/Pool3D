@@ -1,18 +1,38 @@
 using System;
-using System.Collections.Generic;
+using System.Threading.Tasks;
 using UnityEngine;
 using DG.Tweening;
+using Fusion;
+using System.Collections;
+using TMPro;
+using UnityEngine.SceneManagement;
 
 public class UIManager : MonoBehaviour
 {
+    public static UIManager instance;
     
     [SerializeField] RectTransform homePanel,playPanel , gameplayPanel, gameStartPanel;
-    [SerializeField] GameObject gameLogic;
+    [SerializeField] GameObject gameManager, multiplayerPanel, networkObject;
+    [SerializeField] TMP_InputField nameInput;
+    [SerializeField] TextMeshProUGUI statusText;
     int index;
 
     [Header("MainMenu")]
     [SerializeField] RectTransform title, button1, button2;
     [SerializeField] Vector2 titleActivePos, titlehiddenPos, button1ActivePos, button1HiddenPos, button2ActivePos, button2HiddenPos;
+
+    private void Awake()
+    {
+        if(instance==null)
+        {
+            instance = this;
+            DontDestroyOnLoad(this.gameObject);
+        }
+        else
+        {
+            Destroy(this);
+        }
+    }
 
     private void Start()
     {
@@ -42,8 +62,8 @@ public class UIManager : MonoBehaviour
         {
             this.index = index;
             //AnimateUIExit(PlayButtonCallback);
-            PlayButtonCallback();
         }
+        PlayButtonCallback();
     }
 
     void PlayButtonCallback()
@@ -51,15 +71,95 @@ public class UIManager : MonoBehaviour
         homePanel.gameObject.SetActive(false);
         gameplayPanel.gameObject.SetActive(true);
         gameStartPanel.gameObject.SetActive(true);
-        gameLogic.gameObject.SetActive(true);
-        GameManager.instance.gameMode = index == 0 ? GameManager.GameMode.players : GameManager.GameMode.cpu;
+        gameManager.gameObject.SetActive(true);
+        GameManager.instance.gameMode = index == 0 ? GameManager.GameMode.offline : GameManager.GameMode.cpu;
         //GameObject.FindObjectOfType<PoolCamBehaviour>().SetInitialCameraAnim();
         if (index==1)
         {
             Debug.Log("vs cpu");
-            GameManager.instance.SetCpu();
         }
     }
+
+    public void PlayOnlineCallback()
+    {
+        gameManager.SetActive(true);
+        GameManager.instance.gameMode = GameManager.GameMode.online;
+        multiplayerPanel.gameObject.SetActive(true);
+        networkObject.gameObject.SetActive(true);             
+    }
+
+    public void FindMatch()
+    {
+        string playerName = nameInput.text.Trim();
+        if (string.IsNullOrEmpty(playerName))
+        {
+            statusText.text = "Please enter a name.";
+            return;
+        }
+
+        GameManager.instance.localPlayerName = playerName;
+        statusText.text = "Searching for opponent...";
+        //findMatchButton.interactable = false;
+        statusText.text = "Searching for opponent...";
+        nameInput.interactable = false;
+
+        StartCoroutine(InitOnlineGame()); // Starts Fusion networking
+    }
+
+    IEnumerator InitOnlineGame()
+    {
+        yield return new WaitForSeconds(0.3f); // Optional delay
+        StartGame(); // Starts the actual online session
+    }
+
+   
+    private NetworkRunner _runner;
+
+    async void StartGame()
+    {
+        // Create
+        // the Fusion runner and let it know that we will be providing user input
+
+        _runner = gameObject.AddComponent<NetworkRunner>();
+        _runner.ProvideInput = true;
+        _runner.AddCallbacks(networkObject.GetComponent<NetworkPlayersHandler>());
+        GameManager.instance.runner = _runner;
+        // Create the NetworkSceneInfo from the current scene
+        var scene = SceneRef.FromIndex(SceneManager.GetActiveScene().buildIndex);
+        var sceneInfo = new NetworkSceneInfo();
+        if (scene.IsValid)
+        {
+            sceneInfo.AddSceneRef(scene, LoadSceneMode.Additive);
+        }
+
+        // Start or join (depends on gamemode) a session with a specific name
+        var result = await _runner.StartGame(new StartGameArgs()
+        {
+            GameMode = GameMode.AutoHostOrClient,
+            SessionName = "TestRoom",
+            Scene = scene,
+            SceneManager = gameObject.AddComponent<NetworkSceneManagerDefault>()
+        });
+
+        if (result.Ok)
+        {
+            Debug.Log("Fusion: Game started successfully.");
+        }
+        else
+        {
+            Debug.LogError($"Fusion: Failed to start - {result.ShutdownReason}");
+        }
+    }
+
+    public void StartOnline()
+    {
+        statusText.text = "match found, starting game";
+        homePanel.gameObject.SetActive(false);
+        multiplayerPanel.gameObject.SetActive(false);
+        gameplayPanel.gameObject.SetActive(true);
+        gameStartPanel.gameObject.SetActive(true);        
+    }
+
 
     public void OpenPlayPanel()
     {

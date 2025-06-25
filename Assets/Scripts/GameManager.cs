@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
+using Fusion;
 
 public class GameManager : MonoBehaviour
 {
@@ -16,6 +17,9 @@ public class GameManager : MonoBehaviour
     [SerializeField] Sprite[] solidBalls;
     [SerializeField] Sprite[] stripeBalls;
     [SerializeField] Image[] p1Balls, p2Balls;
+    [SerializeField] GameObject[] playerIndicator;
+    public string localPlayerName;
+    public NetworkRunner runner;
 
     public int ballhitCount;
 
@@ -30,14 +34,15 @@ public class GameManager : MonoBehaviour
 
     private GamePlayController playerController;
 
-    public enum GameMode { players, cpu }
+    public enum GameMode { offline, cpu, online }
     public enum CurrentPlayer { player1, player2 }
 
     private void Awake()
     {
         instance = this;
+        //if (gameMode == GameMode.online) return;
         playerController = GamePlayController.instance;
-        playerController.manager = this;
+        //playerController.manager = this;
     }
 
     private void OnEnable()
@@ -47,7 +52,16 @@ public class GameManager : MonoBehaviour
 
     private void Start()
     {
-        SetupPlayers();        
+        if(gameMode == GameMode.online)
+        {
+            //runner = FindObjectOfType<NetworkRunner>();
+        }
+        else
+        {
+            playerController = GamePlayController.instance;
+            playerController.manager = this;
+            SetupPlayers();
+        }
     }
 
     private void SetupPlayers()
@@ -59,24 +73,42 @@ public class GameManager : MonoBehaviour
         StartCoroutine(Toss());
     }
 
+    public void SetupOnlinePlayers(string p1, string p2, NetworkPlayer netPlayer1, NetworkPlayer netPlayer2)
+    {
+        player1 = new Player(p1, p1Balls, netPlayer1);
+        player2 = new Player(p2, p2Balls, netPlayer2);
+        players[CurrentPlayer.player1] = player1;
+        players[CurrentPlayer.player2] = player2;
+        StartCoroutine(Toss());
+    }
+
     private IEnumerator Toss()
     {
         Debug.Log("toss tt");
         yield return null;
         int rand = UnityEngine.Random.Range(0, 2);
         currentPlayer = (CurrentPlayer)rand;
+
+        if (gameMode == GameMode.online && runner.IsServer)
+        {
+            playerController.manager = this;
+            players[currentPlayer].netPlayer.IsTurn = true;
+            players[GetOpponent(currentPlayer)].netPlayer.IsTurn = false;
+        }
+
         playerController.isWaiting = true;
-        playerController.playerIndicator[rand].SetActive(true);
+        playerIndicator[rand].SetActive(true);
 
         tossTxt.text = $"{players[currentPlayer].name} will break";
         yield return LerpTextAlpha(tossTxt, 0, 1, 2);
 
         placeBallPop.SetActive(players[currentPlayer].name != "CPU");
         tossTxt.gameObject.SetActive(false);
-        if (players[currentPlayer].name=="CPU")
+        if (players[currentPlayer].name == "CPU")
         {
             playerController.StartCPUMode();
         }
+
     }
 
     private IEnumerator LerpTextAlpha(Text text, float startAlpha, float endAlpha, float duration)
@@ -119,7 +151,7 @@ public class GameManager : MonoBehaviour
     public void ClosePlacePop()
     {
         if (!playerController.CueBallValid()) return;
-        
+
         foreach (GameObject ball in playerController.balls)
         {
             ball.GetComponent<Rigidbody>().isKinematic = false;
@@ -132,21 +164,34 @@ public class GameManager : MonoBehaviour
         playerController.StartGame();
     }
 
-    public void SetCpu()
+    public bool IsLocalPlayersTurn()
     {
-        //foreach(GameObject ball in PoolMain.instance.balls)
-        //{
-        //    if(ball.GetComponent<BallBehaviour>().ballType == player2.BallType)
-        //    {
-        //        PoolMain.instance.cpuBalls.Add(ball);
-        //    }
-        //}
-        //playerController.StartGame();
+        return players[currentPlayer].netPlayer.IsMyTurn;
+    }
+
+    public void SwitchTurn()
+    {
+        if (gameMode == GameMode.online && runner.IsServer)
+        {
+            players[currentPlayer].netPlayer.IsTurn = false;
+            currentPlayer = GetOpponent(currentPlayer);
+            players[currentPlayer].netPlayer.IsTurn = true;
+        }
+        else
+        {
+            currentPlayer = GetOpponent(currentPlayer);
+        }
+    }
+
+    public void SetIndicator()
+    {
+        playerIndicator[(int)currentPlayer].SetActive(true);
+        playerIndicator[(int)GetOpponent(currentPlayer)].SetActive(false);
     }
 
     public void PlayBallSound(AudioClip clip)
     {
-        if(ballhitCount%2==0 && !playerController.isFoul && playerController.isWaiting)
+        if (ballhitCount % 2 == 0 && !playerController.isFoul && playerController.isWaiting)
         {
             playerController.gameAudio.PlayOneShot(clip);
         }
@@ -156,20 +201,34 @@ public class GameManager : MonoBehaviour
 
     public void Restart() => SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex == 0 ? 0 : 1);
 
-    [System.Serializable]
-    public class Player
-    {
-        public string name;
-        public BallBehaviour.BallType BallType;
-        public List<GameObject> pocketedBalls = new();
-        public Image[] playerBalls;
-
-        public Player(string name, Image[] playerBalls)
-        {
-            this.name = name;
-            this.playerBalls = playerBalls;
-        }
-
-        public void DisableBallImage(int ballCode) => playerBalls[ballCode].enabled = false;
-    }
 }
+
+#region helperClass
+public enum PlayerType { Local, Remote, CPU }
+[System.Serializable]
+public class Player
+{
+    public string name;
+    public BallBehaviour.BallType BallType;
+    public List<GameObject> pocketedBalls = new();
+    public Image[] playerBalls;
+    public NetworkPlayer netPlayer;
+    public bool IsMyTurn => netPlayer != null && netPlayer.IsMyTurn;
+
+    public Player(string name, Image[] playerBalls)
+    {
+        this.name = name;
+        this.playerBalls = playerBalls;
+    }
+
+    public Player(string name, Image[] playerBalls, NetworkPlayer netPlayer)
+    {
+        this.name = name;
+        this.playerBalls = playerBalls;
+        this.netPlayer = netPlayer;
+    }
+
+    public void DisableBallImage(int ballCode) => playerBalls[ballCode].enabled = false;
+}
+#endregion
+
