@@ -230,7 +230,7 @@ public class GamePlayController : MonoBehaviour
     IEnumerator LookAtTarget(GameObject obj)
     {
         time = 0;
-        duration = .8f;
+        duration = .3f;
         targetBall = obj;
         Vector3 direction = targetBall.transform.position - cueAnchor.transform.position;
         direction.y = 0;
