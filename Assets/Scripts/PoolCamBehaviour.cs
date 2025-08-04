@@ -263,7 +263,7 @@ public class PoolCamBehaviour : MonoBehaviour
     {
         Ease ease = Ease.OutCubic;
         //ease = easeType;
-        float duration = .4f;
+        float duration = .8f;
         float rotationAmt = 15f;
         if (swipeDirection == SwipeDirection.Left)
         {
