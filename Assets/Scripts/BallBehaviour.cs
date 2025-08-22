@@ -33,15 +33,23 @@ public class BallBehaviour : MonoBehaviour
 
         if (collision.gameObject.CompareTag("playBall"))
         {
-            //if (!playerController.firstBreak)
-            //{
-            //    if(playerController.gameAudio.isPlaying)
-            //    {
-            //        playerController.gameAudio.Stop();
-            //    }
-            //    playerController.gameAudio.PlayOneShot(ballHit);
-            //}
             
+            if (playerController.ballAssigned)
+            {
+                if (!playerController.firstHit)
+                {
+                    BallBehaviour ball = collision.gameObject.GetComponent<BallBehaviour>();
+                    playerController.firstHit = true;
+                    if (!GameManager.instance.CorrectBallPlayed(ball.ballType))
+                    {
+                        playerController.isFoul = true;
+                        Popup.instance.CreatePopup("Foul!!Different ball played");
+                        Debug.Log("foul");
+                    }
+                }
+
+            }
+
 
             if (ballType == BallType.white)
             {

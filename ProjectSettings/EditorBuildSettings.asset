@@ -8,5 +8,7 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/Pool3D.unity
     guid: 34f418e8b43684c2591e9b5ede7b00b9
-  m_configObjects: {}
+  m_configObjects:
+    com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 3c5634c1431234dee85092082fc973e3,
+      type: 3}
   m_UseUCBPForAssetBundles: 0

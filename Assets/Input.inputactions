@@ -1,0 +1,74 @@
+{
+    "name": "Input",
+    "maps": [
+        {
+            "name": "Gameplay",
+            "id": "81efc283-430f-40ee-bdfc-e5eeefc4e8d0",
+            "actions": [
+                {
+                    "name": "Touch",
+                    "type": "Value",
+                    "id": "216778b6-36da-4270-ac44-e97582ced1d9",
+                    "expectedControlType": "Vector2",
+                    "processors": "",
+                    "interactions": "Tap",
+                    "initialStateCheck": true
+                },
+                {
+                    "name": "TouchPress",
+                    "type": "Button",
+                    "id": "aadb651c-7be4-4f78-8f49-c97e41f0a3de",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "Tap,MultiTap,Hold",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "Drag",
+                    "type": "Value",
+                    "id": "743ac26c-1b4d-4907-a598-f5d8f28ff16e",
+                    "expectedControlType": "Vector2",
+                    "processors": "",
+                    "interactions": "Hold",
+                    "initialStateCheck": true
+                }
+            ],
+            "bindings": [
+                {
+                    "name": "",
+                    "id": "664ea992-70f3-4688-a9f7-a208fea2d230",
+                    "path": "<Touchscreen>/primaryTouch/position",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Touch",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "296fcb1b-a196-4915-b35d-f87a1b84afdc",
+                    "path": "<Touchscreen>/touch0/tap",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "TouchPress",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "17ba282e-504a-4c06-b189-1f3dd8a8d9ad",
+                    "path": "",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Drag",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                }
+            ]
+        }
+    ],
+    "controlSchemes": []
+}

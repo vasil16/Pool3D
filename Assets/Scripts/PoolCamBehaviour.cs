@@ -326,7 +326,7 @@ public class PoolCamBehaviour : MonoBehaviour
 
     #endregion
 
-    bool cut;
+    bool cut, dragRotationActive;
     public float swipeSpeedX, swipeSpeedY;
 
     void Break()
@@ -337,6 +337,7 @@ public class PoolCamBehaviour : MonoBehaviour
             deltaPos = touch.deltaPosition;
             if (Utils.IsPointerOverUIObject(touch.position) && RectTransformUtility.RectangleContainsScreenPoint(dragRotateRect, touch.position))
             {
+                dragRotationActive = true;
                 playerController.cueAnchor.transform.rotation = Quaternion.Euler(0, playerController.cueAnchor.transform.eulerAngles.y + (deltaPos.x * 1.4f * Time.deltaTime), 0);
                 transform.rotation = Quaternion.Euler(transform.eulerAngles.x, transform.eulerAngles.y + (deltaPos.x * 1.4f * Time.deltaTime), transform.eulerAngles.z);
                 return;

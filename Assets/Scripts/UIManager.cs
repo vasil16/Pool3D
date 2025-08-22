@@ -74,10 +74,6 @@ public class UIManager : MonoBehaviour
         gameManager.gameObject.SetActive(true);
         GameManager.instance.gameMode = index == 0 ? GameManager.GameMode.offline : GameManager.GameMode.cpu;
         //GameObject.FindObjectOfType<PoolCamBehaviour>().SetInitialCameraAnim();
-        if (index==1)
-        {
-            Debug.Log("vs cpu");
-        }
     }
 
     public void PlayOnlineCallback()

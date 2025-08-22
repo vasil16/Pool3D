@@ -29,8 +29,7 @@ public class GamePlayController : MonoBehaviour
     [SerializeField] public AudioClip cueHit, rolling;
 
     public GameObject cue, spinMark, cueAnchor;
-    public bool isBreak = true;
-    public bool dragPower, spun, hasSpin, isWaiting, pocketed, firstPot, updown, isFoul, firstBreak, gameOver, touchDisabled;
+    public bool isBreak, spun, hasSpin, isWaiting, pocketed, ballAssigned, updown, isFoul, firstBreak, gameOver, touchDisabled, firstHit;
     private bool looked;
     private int rand;
 
@@ -121,8 +120,7 @@ public class GamePlayController : MonoBehaviour
         if (firstBreak)
         {
             StartCoroutine(LookAtTarget(balls[0]));
-        }
-        
+        }        
     }
 
     public void StartCPUMode()
@@ -160,10 +158,10 @@ public class GamePlayController : MonoBehaviour
                 StartCoroutine(LookAtTarget(bHit.collider.gameObject));
                 looked = true;
             }
-            if (touch.phase == TouchPhase.Ended && dragPower)
-            {
-                StartCoroutine(PlayShot());
-            }
+            //if (touch.phase == TouchPhase.Ended && dragPower)
+            //{
+            //    StartCoroutine(PlayShot());
+            //}
 
         }
     }
@@ -174,11 +172,26 @@ public class GamePlayController : MonoBehaviour
         {
             ball.GetComponent<Rigidbody>().isKinematic = true;
         }
+
         if (touch.phase == TouchPhase.Moved)
         {
-            Vector3 newPos = touch.deltaPosition * 0.1f * Time.deltaTime;
-            cueBall.transform.localPosition += new Vector3(newPos.y, 0, newPos.x * -1);
+            Vector3 screenDelta = new Vector3(touch.deltaPosition.x, touch.deltaPosition.y, 0f);
 
+            screenDelta *= 0.01f;
+
+            Vector3 camRight = Camera.main.transform.right;
+            camRight.y = 0;
+            camRight.Normalize();
+
+            Vector3 camForward = Camera.main.transform.forward;
+            camForward.y = 0;
+            camForward.Normalize();
+
+            Vector3 move = camRight * screenDelta.x + camForward * screenDelta.y;
+
+            cueBall.transform.localPosition += move;
+
+            //clamp
             if (firstBreak)
             {
                 float clampedX = Mathf.Clamp(cueBall.transform.localPosition.x, clampTableBreak.x, clampTableBreak.y);
@@ -193,6 +206,7 @@ public class GamePlayController : MonoBehaviour
             }
         }
     }
+
 
     void HandleSpinControl(Touch touch)
     {
@@ -353,7 +367,7 @@ public class GamePlayController : MonoBehaviour
         }
         else
         {
-            cpuPlayableBalls = firstPot ? balls : cpuBalls;
+            cpuPlayableBalls = ballAssigned ? cpuBalls : balls;
         }
         debugShotOptions.Clear();
         List<CpuShotOption> shotOptions = new List<CpuShotOption>();
@@ -529,7 +543,7 @@ public class GamePlayController : MonoBehaviour
 
     IEnumerator ResetCue()
     {
-        dragPower = false;
+        //dragPower = false;
         yield return new WaitForSeconds(2f);
         yield return new WaitUntil(BallStopped);
         yield return new WaitForSeconds(2f);
@@ -561,6 +575,7 @@ public class GamePlayController : MonoBehaviour
         pocketed = false;
         isBreak = false;
         firstBreak = false;
+        firstHit = false;
         rand = UnityEngine.Random.Range(0, balls.Count - 1);
         targetBall = balls[rand];
 
@@ -596,6 +611,7 @@ public class GamePlayController : MonoBehaviour
     IEnumerator FoulReset()
     {
         firstBreak = false;
+        firstHit = false;
         cueBall.GetComponent<Rigidbody>().isKinematic = true;
         cueBall.transform.localPosition = new Vector3(0.955f, ballYpos, 0f);
         cueBall.transform.localRotation = Quaternion.Euler(-90, 0, 0);

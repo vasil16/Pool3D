@@ -22,6 +22,7 @@ public class Pocket : MonoBehaviour
         if (other.gameObject.CompareTag("cueBall"))
         {
             playerController.isFoul = true;
+            Popup.instance.CreatePopup("Foul!!Cue ball pocketed");
         }
 
         else if (pocketedBall.ballType == BallBehaviour.BallType.black)
@@ -53,9 +54,9 @@ public class Pocket : MonoBehaviour
             }
             else
             {
-                if (playerController.firstPot)
+                if (!playerController.ballAssigned)
                 {
-                    playerController.firstPot = false;
+                    playerController.ballAssigned = true;
                     GameManager.instance.players[GameManager.instance.currentPlayer].BallType = pocketedBall.ballType;
                     GameManager.instance.players[GameManager.instance.GetOpponent(GameManager.instance.currentPlayer)].BallType = pocketedBall.ballType == BallBehaviour.BallType.stripe ? BallBehaviour.BallType.solid : BallBehaviour.BallType.stripe;
 

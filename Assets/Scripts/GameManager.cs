@@ -11,7 +11,6 @@ public class GameManager : MonoBehaviour
     public static GameManager instance;
 
     [SerializeField] PoolCamBehaviour poolCam;
-    [SerializeField] public Text tossTxt;
     [SerializeField] AnimationCurve lerpCurve;
     [SerializeField] public GameObject placeBallPop, startPanel, restartPanel;
     [SerializeField] Sprite[] solidBalls;
@@ -26,16 +25,16 @@ public class GameManager : MonoBehaviour
     [Space(10)] public Player player1, player2;
     [Space(10)] public List<GameObject> pocketedBalls;
 
-    public Dictionary<CurrentPlayer, Player> players = new();
-    public CurrentPlayer currentPlayer;
+    public Dictionary<Users, Player> players = new();
+    public Users currentPlayer;
     public GameMode gameMode;
 
-    public Action<CurrentPlayer> onGameComplete;
+    public Action<Users> onGameComplete;
 
     private GamePlayController playerController;
 
     public enum GameMode { offline, cpu, online }
-    public enum CurrentPlayer { player1, player2 }
+    public enum Users { player1, player2 }
 
     private void Awake()
     {
@@ -52,6 +51,7 @@ public class GameManager : MonoBehaviour
 
     private void Start()
     {
+        playerController.touchDisabled = false;
         if(gameMode == GameMode.online)
         {
             //runner = FindObjectOfType<NetworkRunner>();
@@ -68,8 +68,8 @@ public class GameManager : MonoBehaviour
     {
         player1 = new Player("Player 1", p1Balls);
         player2 = new Player(gameMode == GameMode.cpu ? "CPU" : "Player 2", p2Balls);
-        players[CurrentPlayer.player1] = player1;
-        players[CurrentPlayer.player2] = player2;
+        players[Users.player1] = player1;
+        players[Users.player2] = player2;
         StartCoroutine(Toss());
     }
 
@@ -77,8 +77,8 @@ public class GameManager : MonoBehaviour
     {
         player1 = new Player(p1, p1Balls, netPlayer1);
         player2 = new Player(p2, p2Balls, netPlayer2);
-        players[CurrentPlayer.player1] = player1;
-        players[CurrentPlayer.player2] = player2;
+        players[Users.player1] = player1;
+        players[Users.player2] = player2;
         StartCoroutine(TossOnline());
     }
 
@@ -87,16 +87,16 @@ public class GameManager : MonoBehaviour
         Debug.Log("toss tt");
         yield return null;
         int rand = UnityEngine.Random.Range(0, 2);
-        currentPlayer = (CurrentPlayer)rand;
+        currentPlayer = (Users)rand;
 
         playerController.isWaiting = true;
         playerIndicator[rand].SetActive(true);
 
-        tossTxt.text = $"{players[currentPlayer].name} will break";
-        yield return LerpTextAlpha(tossTxt, 0, 1, 2);
+        Popup.instance.CreatePopup($"{players[currentPlayer].name} will break");
+        //yield return LerpTextAlpha(tossTxt, 0, 1, 2);
 
         placeBallPop.SetActive(players[currentPlayer].name != "CPU");
-        tossTxt.gameObject.SetActive(false);
+        //tossTxt.gameObject.SetActive(false);
         if (players[currentPlayer].name == "CPU")
         {
             playerController.StartCPUMode();
@@ -108,7 +108,7 @@ public class GameManager : MonoBehaviour
         Debug.Log("toss tt");
         yield return null;
         int rand = UnityEngine.Random.Range(0, 2);
-        currentPlayer = (CurrentPlayer)rand;
+        currentPlayer = (Users)rand;
 
         playerController.manager = this;
         players[currentPlayer].netPlayer.IsTurn = true;
@@ -117,14 +117,14 @@ public class GameManager : MonoBehaviour
         playerController.isWaiting = true;
         playerIndicator[rand].SetActive(true);
 
-        tossTxt.text = $"{players[currentPlayer].name} will break";
-        yield return LerpTextAlpha(tossTxt, 0, 1, 2);
+        Popup.instance.CreatePopup($"{players[currentPlayer].name} will break");
+        //yield return LerpTextAlpha(tossTxt, 0, 1, 2);
 
         if(IsLocalPlayersTurn())
         {
             placeBallPop.SetActive(players[currentPlayer].name != "CPU");
         }
-        tossTxt.gameObject.SetActive(false);
+        //tossTxt.gameObject.SetActive(false);
     }
 
     private IEnumerator LerpTextAlpha(Text text, float startAlpha, float endAlpha, float duration)
@@ -140,7 +140,7 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    public void GameCompleteEvent(CurrentPlayer winner)
+    public void GameCompleteEvent(Users winner)
     {
         restartPanel.SetActive(true);
         restartPanel.transform.GetChild(0).GetComponent<Text>().text = $"{winner} WINS";
@@ -213,7 +213,23 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    public CurrentPlayer GetOpponent(CurrentPlayer player) => player == CurrentPlayer.player1 ? CurrentPlayer.player2 : CurrentPlayer.player1;
+    public bool CorrectBallPlayed(BallBehaviour.BallType ballType)
+    {
+        if (ballType == BallBehaviour.BallType.black)
+        {
+            if (players[currentPlayer].pocketedBalls.Count==7)
+            {
+                return true;
+            }
+        }
+        if (ballType == players[currentPlayer].BallType)
+        {
+            return true;
+        }
+        return false;
+    }
+
+    public Users GetOpponent(Users player) => player == Users.player1 ? Users.player2 : Users.player1;
 
     public void Restart() => SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex == 0 ? 0 : 1);
 
