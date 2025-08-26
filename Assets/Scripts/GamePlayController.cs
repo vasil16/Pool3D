@@ -243,6 +243,7 @@ public class GamePlayController : MonoBehaviour
 
     IEnumerator LookAtTarget(GameObject obj)
     {
+        Debug.Log("here");
         time = 0;
         duration = .8f;
         targetBall = obj;

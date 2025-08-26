@@ -483,18 +483,11 @@ public class PoolCamBehaviour : MonoBehaviour
 
     IEnumerator ResetCam()
     {
+        StopAllCoroutines();
         Vector3 startPos = transform.position;
         Quaternion startRotation = transform.rotation;
         //float time = 0;
         float duration = 0.3f;
-        //while (time <= duration)
-        //{
-        //    time += Time.smoothDeltaTime;
-        //    float t = Mathf.SmoothStep(0, 1, time / duration);
-        //    transform.position = Vector3.Slerp(startPos, cueStick.position + stickFollowOffset, t);
-        //    transform.rotation = Quaternion.Slerp(startRotation, Quaternion.Euler(0, cueStick.eulerAngles.y, 0), t);
-        //    yield return null;
-        //}
         transform.DORotateQuaternion(Quaternion.Euler(0, cueStick.eulerAngles.y, 0), duration).SetEase(Ease.OutSine);
         transform.DOMove(cueStick.position + stickFollowOffset, duration).SetEase(Ease.OutSine).OnComplete(() => gameState = GameState.Aim);
         yield return null;

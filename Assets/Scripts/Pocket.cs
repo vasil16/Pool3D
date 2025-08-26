@@ -12,7 +12,6 @@ public class Pocket : MonoBehaviour
         playerController = GamePlayController.instance;
     }
 
-
     private void OnCollisionEnter(Collision other)
     {
         if(!playerController.isFoul)playerController.gameAudio.PlayOneShot(pocketClip);
