@@ -163,5 +163,15 @@ public class UIManager : MonoBehaviour
         playPanel.gameObject.SetActive(true);
         playPanel.DOAnchorPos(new Vector2(0, 0), 0.7f).SetEase(Ease.InBack);
     }
-   
+
+    public void Pause()
+    {
+        Time.timeScale = 0;
+    }
+
+    public void Resume()
+    {
+        Time.timeScale = 1;
+    }
+
 }

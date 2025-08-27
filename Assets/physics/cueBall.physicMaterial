@@ -8,8 +8,8 @@ PhysicsMaterial:
   m_PrefabAsset: {fileID: 0}
   m_Name: cueBall
   serializedVersion: 2
-  m_DynamicFriction: 1
-  m_StaticFriction: 0.001
+  m_DynamicFriction: 4
+  m_StaticFriction: 4
   m_Bounciness: 1
   m_FrictionCombine: 1
   m_BounceCombine: 1

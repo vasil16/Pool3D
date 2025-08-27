@@ -164,9 +164,15 @@ public class GameManager : MonoBehaviour
         }
     }
 
+    public GameObject placeBallButton;
+
     public void ClosePlacePop()
     {
         if (!playerController.CueBallValid()) return;
+        
+        
+        placeBallButton.SetActive(true);
+        
 
         foreach (GameObject ball in playerController.balls)
         {

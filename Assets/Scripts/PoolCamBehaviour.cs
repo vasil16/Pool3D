@@ -342,6 +342,7 @@ public class PoolCamBehaviour : MonoBehaviour
                 transform.rotation = Quaternion.Euler(transform.eulerAngles.x, transform.eulerAngles.y + (deltaPos.x * 1.4f * Time.deltaTime), transform.eulerAngles.z);
                 return;
             }
+            
             if (touch.phase == TouchPhase.Began)
             {
                 touchStart = touch.position;

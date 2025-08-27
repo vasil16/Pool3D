@@ -133,6 +133,7 @@ public class GamePlayController : MonoBehaviour
         StartCoroutine(HandleCpuPlay());             
     }
 
+    [SerializeField] RectTransform spinCotrolUI;
 
     #region InputHandle
     void HandleTouchInput()
@@ -142,7 +143,10 @@ public class GamePlayController : MonoBehaviour
         {
             if (Utils.IsPointerOverUIObject(touch.position))
             {
-                HandleSpinControl(touch);
+                if(spinCotrolUI.gameObject.active)
+                {
+                    HandleSpinControl(touch);
+                }
                 return;
             }
 
@@ -502,6 +506,7 @@ public class GamePlayController : MonoBehaviour
 
         poolCam.gameState = PoolCamBehaviour.GameState.Hit;
         spinObj.SetActive(false);
+        manager.placeBallButton.SetActive(false);
         Vector3 startPos = cue.transform.localPosition;
 
         slingDuration = Mathf.Lerp(0.4f, 0.24f, hitPower / power.maxValue);
@@ -609,6 +614,8 @@ public class GamePlayController : MonoBehaviour
         }
     }
 
+    public bool ballPlace;
+
     IEnumerator FoulReset()
     {
         firstBreak = false;
@@ -630,6 +637,17 @@ public class GamePlayController : MonoBehaviour
         }
         isFoul = false;
         yield return null;
+    }
+
+    public void PlaceCueBall()
+    {
+        DisableLine();
+        cue.SetActive(false);
+        spinObj.SetActive(false);
+        powerBar.SetActive(false);
+        manager.startPanel.SetActive(true);
+        manager.placeBallPop.SetActive(true);
+        poolCam.gameState = PoolCamBehaviour.GameState.Break;
     }
 
     public bool CueBallValid()
