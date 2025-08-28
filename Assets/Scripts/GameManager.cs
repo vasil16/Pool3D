@@ -12,11 +12,12 @@ public class GameManager : MonoBehaviour
 
     [SerializeField] PoolCamBehaviour poolCam;
     [SerializeField] AnimationCurve lerpCurve;
-    [SerializeField] public GameObject placeBallPop, startPanel, restartPanel;
+    [SerializeField] public GameObject placeBallPop, startPanel, restartPanel, messageObject;
     [SerializeField] Sprite[] solidBalls;
     [SerializeField] Sprite[] stripeBalls;
     [SerializeField] Image[] p1Balls, p2Balls;
     [SerializeField] GameObject[] playerIndicator;
+    [SerializeField] Text messageText;
     public string localPlayerName;
     public NetworkRunner runner;
 
@@ -92,7 +93,7 @@ public class GameManager : MonoBehaviour
         playerController.isWaiting = true;
         playerIndicator[rand].SetActive(true);
 
-        Popup.instance.CreatePopup($"{players[currentPlayer].name} will break");
+        StartCoroutine(Popup($"{players[currentPlayer].name} will break"));
         //yield return LerpTextAlpha(tossTxt, 0, 1, 2);
 
         placeBallPop.SetActive(players[currentPlayer].name != "CPU");
@@ -117,7 +118,7 @@ public class GameManager : MonoBehaviour
         playerController.isWaiting = true;
         playerIndicator[rand].SetActive(true);
 
-        Popup.instance.CreatePopup($"{players[currentPlayer].name} will break");
+        StartCoroutine(Popup($"{players[currentPlayer].name} will break"));
         //yield return LerpTextAlpha(tossTxt, 0, 1, 2);
 
         if(IsLocalPlayersTurn())
@@ -217,6 +218,14 @@ public class GameManager : MonoBehaviour
         {
             playerController.gameAudio.PlayOneShot(clip);
         }
+    }
+
+    public IEnumerator Popup(string message)
+    {
+        messageText.text = message;
+        messageObject.SetActive(true);
+        yield return new WaitForSeconds(1);
+        messageObject.SetActive(false);
     }
 
     public bool CorrectBallPlayed(BallBehaviour.BallType ballType)

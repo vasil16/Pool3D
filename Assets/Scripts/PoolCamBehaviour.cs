@@ -7,19 +7,15 @@ public class PoolCamBehaviour : MonoBehaviour
 {
     [SerializeField] Camera cam;
     [SerializeField] Transform cueStick, cueBall;
-    [SerializeField] RectTransform dragRotateRect;
-    [SerializeField] Vector3 ballFollowOffset, stickFollowOffset, followRotation, initialRotation, cpuWaitPosition, cpuWaitRotation;
+    [SerializeField] Vector3 ballFollowOffset, stickFollowOffset, cpuWaitPosition, cpuWaitRotation;
     [SerializeField] Vector3[] cpuWaitPositions, cpuWaitRotations;
-    [SerializeField] Vector2 touchDelta, touchStart, touchEnd, deltaPos;
     [SerializeField] int tCount;
-    [SerializeField] float touchTime, longTouchThreshold, minFov, maxFov, zoomSpeed, rotationAmount, rotationThreshold;
+    [SerializeField] float touchTime, minFov, maxFov, zoomSpeed, rotationAmount, rotationThreshold;
     [SerializeField] public GameState gameState;
     [SerializeField] SwipeDirection swipeDirection;
-    private GameState prevState = GameState.Break;
 
     GamePlayController playerController;
 
-    bool timerRunning;
 
     private bool isZoomingIn = false;
     private bool isZoomingOut = false;
@@ -42,6 +38,30 @@ public class PoolCamBehaviour : MonoBehaviour
         Down
     }
 
+    private void OnEnable()
+    {
+        EventHandler.RotateCameraBreak += RotateCam;
+        EventHandler.SwipeAim += SwipeAim;
+        EventHandler.DragAim += DragAim;
+        EventHandler.SwipeCueBall += SwipePlace;
+        EventHandler.MoveCueBall += MovePlace;
+        EventHandler.PlayableBallTapped += LookAt;
+        EventHandler.ResetCam += ResetCam;
+        EventHandler.WaitCPU += WaitCPU;
+    }
+
+    private void OnDestroy()
+    {
+        EventHandler.RotateCameraBreak -= RotateCam;
+        EventHandler.SwipeAim -= SwipeAim;
+        EventHandler.DragAim -= DragAim;
+        EventHandler.SwipeCueBall -= SwipePlace;
+        EventHandler.MoveCueBall -= MovePlace;
+        EventHandler.PlayableBallTapped -= LookAt;
+        EventHandler.ResetCam -= ResetCam;
+        EventHandler.WaitCPU -= WaitCPU;
+    }
+
 
     void Start()
     {
@@ -53,35 +73,35 @@ public class PoolCamBehaviour : MonoBehaviour
     }
 
 
-    void Update()
-    {
-        tCount = Input.touchCount;
+    //void Update()
+    //{
+    //    tCount = Input.touchCount;
 
-        switch (gameState)
-        {
-            case GameState.Break:
-                Break();
-                return;
+    //    switch (gameState)
+    //    {
+    //        case GameState.Break:
+    //            //Break();
+    //            return;
 
-            case GameState.Aim:
-                playerController.RenderTrajectory();
-                FollowStick();
-                break;
+    //        case GameState.Aim:
+    //            playerController.RenderTrajectory();
+    //            //Aim();
+    //            break;
 
-            case GameState.Waiting:
-                StartCoroutine(AfterHit());
-                return;
+    //        case GameState.Waiting:
+    //            //StartCoroutine(WaitCPU());
+    //            return;
 
-            case GameState.Reset:
-                if (gameState != prevState)
-                {
-                    StartCoroutine(ResetCam());
-                }
-                break;
-        }
-        CameraAction();
-        prevState = gameState;
-    }
+    //        case GameState.Reset:
+    //            if (gameState != prevState)
+    //            {
+    //                //StartCoroutine(ResetCam());
+    //            }
+    //            break;
+    //    }
+    //    CameraAction();
+    //    prevState = gameState;
+    //}
 
     public void SetInitialCameraAnim()
     {
@@ -145,121 +165,11 @@ public class PoolCamBehaviour : MonoBehaviour
                         return;
                     }
                 }
-
-                else if (tCount == 1)
-                {
-                    if (touch.phase == TouchPhase.Began)
-                    {
-                        StartCoroutine(StartTouchTimer());
-                        touchStart = touch.position;
-                    }
-
-                    else if (touch.phase == TouchPhase.Moved)
-                    {
-                        deltaPos = touch.deltaPosition;
-
-                        if (Mathf.Abs(deltaPos.x) > rotationThreshold || Mathf.Abs(deltaPos.y) > rotationThreshold)
-                        {
-                            if (Mathf.Abs(deltaPos.y) > Mathf.Abs(deltaPos.x) && Mathf.Abs(deltaPos.y) > 10 && gameState != GameState.Reset)
-                            {
-                                playerController.updown = true;
-
-                                float smoothRotation = deltaPos.y * rotationAmount * Time.deltaTime;
-                                float z = transform.eulerAngles.z;
-                                if (z > 180f) z -= 360f;
-                                float rotationZ = Mathf.Clamp(z + smoothRotation, -45f,15f);
-                                transform.rotation = Quaternion.Euler(transform.eulerAngles.x, transform.eulerAngles.y, rotationZ);
-                                return;
-                            }
-                            else
-                            {
-                                playerController.updown = false;
-                                float smoothRotation = deltaPos.x * rotationAmount * Time.deltaTime;                                
-                                playerController.cueAnchor.transform.rotation = Quaternion.Euler(0, playerController.cueAnchor.transform.eulerAngles.y + smoothRotation, 0);
-                                transform.rotation = Quaternion.Euler(transform.eulerAngles.x, transform.eulerAngles.y + smoothRotation, transform.eulerAngles.z);
-                                return;
-                            }                            
-                        }
-                    }
-
-                    else if (touch.phase == TouchPhase.Ended)
-                    {
-                        if (tCount == 2) return;
-                        EndTouchTimer();
-                        touchEnd = touch.position;
-                        if (touchTime > 0.01 && touchTime < longTouchThreshold)
-                        {
-                            touchDelta = touchEnd - touchStart;
-
-                            if (Mathf.Abs(touchDelta.x) > 80f || Mathf.Abs(touchDelta.y) > 80f)
-                            {
-                                if (Mathf.Abs(touchDelta.x) > Mathf.Abs(touchDelta.y))
-                                {
-                                    swipeDirection = touchDelta.x > 0 ? SwipeDirection.Right : SwipeDirection.Left;
-                                }
-                                else
-                                {
-                                    swipeDirection = touchDelta.y > 0 ? SwipeDirection.Up : SwipeDirection.Down;
-                                }
-                                touchDelta = touchStart = touchEnd = Vector2.zero;
-                                StartCoroutine(MoveEffect());
-                            }
-                        }
-
-                    }
-                }
             }
         }
     }
 
-    IEnumerator StartTouchTimer()
-    {
-        touchTime = 0;
-        timerRunning = true;
-        while (timerRunning)
-        {
-            touchTime += Time.deltaTime;
-            yield return null;
-        }
-        yield return new WaitForSeconds(2);
-    }
-
-    void EndTouchTimer()
-    {
-        timerRunning = false;
-    }
-
-    //IEnumerator MoveEffect()
-    //{
-    //    float time = 1;
-    //    while (time >= 0)
-    //    {
-    //        time -= Time.deltaTime;
-    //        if (swipeDirection == SwipeDirection.Left)
-    //        {
-    //            playerController.cueAnchor.transform.rotation = Quaternion.Euler(0, transform.eulerAngles.y - (time * 0.8f), 0);
-    //            transform.rotation = Quaternion.Euler(0, transform.eulerAngles.y - (time * 0.8f), transform.eulerAngles.z);
-    //        }
-    //        else if (swipeDirection == SwipeDirection.Right)
-    //        {
-    //            playerController.cueAnchor.transform.rotation = Quaternion.Euler(0, transform.eulerAngles.y + (time * 0.8f), 0);
-    //            transform.rotation = Quaternion.Euler(0, transform.eulerAngles.y + (time * 0.8f), transform.eulerAngles.z);
-    //        }
-    //        else if (swipeDirection == SwipeDirection.Up)
-    //        {
-    //            transform.rotation = Quaternion.Euler(0, transform.eulerAngles.y,transform.eulerAngles.z + (time * 0.8f));
-    //        }
-    //        else if (swipeDirection == SwipeDirection.Down)
-    //        {
-    //            transform.rotation = Quaternion.Euler(0, transform.eulerAngles.y,transform.eulerAngles.z - (time * 0.8f)    );
-    //        }
-    //        yield return null;
-    //    }
-    //}
-
-    //public Ease easeType;
-
-    IEnumerator MoveEffect()
+    IEnumerator RotateEffect()
     {
         Ease ease = Ease.OutCubic;
         //ease = easeType;
@@ -267,12 +177,12 @@ public class PoolCamBehaviour : MonoBehaviour
         float rotationAmt = 15f;
         if (swipeDirection == SwipeDirection.Left)
         {
-            playerController.cueAnchor.transform.DORotateQuaternion(Quaternion.Euler(0, transform.eulerAngles.y - rotationAmt,0), duration).SetEase(ease);
+            cueStick.transform.DORotateQuaternion(Quaternion.Euler(0, transform.eulerAngles.y - rotationAmt,0), duration).SetEase(ease);
             transform.DORotateQuaternion (Quaternion.Euler(0, transform.eulerAngles.y - rotationAmt, transform.eulerAngles.z),duration).SetEase(ease);
         }
         else if (swipeDirection == SwipeDirection.Right)
         {
-            playerController.cueAnchor.transform.DORotateQuaternion(Quaternion.Euler(0, transform.eulerAngles.y + rotationAmt, 0), duration).SetEase(ease);
+            cueStick.transform.DORotateQuaternion(Quaternion.Euler(0, transform.eulerAngles.y + rotationAmt, 0), duration).SetEase(ease);
             transform.DORotateQuaternion(Quaternion.Euler(0, transform.eulerAngles.y + rotationAmt, transform.eulerAngles.z), duration).SetEase(ease);
         }
         else if (swipeDirection == SwipeDirection.Up || swipeDirection == SwipeDirection.Down)
@@ -326,66 +236,66 @@ public class PoolCamBehaviour : MonoBehaviour
 
     #endregion
 
-    bool cut, dragRotationActive;
+    bool cut, dragRotationActive ,looked;
     public float swipeSpeedX, swipeSpeedY;
 
-    void Break()
+    void RotateCam(Vector2 delta)
     {
-        transform.position = (cueBall.position + ballFollowOffset);
-        foreach (Touch touch in Input.touches)
+        dragRotationActive = true;
+        cueStick.transform.rotation = Quaternion.Euler(0, cueStick.transform.eulerAngles.y + (delta.x * 1.4f * Time.deltaTime), 0);
+        transform.rotation = Quaternion.Euler(transform.eulerAngles.x, transform.eulerAngles.y + (delta.x * 1.4f * Time.deltaTime), transform.eulerAngles.z);
+    }
+
+    void LookAt(GameObject obj)
+    {
+        if (!looked)
         {
-            deltaPos = touch.deltaPosition;
-            if (Utils.IsPointerOverUIObject(touch.position) && RectTransformUtility.RectangleContainsScreenPoint(dragRotateRect, touch.position))
-            {
-                dragRotationActive = true;
-                playerController.cueAnchor.transform.rotation = Quaternion.Euler(0, playerController.cueAnchor.transform.eulerAngles.y + (deltaPos.x * 1.4f * Time.deltaTime), 0);
-                transform.rotation = Quaternion.Euler(transform.eulerAngles.x, transform.eulerAngles.y + (deltaPos.x * 1.4f * Time.deltaTime), transform.eulerAngles.z);
-                return;
-            }
-            
-            if (touch.phase == TouchPhase.Began)
-            {
-                touchStart = touch.position;
-                StartCoroutine(StartTouchTimer());
-            }
-            if (touch.phase == TouchPhase.Ended && !cut && playerController.firstBreak)
-            {
-                EndTouchTimer();
-                touchEnd = touch.position;
-                touchDelta = touchEnd - touchStart;
+            looked = true;
+            Debug.Log("here");
+            float duration = .5f;
+            Vector3 direction = obj.transform.position - cueStick.transform.position;
+            direction.y = 0;
+            direction.Normalize();
 
-                if (Mathf.Abs(touchDelta.x) > Mathf.Abs(touchDelta.y))
-                {
-                    swipeSpeedX = touchDelta.x / touchTime;
-
-                    if (Mathf.Abs(swipeSpeedX) > 300)
-                    {
-                        StartCoroutine(slideInOut());
-                        cut = true;
-                    }
-                    return;
-                }
-                else
-                {
-                    swipeSpeedY = touchDelta.y / touchTime;
-
-                    if (Mathf.Abs(swipeSpeedY) > 300)
-                    {
-                        StartCoroutine(slideUpDown());
-                        cut = true;
-                    }
-                    return;
-                }
-            }
+            Quaternion newRotation = Quaternion.LookRotation(direction);
+            cueStick.transform.DORotateQuaternion(Quaternion.Euler(0, newRotation.eulerAngles.y - 90, 0), duration).SetEase(Ease.OutSine).OnComplete(() =>
+            {
+                transform.DORotateQuaternion(Quaternion.Euler(transform.eulerAngles.x, cueStick.eulerAngles.y, transform.eulerAngles.z), .3f);
+                looked = false;
+            });
         }
     }
 
-    IEnumerator slideInOut(int index=0)
+    public void PlaceCamera()
+    {
+        transform.DOMove (cueBall.position + ballFollowOffset,1f).SetEase(Ease.InOutCubic);
+    }
+
+    void SwipePlace(Vector2 delta)
+    {       
+        if (Mathf.Abs(delta.x) > Mathf.Abs(delta.y))
+        {
+            StartCoroutine(slideInOut(delta.x));
+            cut = true;
+        }
+        else
+        {
+            StartCoroutine(slideUpDown(delta.y));
+            cut = true;
+        }        
+    }
+
+    void MovePlace(Vector2 delta)
+    {
+        transform.position = (cueBall.position + ballFollowOffset);
+    }
+
+    IEnumerator slideInOut(float delta)
     {
         float actualZPos = transform.position.z;
-        float zOffset = touchDelta.x < 0 ? 0.03f : -0.03f;
+        float zOffset = delta < 0 ? 0.03f : -0.03f;
         zOffset += actualZPos;
-        float duration = 0.1f, dur = 0.5f;
+        float duration = 0.25f, dur = 0.5f;
         float time = 0, t2 = 0;
         while (time <= duration)
         {
@@ -407,12 +317,12 @@ public class PoolCamBehaviour : MonoBehaviour
         cut = false;
     }
 
-    IEnumerator slideUpDown()
+    IEnumerator slideUpDown(float delta)
     {
         float actualXPos = transform.position.x;
-        float xOffset = touchDelta.y < 0 ? -0.03f : 0.03f;
+        float xOffset = delta < 0 ? -0.03f : 0.03f;
         xOffset += actualXPos;
-        float duration = 0.1f, dur = 0.4f;
+        float duration = 0.25f, dur = 0.5f;
         float time = 0, t2 = 0;
         while (time <= duration)
         {
@@ -429,14 +339,45 @@ public class PoolCamBehaviour : MonoBehaviour
         cut = false;
     }
 
-    void FollowStick()
+    void SwipeAim(Vector2 delta)
+    {        
+        if (Mathf.Abs(delta.x) > Mathf.Abs(delta.y))
+        {
+            swipeDirection = delta.x > 0 ? SwipeDirection.Right : SwipeDirection.Left;
+        }
+        else
+        {
+            swipeDirection = delta.y > 0 ? SwipeDirection.Up : SwipeDirection.Down;
+        }
+        StartCoroutine(RotateEffect());        
+    }
+
+    void DragAim(Vector2 delta)
     {
-        transform.rotation = Quaternion.Euler(transform.eulerAngles.x, cueStick.eulerAngles.y, transform.eulerAngles.z);
+        if (Mathf.Abs(delta.x) > rotationThreshold || Mathf.Abs(delta.y) > rotationThreshold)
+        {
+            if (Mathf.Abs(delta.y) > Mathf.Abs(delta.x) && Mathf.Abs(delta.y) > 10 && gameState != GameState.Reset)
+            {
+                playerController.updown = true;
+                float smoothRotation = delta.y * rotationAmount * Time.deltaTime;
+                float z = transform.eulerAngles.z;
+                if (z > 180f) z -= 360f;
+                float rotationZ = Mathf.Clamp(z + smoothRotation, -45f, 15f);
+                transform.rotation = Quaternion.Euler(transform.eulerAngles.x, transform.eulerAngles.y, rotationZ);
+            }
+            else
+            {
+                playerController.updown = false;
+                float smoothRotation = delta.x * rotationAmount * Time.deltaTime;
+                cueStick.transform.rotation = Quaternion.Euler(0, cueStick.transform.eulerAngles.y + smoothRotation, 0);
+                transform.rotation = Quaternion.Euler(transform.eulerAngles.x, transform.eulerAngles.y + smoothRotation, transform.eulerAngles.z);
+            }
+        }
     }
 
     public bool doneCameraMove;
 
-    public IEnumerator AfterHit()
+    public void WaitCPU()
     {
         //float time = 0;
         float duration = 1f;
@@ -467,22 +408,12 @@ public class PoolCamBehaviour : MonoBehaviour
             cpuWaitRotation = cpuWaitRotations[0];
         }
 
-        //while (time <= duration)
-        //{
-        //    time += Time.deltaTime;
-        //    float t = Mathf.SmoothStep(0, 1, time / duration);
-        //    transform.position = Vector3.Lerp(currentPos, cpuWaitPosition, t);
-        //    transform.rotation = Quaternion.Slerp(currentRot, Quaternion.Euler(cpuWaitRotation), t);
-        //    yield return null;
-        //}
 
         transform.DORotate(cpuWaitRotation, duration).SetEase(Ease.OutSine);
         transform.DOMove(cpuWaitPosition, duration).SetEase(Ease.OutSine).OnComplete(()=>doneCameraMove=true);
-        yield return null;
-        //doneCameraMove = true;
     }
 
-    IEnumerator ResetCam()
+    void ResetCam()
     {
         StopAllCoroutines();
         Vector3 startPos = transform.position;
@@ -491,7 +422,6 @@ public class PoolCamBehaviour : MonoBehaviour
         float duration = 0.3f;
         transform.DORotateQuaternion(Quaternion.Euler(0, cueStick.eulerAngles.y, 0), duration).SetEase(Ease.OutSine);
         transform.DOMove(cueStick.position + stickFollowOffset, duration).SetEase(Ease.OutSine).OnComplete(() => gameState = GameState.Aim);
-        yield return null;
         //gameState = GameState.Aim;
     }
 }

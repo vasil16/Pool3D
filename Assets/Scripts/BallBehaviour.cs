@@ -43,7 +43,7 @@ public class BallBehaviour : MonoBehaviour
                     if (!GameManager.instance.CorrectBallPlayed(ball.ballType))
                     {
                         playerController.isFoul = true;
-                        Popup.instance.CreatePopup("Foul!!Different ball played");
+                        StartCoroutine(GameManager.instance.Popup("Foul!! Different ball played"));
                         Debug.Log("foul");
                     }
                 }

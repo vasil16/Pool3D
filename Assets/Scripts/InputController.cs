@@ -1,11 +1,21 @@
+using Unity.AppUI.UI;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.InputSystem.EnhancedTouch;
 
 public class InputController : MonoBehaviour
 {
     public static InputController Instance;
 
     private GameInputActions inputActions;
+
+    private Ray pRay;
+    private RaycastHit bHit;
+    [SerializeField] LayerMask closeMask;
+
+    [SerializeField] RectTransform dragRotateRect, circleRect;
+
+    [SerializeField] PoolCamBehaviour camB;
 
     // Swipe / Hold tracking
     private Vector2 touchStartPos;
@@ -14,6 +24,7 @@ public class InputController : MonoBehaviour
     [Header("Swipe Settings")]
     public float swipeMinDistance = 100f;   // in pixels
     public float swipeMinSpeed = 500f;      // px/sec
+    public float swipeDurationThreshold =.5f;
 
     [Header("Hold Settings")]
     public float holdThreshold = 0.3f;      // seconds
@@ -60,15 +71,26 @@ public class InputController : MonoBehaviour
     // 🔹 Tap
     private void HandleTap(InputAction.CallbackContext ctx)
     {
-        Vector2 pos = inputActions.Gameplay.Touch.ReadValue<Vector2>();
-        Debug.Log($"[InputController] Tap at: {pos}");
+        if(camB.gameState == PoolCamBehaviour.GameState.Aim)
+        {
+            Vector2 pos = inputActions.Gameplay.Touch.ReadValue<Vector2>();
+            Debug.Log($"[InputController] Tap at: {pos}");
+            pRay = Camera.main.ScreenPointToRay(pos);
+            if (Physics.Raycast(pRay, out bHit, closeMask) && bHit.collider.gameObject.CompareTag("playBall"))
+            {
+                EventHandler.PlayableBallTapped?.Invoke(bHit.collider.gameObject);
+            }
+        }
     }
+
+    Vector2 delta;
 
     // 🔹 Drag
     private void HandleDrag(InputAction.CallbackContext ctx)
     {
-        Vector2 delta = ctx.ReadValue<Vector2>();
+        delta = ctx.ReadValue<Vector2>();
         Debug.Log($"[InputController] Drag delta: {delta}");
+
     }
 
     // 🔹 Touch (position)
@@ -76,6 +98,30 @@ public class InputController : MonoBehaviour
     {
         Vector2 pos = ctx.ReadValue<Vector2>();
         Debug.Log($"[InputController] Touch at: {pos}");
+        if(Utils.IsPointerOverUIObject(pos))
+        {
+            if(TappedOver(circleRect,pos))
+            {
+                Debug.Log("over spin");
+                EventHandler.AddSpin?.Invoke(pos);
+            }
+            else if (TappedOver(dragRotateRect, pos))
+            {
+                Debug.Log("over spin");
+                EventHandler.RotateCameraBreak?.Invoke(delta);
+            }
+        }
+        else
+        {
+            if(camB.gameState==PoolCamBehaviour.GameState.Aim || camB.gameState == PoolCamBehaviour.GameState.Hit)
+            {
+                EventHandler.DragAim?.Invoke(delta);
+            }
+            else if (camB.gameState == PoolCamBehaviour.GameState.Break)
+            {
+                EventHandler.MoveCueBall?.Invoke(delta);
+            }
+        }
     }
 
     // 🔹 Press Start (finger down)
@@ -100,10 +146,19 @@ public class InputController : MonoBehaviour
         // ---------------------------
         // SWIPE LOGIC
         float speed = delta.magnitude / duration;
-        if (delta.magnitude > swipeMinDistance && speed > swipeMinSpeed)
+        if (delta.magnitude > swipeMinDistance && speed > swipeMinSpeed && duration<swipeDurationThreshold)
         {
             Vector2 direction = delta.normalized;
             Debug.Log($"[InputController] Swipe detected! Direction: {direction}, Speed: {speed}");
+            if (Utils.IsPointerOverUIObject(touchStartPos)) return;
+            if (camB.gameState==PoolCamBehaviour.GameState.Break)
+            {
+                EventHandler.SwipeCueBall?.Invoke(direction);
+            }
+            else if (camB.gameState == PoolCamBehaviour.GameState.Aim || camB.gameState == PoolCamBehaviour.GameState.Hit)
+            {
+                EventHandler.SwipeAim?.Invoke(direction);
+            }
         }
         // ---------------------------
 
@@ -114,5 +169,12 @@ public class InputController : MonoBehaviour
             Debug.Log($"[InputController] Hold ended at: {touchEndPos}, Duration: {duration:F2}s");
         }
         // ---------------------------
+    }
+
+    bool TappedOver(RectTransform transform, Vector2 position)
+    {
+        if (Utils.IsPointerOverUIObject(position) && RectTransformUtility.RectangleContainsScreenPoint(transform, position))
+            return true;
+        return false;
     }
 }

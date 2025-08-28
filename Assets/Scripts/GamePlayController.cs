@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 using TMPro;
 using DG.Tweening;
 using System;
@@ -15,8 +16,7 @@ public class GamePlayController : MonoBehaviour
     [SerializeField] private Vector3 cueOgPos, cueOgRot, spinMarkOffset;
     [SerializeField] private Vector2 deltaPosition, deltaPos;
     [SerializeField] private GameObject targetBall, cueBall, powerBar, aimDock, spinObj;
-    [SerializeField] private float rotationSpeed = 0.1f, powerMultiplier, cueBallRadius, ballRadius, ballYpos, dockYpos;
-    [SerializeField] private Camera povCam;
+    [SerializeField] private float  powerMultiplier, cueBallRadius, ballRadius, ballYpos, dockYpos;
     [SerializeField] private Transform forceAt;
     [SerializeField] private LineRenderer lineCue, linePath;
     [SerializeField] private PoolCamBehaviour poolCam;
@@ -24,21 +24,17 @@ public class GamePlayController : MonoBehaviour
     [SerializeField] private RectTransform spinRect, circleRect, spinIndicator;
     [SerializeField] public TextMeshProUGUI player1Txt, player2Txt;
     [SerializeField] public GameObject[] pockets;
-    [SerializeField] LayerMask closeMask;
     [SerializeField] public AudioSource gameAudio;
     [SerializeField] public AudioClip cueHit, rolling;
+    [SerializeField] Text fpsText;
 
     public GameObject cue, spinMark, cueAnchor;
     public bool isBreak, spun, hasSpin, isWaiting, pocketed, ballAssigned, updown, isFoul, firstBreak, gameOver, touchDisabled, firstHit;
-    private bool looked;
     private int rand;
 
     private Rigidbody ballR;
 
-    private Ray pRay;
-    private RaycastHit bHit;
-
-    public float time, duration, hitPower, dockOffset;
+    public float hitPower, dockOffset;
 
     public bool cpuMode;
 
@@ -46,7 +42,22 @@ public class GamePlayController : MonoBehaviour
 
     private void Awake()
     {
+        Application.targetFrameRate = 120;
         instance = this;
+    }
+
+    private void OnEnable()
+    {
+        
+        EventHandler.AddSpin += HandleSpinControl;
+        EventHandler.MoveCueBall += MoveCueBall;
+    }
+
+    private void OnDestroy()
+    {
+        
+        EventHandler.AddSpin -= HandleSpinControl;
+        EventHandler.MoveCueBall -= MoveCueBall;
     }
 
     void Start()
@@ -98,6 +109,8 @@ public class GamePlayController : MonoBehaviour
 
     void Update()
     {
+        //Application.targetFrameRate = 120;
+        //fpsText.text = 1 / Time.deltaTime+"";
         if (!manager || manager.players[manager.currentPlayer].name == "CPU") return;
         if(manager.gameMode==GameManager.GameMode.online)
         {
@@ -117,9 +130,10 @@ public class GamePlayController : MonoBehaviour
         cue.SetActive(true);
         spinObj.SetActive(true);
         powerBar.SetActive(true);
+        poolCam.transform.DORotateQuaternion(Quaternion.Euler(poolCam.transform.eulerAngles.x, cueAnchor.transform.eulerAngles.y, poolCam.transform.eulerAngles.z),1f).SetEase(Ease.InOutCubic);
         if (firstBreak)
         {
-            StartCoroutine(LookAtTarget(balls[0]));
+            //LookAt(balls[0]);
         }        
     }
 
@@ -137,138 +151,101 @@ public class GamePlayController : MonoBehaviour
 
     #region InputHandle
     void HandleTouchInput()
-    {
-        if (touchDisabled) return;
-        foreach (Touch touch in Input.touches)
+    {                
+        if (poolCam.gameState == PoolCamBehaviour.GameState.Aim)
         {
-            if (Utils.IsPointerOverUIObject(touch.position))
-            {
-                if(spinCotrolUI.gameObject.active)
-                {
-                    HandleSpinControl(touch);
-                }
-                return;
-            }
+            RenderTrajectory();
+            return;
+        }
 
-            if (poolCam.gameState == PoolCamBehaviour.GameState.Break)
-            {
-                HandleBreak(touch);
-                return;
-            }
+        //pRay = poolCam.GetComponentInChildren<Camera>().ScreenPointToRay(touch.position);
+        //if (Physics.Raycast(pRay, out bHit, closeMask) && bHit.collider.gameObject.CompareTag("playBall") && !looked)
+        //{
+        //    LookAt(bHit.collider.gameObject);
+        //    looked = true;
+        //}
+        //if (touch.phase == TouchPhase.Ended && dragPower)
+        //{
+        //    StartCoroutine(PlayShot());
+        //}
 
-            pRay = poolCam.GetComponentInChildren<Camera>().ScreenPointToRay(touch.position);
-            if (Physics.Raycast(pRay, out bHit, closeMask) && bHit.collider.gameObject.CompareTag("playBall") && !looked)
-            {
-                StartCoroutine(LookAtTarget(bHit.collider.gameObject));
-                looked = true;
-            }
-            //if (touch.phase == TouchPhase.Ended && dragPower)
-            //{
-            //    StartCoroutine(PlayShot());
-            //}
+        
+    }
 
+    void MoveCueBall(Vector2 screenDelta)
+    {
+        screenDelta *= 0.003f;
+
+        Vector3 camRight = Camera.main.transform.right;
+        camRight.y = 0;
+        camRight.Normalize();
+
+        Vector3 camForward = Camera.main.transform.forward;
+        camForward.y = 0;
+        camForward.Normalize();
+
+        Vector3 move = camRight * screenDelta.x + camForward * screenDelta.y;
+
+        cueBall.transform.localPosition += move;
+        cueBall.transform.RotateAroundLocal(move, .3f);
+
+        //clamp
+        if (firstBreak)
+        {
+            float clampedX = Mathf.Clamp(cueBall.transform.localPosition.x, clampTableBreak.x, clampTableBreak.y);
+            float clampedZ = Mathf.Clamp(cueBall.transform.localPosition.z, clampTableBreak.z, clampTableBreak.w);
+            cueBall.transform.localPosition = new Vector3(clampedX, cueBall.transform.localPosition.y, clampedZ);
+        }
+        else
+        {
+            float clampedX = Mathf.Clamp(cueBall.transform.localPosition.x, clampTableNormal.x, clampTableNormal.y);
+            float clampedZ = Mathf.Clamp(cueBall.transform.localPosition.z, clampTableNormal.z, clampTableNormal.w);
+            cueBall.transform.localPosition = new Vector3(clampedX, cueBall.transform.localPosition.y, clampedZ);
         }
     }
 
-    void HandleBreak(Touch touch)
+    void HandleBreak()
     {
         foreach (GameObject ball in balls)
         {
             ball.GetComponent<Rigidbody>().isKinematic = true;
         }
-
-        if (touch.phase == TouchPhase.Moved)
-        {
-            Vector3 screenDelta = new Vector3(touch.deltaPosition.x, touch.deltaPosition.y, 0f);
-
-            screenDelta *= 0.01f;
-
-            Vector3 camRight = Camera.main.transform.right;
-            camRight.y = 0;
-            camRight.Normalize();
-
-            Vector3 camForward = Camera.main.transform.forward;
-            camForward.y = 0;
-            camForward.Normalize();
-
-            Vector3 move = camRight * screenDelta.x + camForward * screenDelta.y;
-
-            cueBall.transform.localPosition += move;
-
-            //clamp
-            if (firstBreak)
-            {
-                float clampedX = Mathf.Clamp(cueBall.transform.localPosition.x, clampTableBreak.x, clampTableBreak.y);
-                float clampedZ = Mathf.Clamp(cueBall.transform.localPosition.z, clampTableBreak.z, clampTableBreak.w);
-                cueBall.transform.localPosition = new Vector3(clampedX, cueBall.transform.localPosition.y, clampedZ);
-            }
-            else
-            {
-                float clampedX = Mathf.Clamp(cueBall.transform.localPosition.x, clampTableNormal.x, clampTableNormal.y);
-                float clampedZ = Mathf.Clamp(cueBall.transform.localPosition.z, clampTableNormal.z, clampTableNormal.w);
-                cueBall.transform.localPosition = new Vector3(clampedX, cueBall.transform.localPosition.y, clampedZ);
-            }
-        }
     }
 
 
-    void HandleSpinControl(Touch touch)
+    void HandleSpinControl(Vector2 pos)
     {
-        if (RectTransformUtility.RectangleContainsScreenPoint(circleRect, touch.position))
+        if (!spinCotrolUI.gameObject.active) return;
+        Vector2 localPoint;
+        RectTransformUtility.ScreenPointToLocalPointInRectangle(circleRect, pos, null, out localPoint);
+        hasSpin = true;
+
+        Vector2 center = circleRect.rect.center;
+        float radius = circleRect.rect.width / 2;
+
+        if (Vector2.Distance(center, localPoint) <= radius)
         {
-            Vector2 localPoint;
-            RectTransformUtility.ScreenPointToLocalPointInRectangle(circleRect, touch.position, null, out localPoint);
-            hasSpin = true;
-
-            Vector2 center = circleRect.rect.center;
-            float radius = circleRect.rect.width / 2;
-
-            if (Vector2.Distance(center, localPoint) <= radius)
-            {
-                spinRect.transform.position = touch.position;
-            }
-            else
-            {
-                Vector2 clampedPosition = spinRect.transform.position;
-                spinRect.transform.position = clampedPosition;
-            }
-            Vector2 localSpinRectPoint = spinRect.anchoredPosition;
-
-            float normalizedX = localSpinRectPoint.x / radius;
-            float normalizedY = localSpinRectPoint.y / radius;
-
-            Vector3 newSpinMarkPosition = new Vector3(spinMark.transform.localPosition.x, normalizedY * 0.03f, normalizedX * 0.03f * -1);
-            spinMark.transform.localPosition = newSpinMarkPosition;
-            newSpinMarkPosition = spinMark.transform.position;
-            spinMark.transform.position = cueBall.GetComponent<MeshRenderer>().bounds.ClosestPoint(newSpinMarkPosition);
-            spinIndicator.anchoredPosition = new Vector2(normalizedX * 50, normalizedY * 50);
+            spinRect.transform.position = pos;
         }
+        else
+        {
+            Vector2 clampedPosition = spinRect.transform.position;
+            spinRect.transform.position = clampedPosition;
+        }
+        Vector2 localSpinRectPoint = spinRect.anchoredPosition;
+
+        float normalizedX = localSpinRectPoint.x / radius;
+        float normalizedY = localSpinRectPoint.y / radius;
+
+        Vector3 newSpinMarkPosition = new Vector3(spinMark.transform.localPosition.x, normalizedY * 0.03f, normalizedX * 0.03f * -1);
+        spinMark.transform.localPosition = newSpinMarkPosition;
+        newSpinMarkPosition = spinMark.transform.position;
+        spinMark.transform.position = cueBall.GetComponent<MeshRenderer>().bounds.ClosestPoint(newSpinMarkPosition);
+        spinIndicator.anchoredPosition = new Vector2(normalizedX * 50, normalizedY * 50);
+        
     }
 
-    IEnumerator LookAtTarget(GameObject obj)
-    {
-        Debug.Log("here");
-        time = 0;
-        duration = .8f;
-        targetBall = obj;
-        Vector3 direction = targetBall.transform.position - cueAnchor.transform.position;
-        direction.y = 0;
-        direction.Normalize();
-
-        Quaternion newRotation = Quaternion.LookRotation(direction);
-        cueAnchor.transform.DORotateQuaternion(Quaternion.Euler(0, newRotation.eulerAngles.y - 90, 0), duration).SetEase(Ease.OutSine);
-
-
-        //while (time < duration)
-        //{
-        //    time += Time.deltaTime;
-        //    float t = Mathf.SmoothStep(0, 1, time / duration);
-        //    cueAnchor.transform.rotation = Quaternion.Slerp(cueAnchor.transform.rotation, Quaternion.Euler(0, newRotation.eulerAngles.y - 90, 0), t);
-        //    yield return null;
-        //}
-        yield return null;
-        looked = false;
-    }
+    
 
     #endregion
 
@@ -297,6 +274,7 @@ public class GamePlayController : MonoBehaviour
     IEnumerator HandleCpuPlay()
     {
         poolCam.gameState = PoolCamBehaviour.GameState.Waiting;
+        EventHandler.WaitCPU?.Invoke();
         yield return new WaitUntil(() => poolCam.doneCameraMove);
         poolCam.doneCameraMove = false;
 
@@ -601,7 +579,7 @@ public class GamePlayController : MonoBehaviour
         cue.SetActive(true);
         cue.transform.localPosition = cueOgPos;
 
-        poolCam.gameState = PoolCamBehaviour.GameState.Reset;
+        EventHandler.ResetCam?.Invoke();
         isWaiting = false;
         if (manager.players[manager.currentPlayer].name == "CPU")
         {
@@ -634,6 +612,8 @@ public class GamePlayController : MonoBehaviour
             manager.startPanel.SetActive(true);
             manager.placeBallPop.SetActive(true);
             poolCam.gameState = PoolCamBehaviour.GameState.Break;
+            HandleBreak();
+            poolCam.PlaceCamera();
         }
         isFoul = false;
         yield return null;

@@ -14,7 +14,7 @@ public class UIManager : MonoBehaviour
     [SerializeField] RectTransform homePanel,playPanel , gameplayPanel, gameStartPanel;
     [SerializeField] GameObject gameManager, multiplayerPanel, networkObject;
     [SerializeField] TMP_InputField nameInput;
-    [SerializeField] TextMeshProUGUI statusText;
+    [SerializeField] TextMeshProUGUI statusText;    
     int index;
 
     [Header("MainMenu")]

@@ -21,7 +21,8 @@ public class Pocket : MonoBehaviour
         if (other.gameObject.CompareTag("cueBall"))
         {
             playerController.isFoul = true;
-            Popup.instance.CreatePopup("Foul!!Cue ball pocketed");
+
+            StartCoroutine(GameManager.instance.Popup("Foul!! Cue ball pocketed"));
         }
 
         else if (pocketedBall.ballType == BallBehaviour.BallType.black)
