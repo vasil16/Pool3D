@@ -14,7 +14,7 @@ public class Pocket : MonoBehaviour
 
     private void OnCollisionEnter(Collision other)
     {
-        if(!playerController.isFoul)playerController.gameAudio.PlayOneShot(pocketClip);
+        if(!playerController.isFoul)GameManager.instance.PlaySound(pocketClip);
         BallBehaviour pocketedBall = other.gameObject.GetComponent<BallBehaviour>();
         other.gameObject.GetComponent<Rigidbody>().constraints = RigidbodyConstraints.None;
 
@@ -81,8 +81,7 @@ public class Pocket : MonoBehaviour
                         }
                     }
 
-                    playerController.player1Txt.text = GameManager.instance.player1.BallType + "";
-                    playerController.player2Txt.text = GameManager.instance.player2.BallType + "";
+                    
                     playerController.pocketed = true;
                     GameManager.instance.SetBallImages();
                     foreach (GameObject gBall in GameManager.instance.pocketedBalls)

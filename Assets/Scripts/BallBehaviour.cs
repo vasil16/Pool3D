@@ -11,11 +11,10 @@ public class BallBehaviour : MonoBehaviour
         black
     }
 
-    public BallType ballType;
     [SerializeField] public int ballCode;
     [SerializeField] AudioClip ballHit, cushionHit;
-
     GamePlayController playerController;
+    public BallType ballType;
 
     private void Awake()
     {
@@ -49,31 +48,29 @@ public class BallBehaviour : MonoBehaviour
                 }
 
             }
-
-
-            if (ballType == BallType.white)
-            {
-                if (!playerController.spun && playerController.hasSpin)
-                {
-                    Debug.Log("spinn power " + playerController.hitPower + "  dir " + playerController.spinMark.transform.position);
-                    //GetComponent<Rigidbody>().AddForce((transform.position - playerController.spinMark.transform.position).normalized * playerController.hitPower * 0.10f, ForceMode.Force);
-                    playerController.spun = true;
-                }
-                else if (!playerController.spun)
-                {
-                    if (!playerController.firstBreak)
-                    {
-                        Debug.Log("cut on  " + gameObject.name + " with " + collision.gameObject.name);
-                        //GetComponent<Rigidbody>().linearVelocity *= 0.4f;
-                        //StartCoroutine(CutOff());
-                        //PoolMain.instance.spun = true;
-                    }
-                }
-            }
+            //if (ballType == BallType.white)
+            //{
+            //    if (!playerController.spun && playerController.hasSpin)
+            //    {
+            //        Debug.Log("spinn power " + playerController.hitPower + "  dir " + playerController.spinMark.transform.position);
+            //        //GetComponent<Rigidbody>().AddForce((transform.position - playerController.spinMark.transform.position).normalized * playerController.hitPower * 0.10f, ForceMode.Force);
+            //        playerController.spun = true;
+            //    }
+            //    else if (!playerController.spun)
+            //    {
+            //        if (!playerController.firstBreak)
+            //        {
+            //            Debug.Log("cut on  " + gameObject.name + " with " + collision.gameObject.name);
+            //            //GetComponent<Rigidbody>().linearVelocity *= 0.4f;
+            //            //StartCoroutine(CutOff());
+            //            //PoolMain.instance.spun = true;
+            //        }
+            //    }
+            //}
         }
         else if (collision.gameObject.CompareTag("pocket"))
         {
-            playerController.gameAudio.PlayOneShot(cushionHit);
+            GameManager.instance.PlaySound(cushionHit);
         }
 
     }

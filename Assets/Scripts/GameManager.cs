@@ -5,6 +5,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
 using Fusion;
+using TMPro;
 
 public class GameManager : MonoBehaviour
 {
@@ -18,6 +19,8 @@ public class GameManager : MonoBehaviour
     [SerializeField] Image[] p1Balls, p2Balls;
     [SerializeField] GameObject[] playerIndicator;
     [SerializeField] Text messageText;
+    [SerializeField] public TextMeshProUGUI player1Txt, player2Txt;
+    [SerializeField] AudioClip uiFx;
     public string localPlayerName;
     public NetworkRunner runner;
 
@@ -39,10 +42,16 @@ public class GameManager : MonoBehaviour
 
     private void Awake()
     {
-        instance = this;
-        //if (gameMode == GameMode.online) return;
+        if (instance == null)
+        {
+            instance = this;
+            DontDestroyOnLoad(this.gameObject);
+        }
+        else
+        {
+            Destroy(this);
+        }
         playerController = GamePlayController.instance;
-        //playerController.manager = this;
     }
 
     private void OnEnable()
@@ -59,7 +68,6 @@ public class GameManager : MonoBehaviour
         }
         else
         {
-            playerController = GamePlayController.instance;
             playerController.manager = this;
             SetupPlayers();
         }
@@ -76,6 +84,8 @@ public class GameManager : MonoBehaviour
 
     public void SetupOnlinePlayers(string p1, string p2, NetworkPlayer netPlayer1, NetworkPlayer netPlayer2)
     {
+        player1Txt.text = p1;
+        player2Txt.text = p2;
         player1 = new Player(p1, p1Balls, netPlayer1);
         player2 = new Player(p2, p2Balls, netPlayer2);
         players[Users.player1] = player1;
@@ -126,6 +136,11 @@ public class GameManager : MonoBehaviour
             placeBallPop.SetActive(players[currentPlayer].name != "CPU");
         }
         //tossTxt.gameObject.SetActive(false);
+    }   
+
+    public void PlayUIFx()
+    {
+        gameFx.PlayOneShot(uiFx);
     }
 
     private IEnumerator LerpTextAlpha(Text text, float startAlpha, float endAlpha, float duration)
@@ -149,6 +164,8 @@ public class GameManager : MonoBehaviour
 
     public void SetBallImages()
     {
+        player1Txt.text = player1.BallType + "";
+        player2Txt.text = player2.BallType + "";
         bool isCurrentPlayerStripe = players[currentPlayer].BallType == BallBehaviour.BallType.stripe;
         UpdatePlayerBalls(isCurrentPlayerStripe);
     }
@@ -216,8 +233,15 @@ public class GameManager : MonoBehaviour
     {
         if (ballhitCount % 2 == 0 && !playerController.isFoul && playerController.isWaiting)
         {
-            playerController.gameAudio.PlayOneShot(clip);
+            gameFx.PlayOneShot(clip);
         }
+    }
+
+    [SerializeField] AudioSource gameFx;
+
+    public void PlaySound(AudioClip clip)
+    {
+        gameFx.PlayOneShot(clip);
     }
 
     public IEnumerator Popup(string message)

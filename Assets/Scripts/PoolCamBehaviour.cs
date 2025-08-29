@@ -17,9 +17,6 @@ public class PoolCamBehaviour : MonoBehaviour
     GamePlayController playerController;
 
 
-    private bool isZoomingIn = false;
-    private bool isZoomingOut = false;
-
     public enum GameState
     {
         Break,
@@ -73,36 +70,6 @@ public class PoolCamBehaviour : MonoBehaviour
     }
 
 
-    //void Update()
-    //{
-    //    tCount = Input.touchCount;
-
-    //    switch (gameState)
-    //    {
-    //        case GameState.Break:
-    //            //Break();
-    //            return;
-
-    //        case GameState.Aim:
-    //            playerController.RenderTrajectory();
-    //            //Aim();
-    //            break;
-
-    //        case GameState.Waiting:
-    //            //StartCoroutine(WaitCPU());
-    //            return;
-
-    //        case GameState.Reset:
-    //            if (gameState != prevState)
-    //            {
-    //                //StartCoroutine(ResetCam());
-    //            }
-    //            break;
-    //    }
-    //    CameraAction();
-    //    prevState = gameState;
-    //}
-
     public void SetInitialCameraAnim()
     {
         StartCoroutine(SetCamera());
@@ -111,23 +78,9 @@ public class PoolCamBehaviour : MonoBehaviour
     IEnumerator SetCamera()
     {
         yield return null;
-
-        float duration = 1f, time = 0f;
-        Vector3 startPos = transform.GetChild(0).localPosition;
+        float duration = 1f;
         Vector3 endPos = new Vector3(-2.18f, 1.44f, 0);
-        float velocity = 0f;
-
-        //while (time < duration)
-        //{
-        //    time += Time.deltaTime;
-        //    float smoothT = Mathf.SmoothDamp(0, 1, ref velocity, duration);
-        //    transform.GetChild(0).localPosition = Vector3.Lerp(startPos, endPos, time/duration);
-        //    yield return null; 
-        //}
-
-        transform.GetChild(0).DOLocalMove(endPos, 1f);
-
-        //transform.GetChild(0).localPosition = endPos;
+        transform.GetChild(0).DOLocalMove(endPos, duration);
     }
 
     void CameraAction()
@@ -196,45 +149,6 @@ public class PoolCamBehaviour : MonoBehaviour
         yield return null;
         
     }
-
-
-    #region Zoom
-
-    public void ZoomIn()
-    {
-        //cam.fieldOfView = Mathf.Lerp(cam.fieldOfView, minFov, zoomSpeed * Time.deltaTime);
-        cam.fieldOfView -= 5 * Time.smoothDeltaTime;
-    }
-
-    public void ZoomOut()
-    {
-        //cam.fieldOfView = Mathf.Lerp(cam.fieldOfView, maxFov, zoomSpeed * Time.deltaTime);
-        cam.fieldOfView += 5 * Time.smoothDeltaTime;
-    }
-
-    public void StartZoomIn()
-    {
-        isZoomingIn = true;
-        isZoomingOut = false;
-    }
-
-    public void StopZoomIn()
-    {
-        isZoomingIn = false;
-    }
-
-    public void StartZoomOut()
-    {
-        isZoomingIn = false;
-        isZoomingOut = true;
-    }
-
-    public void StopZoomOut()
-    {
-        isZoomingOut = false;
-    }
-
-    #endregion
 
     bool cut, dragRotationActive ,looked;
     public float swipeSpeedX, swipeSpeedY;
@@ -309,11 +223,6 @@ public class PoolCamBehaviour : MonoBehaviour
             transform.position = new Vector3(transform.position.x, transform.position.y, Mathf.Lerp(zOffset, actualZPos, t2 / dur));
             yield return null;
         }
-        //transform.DOMoveZ(zOffset, .2f).SetEase(Ease.OutSine).OnComplete(() =>
-        //{
-        //    transform.DOMoveZ(actualZPos, .8f).SetEase(Ease.OutSine).OnComplete(() => cut = false);
-        //});
-        //yield return null;
         cut = false;
     }
 
@@ -379,7 +288,6 @@ public class PoolCamBehaviour : MonoBehaviour
 
     public void WaitCPU()
     {
-        //float time = 0;
         float duration = 1f;
         Vector3 currentPos = transform.position;
         Quaternion currentRot = transform.rotation;
@@ -418,10 +326,8 @@ public class PoolCamBehaviour : MonoBehaviour
         StopAllCoroutines();
         Vector3 startPos = transform.position;
         Quaternion startRotation = transform.rotation;
-        //float time = 0;
         float duration = 0.3f;
         transform.DORotateQuaternion(Quaternion.Euler(0, cueStick.eulerAngles.y, 0), duration).SetEase(Ease.OutSine);
         transform.DOMove(cueStick.position + stickFollowOffset, duration).SetEase(Ease.OutSine).OnComplete(() => gameState = GameState.Aim);
-        //gameState = GameState.Aim;
     }
 }

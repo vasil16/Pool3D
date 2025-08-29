@@ -2,7 +2,6 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
-using TMPro;
 using DG.Tweening;
 using System;
 
@@ -22,9 +21,8 @@ public class GamePlayController : MonoBehaviour
     [SerializeField] private PoolCamBehaviour poolCam;
     [SerializeField] private PowerControl power;
     [SerializeField] private RectTransform spinRect, circleRect, spinIndicator;
-    [SerializeField] public TextMeshProUGUI player1Txt, player2Txt;
-    [SerializeField] public GameObject[] pockets;
-    [SerializeField] public AudioSource gameAudio;
+    
+    [SerializeField] private GameObject[] pockets;
     [SerializeField] public AudioClip cueHit, rolling;
     [SerializeField] Text fpsText;
 
@@ -149,27 +147,13 @@ public class GamePlayController : MonoBehaviour
 
     [SerializeField] RectTransform spinCotrolUI;
 
-    #region InputHandle
     void HandleTouchInput()
     {                
         if (poolCam.gameState == PoolCamBehaviour.GameState.Aim)
         {
             RenderTrajectory();
             return;
-        }
-
-        //pRay = poolCam.GetComponentInChildren<Camera>().ScreenPointToRay(touch.position);
-        //if (Physics.Raycast(pRay, out bHit, closeMask) && bHit.collider.gameObject.CompareTag("playBall") && !looked)
-        //{
-        //    LookAt(bHit.collider.gameObject);
-        //    looked = true;
-        //}
-        //if (touch.phase == TouchPhase.Ended && dragPower)
-        //{
-        //    StartCoroutine(PlayShot());
-        //}
-
-        
+        }        
     }
 
     void MoveCueBall(Vector2 screenDelta)
@@ -186,8 +170,9 @@ public class GamePlayController : MonoBehaviour
 
         Vector3 move = camRight * screenDelta.x + camForward * screenDelta.y;
 
+        Vector3 invertMove = camRight * screenDelta.y + camForward * -screenDelta.x;
         cueBall.transform.localPosition += move;
-        cueBall.transform.RotateAroundLocal(move, .3f);
+        cueBall.transform.RotateAroundLocal(invertMove, .1f);
 
         //clamp
         if (firstBreak)
@@ -244,10 +229,6 @@ public class GamePlayController : MonoBehaviour
         spinIndicator.anchoredPosition = new Vector2(normalizedX * 50, normalizedY * 50);
         
     }
-
-    
-
-    #endregion
 
     #region CpuPlay
     public Transform lockedPocket;
@@ -496,7 +477,7 @@ public class GamePlayController : MonoBehaviour
 
         Vector3 direction = cueAnchor.transform.right.normalized;
         cue.SetActive(false);
-        gameAudio.PlayOneShot(cueHit);
+        GameManager.instance.PlaySound(cueHit);
         Vector3 offset = forceAt.position - spinMark.transform.position;
         Vector3 spinDirection = Vector3.Cross(direction, offset.normalized);
 
@@ -513,7 +494,7 @@ public class GamePlayController : MonoBehaviour
         cue.SetActive(false);
         powerBar.SetActive(false);
 
-        gameAudio.PlayOneShot(cueHit);
+        GameManager.instance.PlaySound(cueHit);
 
         Vector3 offset = forceAt.position - spin;
         Vector3 spinDirection = Vector3.Cross(direction, offset.normalized);

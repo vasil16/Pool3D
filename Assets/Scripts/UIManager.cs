@@ -39,6 +39,11 @@ public class UIManager : MonoBehaviour
         //AnimateUIEntry();
     }
 
+    public void test()
+    {
+        Debug.Log("hii");
+    }
+
     void AnimateUIEntry()
     {
         title.DOAnchorPos(titleActivePos,1f).SetEase(Ease.InOutBack);
@@ -57,12 +62,9 @@ public class UIManager : MonoBehaviour
     }
 
     public void PlayClick(int index)
-    {
-        foreach(Transform t in homePanel.transform)
-        {
-            this.index = index;
-            //AnimateUIExit(PlayButtonCallback);
-        }
+    {        
+        this.index = index;
+        //AnimateUIExit(PlayButtonCallback);        
         PlayButtonCallback();
     }
 
@@ -73,7 +75,6 @@ public class UIManager : MonoBehaviour
         gameStartPanel.gameObject.SetActive(true);
         gameManager.gameObject.SetActive(true);
         GameManager.instance.gameMode = index == 0 ? GameManager.GameMode.offline : GameManager.GameMode.cpu;
-        //GameObject.FindObjectOfType<PoolCamBehaviour>().SetInitialCameraAnim();
     }
 
     public void PlayOnlineCallback()
@@ -94,8 +95,6 @@ public class UIManager : MonoBehaviour
         }
 
         GameManager.instance.localPlayerName = playerName;
-        statusText.text = "Searching for opponent...";
-        //findMatchButton.interactable = false;
         statusText.text = "Searching for opponent...";
         nameInput.interactable = false;
 
