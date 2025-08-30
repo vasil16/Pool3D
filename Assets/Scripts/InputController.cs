@@ -1,3 +1,4 @@
+using Fusion;
 using Unity.AppUI.UI;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -17,19 +18,16 @@ public class InputController : MonoBehaviour
 
     [SerializeField] PoolCamBehaviour camB;
 
-    // Swipe / Hold tracking
     private Vector2 touchStartPos;
     private float touchStartTime;
 
     [Header("Swipe Settings")]
-    public float swipeMinDistance = 100f;   // in pixels
-    public float swipeMinSpeed = 500f;      // px/sec
+    public float swipeMinDistance = 100f;   
+    public float swipeMinSpeed = 500f;      
     public float swipeDurationThreshold =.5f;
 
     [Header("Hold Settings")]
-    public float holdThreshold = 0.3f;      // seconds
-
-    
+    public float holdThreshold = 0.3f; 
 
     private void Awake()
     {
@@ -43,16 +41,12 @@ public class InputController : MonoBehaviour
     {
         inputActions.Gameplay.Enable();
 
-        // Tap
         inputActions.Gameplay.Tap.performed += HandleTap;
 
-        // Drag
         inputActions.Gameplay.Drag.performed += HandleDrag;
 
-        // Touch position
         inputActions.Gameplay.Touch.performed += HandleTouch;
 
-        // Press (finger down/up)
         inputActions.Gameplay.Press.started += HandleTouchStart;
         inputActions.Gameplay.Press.canceled += HandleTouchEnd;
     }
@@ -68,13 +62,13 @@ public class InputController : MonoBehaviour
         inputActions.Gameplay.Disable();
     }
 
-    // 🔹 Tap
+
     private void HandleTap(InputAction.CallbackContext ctx)
     {
         if(camB.gameState == PoolCamBehaviour.GameState.Aim)
         {
             Vector2 pos = inputActions.Gameplay.Touch.ReadValue<Vector2>();
-            Debug.Log($"[InputController] Tap at: {pos}");
+            //Debug.Log($"[InputController] Tap at: {pos}");
             pRay = Camera.main.ScreenPointToRay(pos);
             if (Physics.Raycast(pRay, out bHit, closeMask) && bHit.collider.gameObject.CompareTag("playBall"))
             {
@@ -85,29 +79,27 @@ public class InputController : MonoBehaviour
 
     Vector2 delta;
 
-    // 🔹 Drag
     private void HandleDrag(InputAction.CallbackContext ctx)
     {
         delta = ctx.ReadValue<Vector2>();
-        Debug.Log($"[InputController] Drag delta: {delta}");
+        //Debug.Log($"[InputController] Drag delta: {delta}");
 
     }
 
-    // 🔹 Touch (position)
     private void HandleTouch(InputAction.CallbackContext ctx)
     {
         Vector2 pos = ctx.ReadValue<Vector2>();
-        Debug.Log($"[InputController] Touch at: {pos}");
+        //Debug.Log($"[InputController] Touch at: {pos}");
         if(Utils.IsPointerOverUIObject(pos))
         {
             if(TappedOver(circleRect,pos))
             {
-                Debug.Log("over spin");
+                //Debug.Log("over spin");
                 EventHandler.AddSpin?.Invoke(pos);
             }
             else if (TappedOver(dragRotateRect, pos))
             {
-                Debug.Log("over spin");
+                //Debug.Log("over drag");
                 EventHandler.RotateCameraBreak?.Invoke(delta);
             }
         }
@@ -124,7 +116,6 @@ public class InputController : MonoBehaviour
         }
     }
 
-    // 🔹 Press Start (finger down)
     private void HandleTouchStart(InputAction.CallbackContext ctx)
     {
         touchStartPos = inputActions.Gameplay.Touch.ReadValue<Vector2>();
@@ -132,11 +123,10 @@ public class InputController : MonoBehaviour
 
         // ---------------------------
         // HOLD LOGIC (start)
-        Debug.Log($"[InputController] Hold started at: {touchStartPos}");
+        //Debug.Log($"[InputController] Hold started at: {touchStartPos}");
         // ---------------------------
     }
 
-    // 🔹 Press End (finger up)
     private void HandleTouchEnd(InputAction.CallbackContext ctx)
     {
         Vector2 touchEndPos = inputActions.Gameplay.Touch.ReadValue<Vector2>();
@@ -149,7 +139,7 @@ public class InputController : MonoBehaviour
         if (delta.magnitude > swipeMinDistance && speed > swipeMinSpeed && duration<swipeDurationThreshold)
         {
             Vector2 direction = delta.normalized;
-            Debug.Log($"[InputController] Swipe detected! Direction: {direction}, Speed: {speed}");
+            //Debug.Log($"[InputController] Swipe detected! Direction: {direction}, Speed: {speed}");
             if (Utils.IsPointerOverUIObject(touchStartPos)) return;
             if (camB.gameState==PoolCamBehaviour.GameState.Break)
             {
@@ -166,7 +156,7 @@ public class InputController : MonoBehaviour
         // HOLD LOGIC (end)
         if (duration >= holdThreshold)
         {
-            Debug.Log($"[InputController] Hold ended at: {touchEndPos}, Duration: {duration:F2}s");
+            //Debug.Log($"[InputController] Hold ended at: {touchEndPos}, Duration: {duration:F2}s");
         }
         // ---------------------------
     }

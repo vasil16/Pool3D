@@ -98,61 +98,71 @@ public class UIManager : MonoBehaviour
         statusText.text = "Searching for opponent...";
         nameInput.interactable = false;
 
-        StartCoroutine(InitOnlineGame()); // Starts Fusion networking
+        // Simple call to start online game
+        GameNetworkManager.Instance.StartGame(GameNetworkManager.NetworkGameMode.Online1v1);
     }
 
-    IEnumerator InitOnlineGame()
+    public void HideMultiplayerPanel()
     {
-        yield return new WaitForSeconds(0.3f); // Optional delay
-        StartGame(); // Starts the actual online session
-    }
-
-   
-    private NetworkRunner _runner;
-
-    async void StartGame()
-    {
-        // Create
-        // the Fusion runner and let it know that we will be providing user input
-
-        _runner = gameObject.AddComponent<NetworkRunner>();
-        _runner.ProvideInput = true;
-        _runner.AddCallbacks(networkObject.GetComponent<NetworkPlayersHandler>());
-        GameManager.instance.runner = _runner;
-        // Create the NetworkSceneInfo from the current scene
-        var scene = SceneRef.FromIndex(SceneManager.GetActiveScene().buildIndex);
-        var sceneInfo = new NetworkSceneInfo();
-        if (scene.IsValid)
+        if (multiplayerPanel != null)
         {
-            sceneInfo.AddSceneRef(scene, LoadSceneMode.Additive);
+            multiplayerPanel.SetActive(false);
+            Debug.Log("Multiplayer panel hidden");
         }
+    }
 
-        // Start or join (depends on gamemode) a session with a specific name
-        var result = await _runner.StartGame(new StartGameArgs()
+    public void ShowGameplayUI()
+    {
+        if (gameplayPanel != null)
         {
-            GameMode = GameMode.AutoHostOrClient,
-            SessionName = "TestRoom",
-            Scene = scene,
-            SceneManager = gameObject.AddComponent<NetworkSceneManagerDefault>()
-        });
+            gameplayPanel.gameObject.SetActive(true);
+            Debug.Log("Gameplay UI shown");
+        }
+    
+        if (gameStartPanel != null)
+        {
+            gameStartPanel.gameObject.SetActive(true);
+            Debug.Log("Game start panel shown");
+        }
+    }
 
-        if (result.Ok)
+    public void HideHomePanel()
+    {
+        if (homePanel != null)
         {
-            Debug.Log("Fusion: Game started successfully.");
+            homePanel.gameObject.SetActive(false);
+            Debug.Log("Home panel disabled");
         }
         else
         {
-            Debug.LogError($"Fusion: Failed to start - {result.ShutdownReason}");
+            Debug.LogWarning("Home panel reference is missing!");
         }
     }
 
+    public void ShowHomePanel()
+    {
+        if (homePanel != null)
+        {
+            homePanel.gameObject.SetActive(true);
+            Debug.Log("Home panel enabled");
+        }
+    }
+
+    public void ShowPlaceBallPopup(bool show)
+    {
+        if (GameManager.instance != null && GameManager.instance.placeBallPop != null)
+        {
+            GameManager.instance.placeBallPop.SetActive(show);
+            Debug.Log($"Place ball popup {(show ? "enabled" : "disabled")}");
+        }
+    }
+
+
     public void StartOnline()
     {
-        statusText.text = "match found, starting game";
-        homePanel.gameObject.SetActive(false);
-        multiplayerPanel.gameObject.SetActive(false);
-        gameplayPanel.gameObject.SetActive(true);
-        gameStartPanel.gameObject.SetActive(true);        
+        HideMultiplayerPanel();
+        ShowGameplayUI();
+        Debug.Log("Online game UI initialized");
     }
 
 

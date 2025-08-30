@@ -92,7 +92,7 @@ public class NetworkPlayersHandler : NetworkBehaviour, INetworkRunnerCallbacks
         yield return new WaitUntil(() => players.Count == 2);
 
         // ✅ Then wait until both have valid names
-        yield return new WaitUntil(() => players.Values.All(p => !string.IsNullOrEmpty(p.PlayerName)));
+        yield return new WaitUntil(() => players.Values.All(p => !string.IsNullOrEmpty(p.PlayerName.Value)));
 
         Debug.Log("Both players ready. Names: " + string.Join(", ", players.Values.Select(p => p.PlayerName)));
 
@@ -102,7 +102,7 @@ public class NetworkPlayersHandler : NetworkBehaviour, INetworkRunnerCallbacks
         NetworkPlayer p1 = orderedPlayers[0].Value;
         NetworkPlayer p2 = orderedPlayers[1].Value;
 
-        GameManager.instance.SetupOnlinePlayers(p1.PlayerName, p2.PlayerName, p1, p2);
+        GameNetworkManager.Instance.StartGame(GameNetworkManager.NetworkGameMode.Online1v1);
 
         Debug.Log("Game starting!");
     }

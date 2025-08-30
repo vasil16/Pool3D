@@ -4,8 +4,10 @@ using UnityEngine;
 using UnityEngine.UI;
 using DG.Tweening;
 using System;
+using Fusion;
+using UnityEngine.Serialization;
 
-public class GamePlayController : MonoBehaviour
+public class GamePlayController : NetworkBehaviour
 {
     public static GamePlayController instance;
 
@@ -38,10 +40,18 @@ public class GamePlayController : MonoBehaviour
 
     public GameManager manager;
 
+    [Networked] public NetworkBool IsMyTurn { get; set; }
+
+    private bool _isOnlineMode = false;
+    private bool _isSpawned = false; // Track if network spawned
+
     private void Awake()
     {
         Application.targetFrameRate = 120;
         instance = this;
+
+        // SET ONLINE MODE HERE - safe to call anytime
+        _isOnlineMode = GameNetworkManager.Instance != null && GameNetworkManager.Instance.IsOnlineMode();
     }
 
     private void OnEnable()
@@ -107,17 +117,68 @@ public class GamePlayController : MonoBehaviour
 
     void Update()
     {
-        //Application.targetFrameRate = 120;
-        //fpsText.text = 1 / Time.deltaTime+"";
-        if (!manager || manager.players[manager.currentPlayer].name == "CPU") return;
-        if(manager.gameMode==GameManager.GameMode.online)
-        {
+        // Skip input if in online mode and not our turn
+        if (_isOnlineMode && !IsMyTurn) return;
 
+        // Skip input if in OFFLINE mode and it's CPU's turn
+        if (!_isOnlineMode && manager && manager.players[manager.currentPlayer].name == "CPU") return;
+
+        HandleTouchInput();
+    }
+
+
+    [Rpc(RpcSources.InputAuthority, RpcTargets.All)]
+    public void RPC_PlayShot(Vector3 direction, float powerValue, Vector3 spinPosition)
+    {
+        if (Object.HasStateAuthority)
+        {
+            PlaySyncedShot(direction, powerValue, spinPosition);
+
+            // Force sync all balls after shot
+            RPC_ForceAllBallsSync();
+        }
+    }
+
+    [Rpc(RpcSources.StateAuthority, RpcTargets.All)]
+    public void RPC_ForceAllBallsSync()
+    {
+        var allBalls = FindObjectsOfType<BallBehaviour>();
+        foreach (var ball in allBalls)
+        {
+            if (ball.Object != null && ball.Object.IsValid)
+            {
+                ball.RPC_ForceSync();
+            }
+        }
+    }
+
+    [Rpc(RpcSources.StateAuthority, RpcTargets.All)]
+    public void RPC_SetTurn(NetworkBool isMyTurn)
+    {
+        IsMyTurn = isMyTurn;
+
+        if (IsMyTurn && Object.HasInputAuthority)
+        {
+            // Enable UI for local player's turn
+            spinObj.SetActive(true);
+            powerBar.SetActive(true);
+            Debug.Log("It's now your turn!");
         }
         else
         {
-            HandleTouchInput();
+            // Disable UI when not our turn
+            spinObj.SetActive(false);
+            powerBar.SetActive(false);
         }
+    }
+
+    [Rpc(RpcSources.StateAuthority, RpcTargets.All)]
+    public void RPC_ResetTurn()
+    {
+        // Reset turn state (called when switching players)
+        IsMyTurn = false;
+        spinObj.SetActive(false);
+        powerBar.SetActive(false);
     }
 
     public void StartGame()
@@ -230,6 +291,25 @@ public class GamePlayController : MonoBehaviour
         
     }
 
+    [Rpc(RpcSources.StateAuthority, RpcTargets.All)]
+    public void RPC_SwitchTurn(NetworkBool isMyTurn)
+    {
+        IsMyTurn = isMyTurn;
+
+        if (IsMyTurn && Object.HasInputAuthority)
+        {
+            // Enable UI elements for the local player
+            spinObj.SetActive(true);
+            powerBar.SetActive(true);
+        }
+        else
+        {
+            // Disable UI elements for the remote player
+            spinObj.SetActive(false);
+            powerBar.SetActive(false);
+        }
+    }
+
     #region CpuPlay
     public Transform lockedPocket;
     public Vector3 hitPoint;
@@ -240,8 +320,95 @@ public class GamePlayController : MonoBehaviour
 
     Transform lockedBall;
 
+
+    public override void Spawned()
+    {
+        _isSpawned = true;
+        Debug.Log($"GamePlayController Spawned - HasInputAuthority: {Object.HasInputAuthority}");
+
+        // Don't set _isOnlineMode here yet - wait for GameManager to tell us
+    }
+
+    public void SetOnlineMode(bool isOnline)
+    {
+        _isOnlineMode = isOnline;
+        Debug.Log($"GamePlayController SetOnlineMode: {isOnline}");
+
+        if (_isOnlineMode)
+        {
+            // Initially disable all UI until we know the game state
+            SetAllUIEnabled(false);
+
+            // Check game state after a brief delay
+            StartCoroutine(CheckGameStateAfterDelay());
+        }
+        else
+        {
+            // Offline mode - enable UI based on current game state
+            if (poolCam != null)
+            {
+                UpdateUIForGameState(poolCam.gameState);
+            }
+        }
+    }
+
+    private IEnumerator CheckGameStateAfterDelay()
+    {
+        yield return new WaitForSeconds(0.5f);
+
+        if (poolCam != null && manager != null && manager.IsLocalPlayersTurn())
+        {
+            UpdateUIForGameState(poolCam.gameState);
+        }
+    }
+
+    private void UpdateUIForGameState(PoolCamBehaviour.GameState gameState)
+    {
+        switch (gameState)
+        {
+            case PoolCamBehaviour.GameState.Break:
+                SetBreakUIEnabled(true);
+                SetPlayerUIEnabled(false);
+                break;
+
+            case PoolCamBehaviour.GameState.Aim:
+                SetPlayerUIEnabled(true);
+                SetBreakUIEnabled(false);
+                break;
+
+            default:
+                SetAllUIEnabled(false);
+                break;
+        }
+    }
+
+    public void SetPlayerUIEnabled(bool enabled)
+    {
+        if (spinObj != null) spinObj.SetActive(enabled);
+        if (powerBar != null) powerBar.SetActive(enabled);
+        Debug.Log($"Player UI {(enabled ? "enabled" : "disabled")}");
+    }
+
+    public void SetBreakUIEnabled(bool enabled)
+    {
+        if (manager != null && manager.placeBallPop != null)
+            manager.placeBallPop.SetActive(enabled);
+        if (manager != null && manager.startPanel != null)
+            manager.startPanel.SetActive(enabled);
+        Debug.Log($"Break UI {(enabled ? "enabled" : "disabled")}");
+    }
+
+    public void SetAllUIEnabled(bool enabled)
+    {
+        SetPlayerUIEnabled(enabled);
+        SetBreakUIEnabled(enabled);
+    }
+
+
     IEnumerator HandleCpuCueBallPlace()
     {
+        if (GameNetworkManager.Instance.IsOnlineMode()) yield break;
+
         cueBall.transform.localPosition = new Vector3(1.2f, .768f, -.5f);
         cueAnchor.transform.SetParent(cueBall.transform);
         cueAnchor.transform.localPosition = Vector3.zero;
@@ -461,29 +628,44 @@ public class GamePlayController : MonoBehaviour
 
     public IEnumerator PlayShot()
     {
-        if (hitPower <= 5) yield break;
+        if(hitPower <= 5) yield break;
 
+        // CORRECTED: Check if local player can shoot (their turn + online mode)
+        if (_isOnlineMode && IsMyTurn && Object.HasStateAuthority)
+        {
+            Vector3 direction = cueAnchor.transform.right.normalized;
+            RPC_PlayShot(direction, hitPower, spinMark.transform.position);
+            yield break;
+        }
+
+        // Offline execution (existing code)
         poolCam.gameState = PoolCamBehaviour.GameState.Hit;
         spinObj.SetActive(false);
-        manager.placeBallButton.SetActive(false);
+
+        // FIX: Add null check for manager
+        if (manager != null && manager.placeBallButton != null)
+        {
+            manager.placeBallButton.SetActive(false);
+        }
+
         Vector3 startPos = cue.transform.localPosition;
 
-        slingDuration = Mathf.Lerp(0.4f, 0.24f, hitPower / power.maxValue);
+        float slingDuration = Mathf.Lerp(0.4f, 0.24f, hitPower / power.maxValue);
 
         cue.transform.DOLocalMove(cueOgPos, slingDuration).SetEase(Ease.OutSine);
 
         isWaiting = true;
         powerBar.SetActive(false);
 
-        Vector3 direction = cueAnchor.transform.right.normalized;
+        Vector3 directionLocal = cueAnchor.transform.right.normalized;
         cue.SetActive(false);
         GameManager.instance.PlaySound(cueHit);
         Vector3 offset = forceAt.position - spinMark.transform.position;
-        Vector3 spinDirection = Vector3.Cross(direction, offset.normalized);
+        Vector3 spinDirection = Vector3.Cross(directionLocal, offset.normalized);
 
-        ballR.AddForceAtPosition(direction * hitPower * .008f, spinMark.transform.position, ForceMode.Impulse);
-
+        ballR.AddForceAtPosition(directionLocal * hitPower * .008f, spinMark.transform.position, ForceMode.Impulse);
         ballR.AddTorque(spinDirection * hitPower * 0.008f, ForceMode.Impulse);
+
         DisableLine();
         StartCoroutine(ResetCue());
     }
@@ -506,12 +688,14 @@ public class GamePlayController : MonoBehaviour
     }
 
 
+    // In your GamePlayController.cs, update the reset methods:
+
     IEnumerator ResetCue()
     {
-        //dragPower = false;
         yield return new WaitForSeconds(2f);
         yield return new WaitUntil(BallStopped);
         yield return new WaitForSeconds(2f);
+
         ballR.linearVelocity = ballR.angularVelocity = Vector3.zero;
         spinIndicator.anchoredPosition = Vector2.zero;
         spinRect.anchoredPosition = Vector2.zero;
@@ -523,18 +707,12 @@ public class GamePlayController : MonoBehaviour
 
         if (gameOver) yield break;
 
-        if (!pocketed || isFoul)
+        // COMPLETE THE TURN - check if foul occurred
+        if (manager != null)
         {
-            manager.SwitchTurn();
-        }
-
-        manager.SetIndicator();
-
-        if (isFoul)
-        {
-            pocketed = false;
-            StartCoroutine(FoulReset());            
-            yield break;
+            bool hadFoul = isFoul;
+            isFoul = false;
+            manager.CompleteTurn(hadFoul);
         }
 
         pocketed = false;
@@ -562,7 +740,8 @@ public class GamePlayController : MonoBehaviour
 
         EventHandler.ResetCam?.Invoke();
         isWaiting = false;
-        if (manager.players[manager.currentPlayer].name == "CPU")
+
+        if (manager.players[manager.currentPlayer].name == "CPU" && !_isOnlineMode)
         {
             StartCoroutine(HandleCpuPlay());
         }
@@ -573,8 +752,6 @@ public class GamePlayController : MonoBehaviour
         }
     }
 
-    public bool ballPlace;
-
     IEnumerator FoulReset()
     {
         firstBreak = false;
@@ -584,7 +761,14 @@ public class GamePlayController : MonoBehaviour
         cueBall.transform.localRotation = Quaternion.Euler(-90, 0, 0);
         poolCam.transform.rotation = Quaternion.Euler(0, 0, 0);
         cueBall.GetComponent<Rigidbody>().isKinematic = false;
-        if (manager.players[manager.currentPlayer].name =="CPU")
+
+        // COMPLETE TURN WITH FOUL
+        if (manager != null)
+        {
+            manager.CompleteTurn(true); // true for foul
+        }
+
+        if (manager.players[manager.currentPlayer].name == "CPU")
         {
             StartCoroutine(HandleCpuCueBallPlace());
         }
@@ -599,6 +783,10 @@ public class GamePlayController : MonoBehaviour
         isFoul = false;
         yield return null;
     }
+
+    public bool ballPlace;
+
+    
 
     public void PlaceCueBall()
     {
@@ -731,71 +919,6 @@ public class GamePlayController : MonoBehaviour
     #endregion
 
     #region helpers
-
-    //public float velocityThreshold = 0.01f;
-    //public float settleTime = 0.5f;
-    //public float checkInterval = 0.1f;
-
-    //public event Action OnAllBallsStopped;
-
-    //private Coroutine checkRoutine;
-
-    //public void BeginMonitoring()
-    //{
-    //    if (checkRoutine != null)
-    //        StopCoroutine(checkRoutine);
-
-    //    checkRoutine = StartCoroutine(CheckBallsRoutine());
-    //}
-
-    //private IEnumerator CheckBallsRoutine()
-    //{
-    //    float timer = 0f;
-
-    //    while (true)
-    //    {
-    //        bool allBelowThreshold = true;
-
-    //        foreach (GameObject ball in balls)
-    //        {
-    //            Rigidbody rb = ball.GetComponent<Rigidbody>();
-    //            if (!rb || !rb.gameObject.activeInHierarchy)
-    //                continue;
-
-    //            if (rb.velocity.sqrMagnitude > velocityThreshold * velocityThreshold ||
-    //                rb.angularVelocity.sqrMagnitude > velocityThreshold * velocityThreshold)
-    //            {
-    //                allBelowThreshold = false;
-    //                break;
-    //            }
-    //        }
-
-    //        if (allBelowThreshold)
-    //        {
-    //            timer += checkInterval;
-    //            if (timer >= settleTime)
-    //                break;
-    //        }
-    //        else
-    //        {
-    //            timer = 0f;
-    //        }
-
-    //        yield return new WaitForSeconds(checkInterval);
-    //    }
-
-    //    checkRoutine = null;
-    //    OnAllBallsStopped?.Invoke();
-    //}
-
-    //public void StopMonitoring()
-    //{
-    //    if (checkRoutine != null)
-    //    {
-    //        StopCoroutine(checkRoutine);
-    //        checkRoutine = null;
-    //    }
-    //}
 
     public bool BallStopped()
     {
