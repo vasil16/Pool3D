@@ -7,6 +7,6 @@ public class CustomButton : Button, IPointerClickHandler
     {
         base.OnPointerClick(eventData);
 
-        GameManager.instance.PlayUIFx();
+        UIManager.instance.PlayUIFx();
     }
 }

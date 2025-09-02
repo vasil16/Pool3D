@@ -155,6 +155,14 @@ public class UIManager : MonoBehaviour
         gameStartPanel.gameObject.SetActive(true);        
     }
 
+    [SerializeField] AudioSource gameFx;
+    [SerializeField] AudioClip uiFx;
+
+    public void PlayUIFx()
+    {
+        gameFx.PlayOneShot(uiFx);
+    }
+
 
     public void OpenPlayPanel()
     {
