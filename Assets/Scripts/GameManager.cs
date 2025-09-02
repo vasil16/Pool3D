@@ -109,9 +109,12 @@ public class GameManager : MonoBehaviour
         }
     }
 
+    [SerializeField] GameObject startMatchPop;
+
     // ONLINE MODE METHODS
     public IEnumerator InitializeNetworkGame()
     {
+        startMatchPop.SetActive(true);
         if (_isNetworkInitialized || _isInitializing) yield break;
 
         _isInitializing = true;
@@ -132,9 +135,7 @@ public class GameManager : MonoBehaviour
             _isInitializing = false;
             yield break;
         }
-
-        // SYNC FULL UI TO ALL PLAYERS
-        SyncFullUIToAllPlayers();
+        
 
         // Setup gameplay controller
         var gameplayController = FindObjectOfType<GamePlayController>();
@@ -148,8 +149,17 @@ public class GameManager : MonoBehaviour
         _isInitializing = false;
         Debug.Log("Network game initialization complete!");
 
-        // Start the game
-        StartCoroutine(TossOnline());
+        // FIX: ONLY MASTER CLIENT INITIATES TOSS
+        if (runner != null && runner.IsSharedModeMasterClient)
+        {
+            Debug.Log("Master client initiating toss...");
+            StartCoroutine(TossOnline());
+        }
+        else
+        {
+            Debug.Log("Non-master client waiting for toss result...");
+            // Non-master clients will receive the toss result via RPC sync
+        }
     }
 
     public IEnumerator SetupOnlinePlayers()
@@ -196,29 +206,59 @@ public class GameManager : MonoBehaviour
         Debug.Log("Starting online toss...");
         yield return new WaitForSeconds(0.5f);
 
-        int rand = UnityEngine.Random.Range(0, 2);
-        currentPlayer = (Users)rand;
+        // DOUBLE CHECK: ONLY MASTER CLIENT DETERMINES TOSS RESULT
+        if (runner != null && runner.IsSharedModeMasterClient)
+        {
+            int rand = UnityEngine.Random.Range(0, 2);
+            currentPlayer = (Users)rand;
 
-        Debug.Log($"Toss result: {currentPlayer} will break");
+            Debug.Log($"Toss result: {currentPlayer} will break (Master client decided)");
 
-        // SET PROPER STATES: Breaking player gets Break, other gets Waiting
-        playerStates[currentPlayer].gameState = PoolCamBehaviour.GameState.Break;
-        playerStates[currentPlayer].isMyTurn = true;
+            // SET PROPER STATES: Breaking player gets Break, other gets Waiting
+            playerStates[currentPlayer].gameState = PoolCamBehaviour.GameState.Break;
+            playerStates[currentPlayer].isMyTurn = true;
 
-        playerStates[GetOpponent(currentPlayer)].gameState = PoolCamBehaviour.GameState.Waiting;
-        playerStates[GetOpponent(currentPlayer)].isMyTurn = false;
+            playerStates[GetOpponent(currentPlayer)].gameState = PoolCamBehaviour.GameState.Waiting;
+            playerStates[GetOpponent(currentPlayer)].isMyTurn = false;
 
-        // SYNC PLAYER STATES TO ALL PLAYERS
-        SyncPlayerGameStatesToAllPlayers();
+            SyncFullUIToAllPlayers();
 
-        playerController.isWaiting = true;
+            // SYNC THE TOSS RESULT TO ALL PLAYERS
+            SyncTossResultToAllPlayers(currentPlayer);
 
-        // SYNC UI AFTER TOSS
-        SyncUIForTossPhase();
+            playerController.isWaiting = true;
 
-        StartCoroutine(Popup($"{players[currentPlayer].name} will break"));
+            // Handle break UI based on turn
+            UpdateBreakUIAfterToss();
 
-        // Handle break UI based on turn
+            StartCoroutine(Popup($"{players[currentPlayer].name} will break"));            
+        }
+        else
+        {
+            Debug.Log("Not master client - skipping toss logic");
+            // This shouldn't happen since only master client calls this method
+            yield break;
+        }
+    }
+
+    public void SyncTossResultToAllPlayers(Users winningPlayer)
+    {
+        var networkPlayers = FindObjectsOfType<NetworkPlayer>();
+        foreach (var netPlayer in networkPlayers)
+        {
+            if (netPlayer.Object.HasStateAuthority)
+            {
+                netPlayer.RPC_SyncTossResult((int)winningPlayer);
+                break;
+            }
+        }
+    }
+
+    public void UpdateBreakUIAfterToss()
+    {
+        startMatchPop.SetActive(false);
+        UIManager.instance.HideMultiplayerPanel();
+        UIManager.instance.ShowGameplayUI();
         if (IsLocalPlayersTurn())
         {
             Debug.Log("Local player won toss - enabling break UI");
@@ -232,8 +272,6 @@ public class GameManager : MonoBehaviour
             if (startPanel != null) startPanel.SetActive(false);
             playerController.SetAllUIEnabled(false);
         }
-
-        StartCoroutine(TransitionToGameplayUI());
     }
 
     private IEnumerator TransitionToGameplayUI()
@@ -291,11 +329,19 @@ public class GameManager : MonoBehaviour
 
     public void UpdateBallImages(BallBehaviour.BallType player1BallType, BallBehaviour.BallType player2BallType)
     {
+        // ONLY update if balls are actually assigned (not white/unassigned)
+        if (player1BallType == BallBehaviour.BallType.white ||
+            player2BallType == BallBehaviour.BallType.white)
+        {
+            Debug.Log("Skipping ball image update - balls not assigned yet");
+            return;
+        }
+
         if (players.ContainsKey(Users.player1)) players[Users.player1].BallType = player1BallType;
         if (players.ContainsKey(Users.player2)) players[Users.player2].BallType = player2BallType;
 
         SetBallImages();
-        Debug.Log("Ball images updated");
+        Debug.Log("Ball images updated after assignment");
     }
 
     public void UpdatePlayerIndicator(int activePlayerIndex)
@@ -313,8 +359,8 @@ public class GameManager : MonoBehaviour
     }
 
     public void SyncUIFromNetwork(int activePlayerIndex, string player1Name, string player2Name,
-                                BallBehaviour.BallType player1BallType, BallBehaviour.BallType player2BallType,
-                                bool isBreakState)
+                            BallBehaviour.BallType player1BallType, BallBehaviour.BallType player2BallType,
+                            bool isBreakState)
     {
         // Update player names (always available)
         UpdatePlayerNames(player1Name, player2Name);
@@ -322,8 +368,9 @@ public class GameManager : MonoBehaviour
         // Update player indicator (always available)
         UpdatePlayerIndicator(activePlayerIndex);
 
-        // Only update ball images if they've been assigned (not during toss)
-        if (player1BallType != BallBehaviour.BallType.white && player2BallType != BallBehaviour.BallType.white)
+        // ONLY update ball images if they're properly assigned (not white)
+        if (player1BallType != BallBehaviour.BallType.white &&
+            player2BallType != BallBehaviour.BallType.white)
         {
             UpdateBallImages(player1BallType, player2BallType);
         }
@@ -357,32 +404,12 @@ public class GameManager : MonoBehaviour
         {
             if (netPlayer.Object.HasStateAuthority)
             {
+                // DON'T include ball types in full UI sync
                 netPlayer.RPC_SyncFullUI(
                     activePlayerIndex,
                     players[Users.player1].name,
                     players[Users.player2].name,
-                    players[Users.player1].BallType,
-                    players[Users.player2].BallType,
                     isBreakState
-                );
-                break;
-            }
-        }
-    }
-
-    public void SyncUIForTossPhase()
-    {
-        int activePlayerIndex = (int)currentPlayer;
-
-        var networkPlayers = FindObjectsOfType<NetworkPlayer>();
-        foreach (var netPlayer in networkPlayers)
-        {
-            if (netPlayer.Object.HasStateAuthority)
-            {
-                netPlayer.RPC_SyncUIForToss(
-                    activePlayerIndex,
-                    players[Users.player1].name,
-                    players[Users.player2].name
                 );
                 break;
             }
@@ -491,11 +518,21 @@ public class GameManager : MonoBehaviour
     {
         if (gameMode == GameMode.online && runner != null)
         {
-            return players[currentPlayer].netPlayer != null &&
-                   players[currentPlayer].netPlayer.IsTurn &&
-                   players[currentPlayer].netPlayer.Object.HasInputAuthority;
+            // Use the synchronized state from the dictionary
+            return playerStates.ContainsKey(currentPlayer) &&
+                   playerStates[currentPlayer].isMyTurn &&
+                   IsLocalPlayer(currentPlayer);
         }
-        return true;
+        return true; // For offline/CPU modes
+    }
+
+    private bool IsLocalPlayer(Users player)
+    {
+        if (players.ContainsKey(player) && players[player].netPlayer != null)
+        {
+            return players[player].netPlayer.Object.HasInputAuthority;
+        }
+        return false;
     }
 
     public void SetBallImages()
@@ -600,7 +637,6 @@ public class GameManager : MonoBehaviour
 }
 
 #region helperClass
-public enum PlayerType { Local, Remote, CPU }
 [System.Serializable]
 public class Player
 {
@@ -612,13 +648,7 @@ public class Player
 
     public bool IsMyTurn => netPlayer != null && netPlayer.IsTurn && netPlayer.Object.HasInputAuthority;
 
-    public Player(string name, Image[] playerBalls)
-    {
-        this.name = name;
-        this.playerBalls = playerBalls;
-    }
-
-    public Player(string name, Image[] playerBalls, NetworkPlayer netPlayer)
+    public Player(string name, Image[] playerBalls, NetworkPlayer netPlayer=null)
     {
         this.name = name;
         this.playerBalls = playerBalls;

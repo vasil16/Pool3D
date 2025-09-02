@@ -45,10 +45,10 @@ public class Pocket : MonoBehaviour
             other.gameObject.SetActive(false);
             GameManager.instance.pocketedBalls.Add(other.gameObject);
             playerController.balls.Remove(other.gameObject);
-
+            playerController.pocketed = true;
             if (playerController.firstBreak)
             {
-                playerController.pocketed = true;
+                
             }
             else
             {
@@ -92,22 +92,9 @@ public class Pocket : MonoBehaviour
                         playerController.cpuBalls.Add(ball);
                     }
                 }
-            }
-            else
-            {
-                foreach (GameObject ball in playerController.balls)
-                {
-                    if (ball.GetComponent<BallBehaviour>().ballType != pocketedBall.ballType &&
-                        ball.GetComponent<BallBehaviour>().ballType != BallBehaviour.BallType.white &&
-                        ball.GetComponent<BallBehaviour>().ballType != BallBehaviour.BallType.black)
-                    {
-                        playerController.cpuBalls.Add(ball);
-                    }
-                }
-            }
+            }            
         }
 
-        playerController.pocketed = true;
         GameManager.instance.SetBallImages();
 
         // Process already pocketed balls
@@ -157,13 +144,16 @@ public class Pocket : MonoBehaviour
     private void SyncBallAssignmentThroughNetworkPlayers()
     {
         var networkPlayers = FindObjectsOfType<NetworkPlayer>();
+        
         if (networkPlayers.Length > 0)
         {
             foreach (var netPlayer in networkPlayers)
             {
+                netPlayer.balllsAssigned = true;
                 if (netPlayer.Object.HasStateAuthority)
                 {
-                    netPlayer.RPC_SyncBallAssignment(
+                    // Use the NEW RPC method that only handles ball assignment
+                    netPlayer.RPC_SyncBallAssignmentOnly(
                         GameManager.instance.players[GameManager.Users.player1].name,
                         GameManager.instance.players[GameManager.Users.player2].name,
                         GameManager.instance.players[GameManager.Users.player1].BallType,

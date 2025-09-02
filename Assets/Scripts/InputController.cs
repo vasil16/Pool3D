@@ -1,8 +1,5 @@
-using Fusion;
-using Unity.AppUI.UI;
 using UnityEngine;
 using UnityEngine.InputSystem;
-using UnityEngine.InputSystem.EnhancedTouch;
 
 public class InputController : MonoBehaviour
 {
@@ -88,6 +85,7 @@ public class InputController : MonoBehaviour
 
     private void HandleTouch(InputAction.CallbackContext ctx)
     {
+        if (camB.gameState == PoolCamBehaviour.GameState.Waiting) return;
         Vector2 pos = ctx.ReadValue<Vector2>();
         //Debug.Log($"[InputController] Touch at: {pos}");
         if(Utils.IsPointerOverUIObject(pos))
@@ -118,6 +116,7 @@ public class InputController : MonoBehaviour
 
     private void HandleTouchStart(InputAction.CallbackContext ctx)
     {
+        if (camB.gameState == PoolCamBehaviour.GameState.Waiting) return;
         touchStartPos = inputActions.Gameplay.Touch.ReadValue<Vector2>();
         touchStartTime = Time.time;
 
@@ -129,6 +128,7 @@ public class InputController : MonoBehaviour
 
     private void HandleTouchEnd(InputAction.CallbackContext ctx)
     {
+        if (camB.gameState == PoolCamBehaviour.GameState.Waiting) return;
         Vector2 touchEndPos = inputActions.Gameplay.Touch.ReadValue<Vector2>();
         float duration = Time.time - touchStartTime;
         Vector2 delta = touchEndPos - touchStartPos;
