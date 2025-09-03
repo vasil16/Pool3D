@@ -6,6 +6,7 @@ using UnityEngine.UI;
 using UnityEngine.SceneManagement;
 using Fusion;
 using TMPro;
+using DG.Tweening;
 
 public class GameManager : MonoBehaviour
 {
@@ -20,7 +21,6 @@ public class GameManager : MonoBehaviour
     [SerializeField] GameObject[] playerIndicator;
     [SerializeField] Text messageText;
     [SerializeField] public TextMeshProUGUI player1Txt, player2Txt;
-    [SerializeField] AudioClip uiFx;
     public string localPlayerName;
     public NetworkRunner runner;
 
@@ -32,6 +32,7 @@ public class GameManager : MonoBehaviour
     public Dictionary<Users, Player> players = new();
     public Users currentPlayer;
     public GameMode gameMode;
+    [SerializeField] public GameState gameState;
 
     public Action<Users> onGameComplete;
 
@@ -39,6 +40,14 @@ public class GameManager : MonoBehaviour
 
     public enum GameMode { offline, cpu, online }
     public enum Users { player1, player2 }
+    public enum GameState
+    {
+        Break,
+        Hit,
+        Waiting,
+        Aim,
+        Reset
+    };
 
     private void Awake()
     {
@@ -82,17 +91,6 @@ public class GameManager : MonoBehaviour
         StartCoroutine(Toss());
     }
 
-    public void SetupOnlinePlayers(string p1, string p2, NetworkPlayer netPlayer1, NetworkPlayer netPlayer2)
-    {
-        player1Txt.text = p1;
-        player2Txt.text = p2;
-        player1 = new Player(p1, p1Balls, netPlayer1);
-        player2 = new Player(p2, p2Balls, netPlayer2);
-        players[Users.player1] = player1;
-        players[Users.player2] = player2;
-        StartCoroutine(TossOnline());
-    }
-
     private IEnumerator Toss()
     {
         Debug.Log("toss tt");
@@ -102,8 +100,9 @@ public class GameManager : MonoBehaviour
 
         playerController.isWaiting = true;
         playerIndicator[rand].SetActive(true);
-
         StartCoroutine(Popup($"{players[currentPlayer].name} will break"));
+        //yield return Popup($"{players[currentPlayer].name} will break");
+        yield return new WaitForSeconds(3f);
         //yield return LerpTextAlpha(tossTxt, 0, 1, 2);
 
         placeBallPop.SetActive(players[currentPlayer].name != "CPU");
@@ -112,35 +111,6 @@ public class GameManager : MonoBehaviour
         {
             playerController.StartCPUMode();
         }
-    }
-
-    private IEnumerator TossOnline()
-    {
-        Debug.Log("toss tt");
-        yield return null;
-        int rand = UnityEngine.Random.Range(0, 2);
-        currentPlayer = (Users)rand;
-
-        playerController.manager = this;
-        players[currentPlayer].netPlayer.IsTurn = true;
-        players[GetOpponent(currentPlayer)].netPlayer.IsTurn = false;
-
-        playerController.isWaiting = true;
-        playerIndicator[rand].SetActive(true);
-
-        StartCoroutine(Popup($"{players[currentPlayer].name} will break"));
-        //yield return LerpTextAlpha(tossTxt, 0, 1, 2);
-
-        if(IsLocalPlayersTurn())
-        {
-            placeBallPop.SetActive(players[currentPlayer].name != "CPU");
-        }
-        //tossTxt.gameObject.SetActive(false);
-    }   
-
-    public void PlayUIFx()
-    {
-        gameFx.PlayOneShot(uiFx);
     }
 
     private IEnumerator LerpTextAlpha(Text text, float startAlpha, float endAlpha, float duration)
@@ -198,7 +168,7 @@ public class GameManager : MonoBehaviour
         }
 
         playerController.isWaiting = false;
-        poolCam.gameState = PoolCamBehaviour.GameState.Aim;
+        gameState = GameState.Aim;
         placeBallPop.SetActive(false);
         startPanel.SetActive(false);
         playerController.StartGame();
@@ -246,10 +216,12 @@ public class GameManager : MonoBehaviour
 
     public IEnumerator Popup(string message)
     {
+        yield return null;
         messageText.text = message;
         messageObject.SetActive(true);
-        yield return new WaitForSeconds(1);
-        messageObject.SetActive(false);
+        messageObject.GetComponent<RectTransform>().DOAnchorPosY(79, .6f).SetEase(Ease.InOutCubic).OnComplete(() => 
+        messageObject.GetComponent<RectTransform>().DOAnchorPosY(-93, .6f).SetEase(Ease.InOutCubic).SetDelay(1.3f).OnComplete(() => messageObject.SetActive(false)));
+        
     }
 
     public bool CorrectBallPlayed(BallBehaviour.BallType ballType)

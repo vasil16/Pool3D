@@ -1,7 +1,5 @@
-using Unity.AppUI.UI;
 using UnityEngine;
 using UnityEngine.InputSystem;
-using UnityEngine.InputSystem.EnhancedTouch;
 
 public class InputController : MonoBehaviour
 {
@@ -71,10 +69,10 @@ public class InputController : MonoBehaviour
     // 🔹 Tap
     private void HandleTap(InputAction.CallbackContext ctx)
     {
-        if(camB.gameState == PoolCamBehaviour.GameState.Aim)
+        if(GameManager.instance && GameManager.instance.gameState == GameManager.GameState.Aim)
         {
             Vector2 pos = inputActions.Gameplay.Touch.ReadValue<Vector2>();
-            Debug.Log($"[InputController] Tap at: {pos}");
+            //Debug.Log($"[InputController] Tap at: {pos}");
             pRay = Camera.main.ScreenPointToRay(pos);
             if (Physics.Raycast(pRay, out bHit, closeMask) && bHit.collider.gameObject.CompareTag("playBall"))
             {
@@ -89,35 +87,34 @@ public class InputController : MonoBehaviour
     private void HandleDrag(InputAction.CallbackContext ctx)
     {
         delta = ctx.ReadValue<Vector2>();
-        Debug.Log($"[InputController] Drag delta: {delta}");
-
+        //Debug.Log($"[InputController] Drag delta: {delta}");
     }
 
     // 🔹 Touch (position)
     private void HandleTouch(InputAction.CallbackContext ctx)
     {
         Vector2 pos = ctx.ReadValue<Vector2>();
-        Debug.Log($"[InputController] Touch at: {pos}");
+        //Debug.Log($"[InputController] Touch at: {pos}");
         if(Utils.IsPointerOverUIObject(pos))
         {
             if(TappedOver(circleRect,pos))
             {
-                Debug.Log("over spin");
+                //Debug.Log("over spin");
                 EventHandler.AddSpin?.Invoke(pos);
             }
             else if (TappedOver(dragRotateRect, pos))
             {
-                Debug.Log("over spin");
+                //Debug.Log("over spin");
                 EventHandler.RotateCameraBreak?.Invoke(delta);
             }
         }
         else
         {
-            if(camB.gameState==PoolCamBehaviour.GameState.Aim || camB.gameState == PoolCamBehaviour.GameState.Hit)
+            if(GameManager.instance.gameState== GameManager.GameState.Aim || GameManager.instance.gameState == GameManager.GameState.Hit)
             {
                 EventHandler.DragAim?.Invoke(delta);
             }
-            else if (camB.gameState == PoolCamBehaviour.GameState.Break)
+            else if (GameManager.instance.gameState == GameManager.GameState.Break)
             {
                 EventHandler.MoveCueBall?.Invoke(delta);
             }
@@ -132,7 +129,7 @@ public class InputController : MonoBehaviour
 
         // ---------------------------
         // HOLD LOGIC (start)
-        Debug.Log($"[InputController] Hold started at: {touchStartPos}");
+        //Debug.Log($"[InputController] Hold started at: {touchStartPos}");
         // ---------------------------
     }
 
@@ -149,13 +146,13 @@ public class InputController : MonoBehaviour
         if (delta.magnitude > swipeMinDistance && speed > swipeMinSpeed && duration<swipeDurationThreshold)
         {
             Vector2 direction = delta.normalized;
-            Debug.Log($"[InputController] Swipe detected! Direction: {direction}, Speed: {speed}");
+            //Debug.Log($"[InputController] Swipe detected! Direction: {direction}, Speed: {speed}");
             if (Utils.IsPointerOverUIObject(touchStartPos)) return;
-            if (camB.gameState==PoolCamBehaviour.GameState.Break)
+            if (GameManager.instance.gameState== GameManager.GameState.Break)
             {
                 EventHandler.SwipeCueBall?.Invoke(direction);
             }
-            else if (camB.gameState == PoolCamBehaviour.GameState.Aim || camB.gameState == PoolCamBehaviour.GameState.Hit)
+            else if (GameManager.instance.gameState == GameManager.GameState.Aim || GameManager.instance.gameState == GameManager.GameState.Hit)
             {
                 EventHandler.SwipeAim?.Invoke(direction);
             }
@@ -166,7 +163,7 @@ public class InputController : MonoBehaviour
         // HOLD LOGIC (end)
         if (duration >= holdThreshold)
         {
-            Debug.Log($"[InputController] Hold ended at: {touchEndPos}, Duration: {duration:F2}s");
+            //Debug.Log($"[InputController] Hold ended at: {touchEndPos}, Duration: {duration:F2}s");
         }
         // ---------------------------
     }

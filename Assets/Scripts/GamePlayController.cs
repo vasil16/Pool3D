@@ -112,7 +112,7 @@ public class GamePlayController : MonoBehaviour
         if (!manager || manager.players[manager.currentPlayer].name == "CPU") return;
         if(manager.gameMode==GameManager.GameMode.online)
         {
-
+            
         }
         else
         {
@@ -149,7 +149,7 @@ public class GamePlayController : MonoBehaviour
 
     void HandleTouchInput()
     {                
-        if (poolCam.gameState == PoolCamBehaviour.GameState.Aim)
+        if (GameManager.instance.gameState == GameManager.GameState.Aim)
         {
             RenderTrajectory();
             return;
@@ -196,7 +196,6 @@ public class GamePlayController : MonoBehaviour
             ball.GetComponent<Rigidbody>().isKinematic = true;
         }
     }
-
 
     void HandleSpinControl(Vector2 pos)
     {
@@ -254,7 +253,7 @@ public class GamePlayController : MonoBehaviour
 
     IEnumerator HandleCpuPlay()
     {
-        poolCam.gameState = PoolCamBehaviour.GameState.Waiting;
+        GameManager.instance.gameState = GameManager.GameState.Waiting;
         EventHandler.WaitCPU?.Invoke();
         yield return new WaitUntil(() => poolCam.doneCameraMove);
         poolCam.doneCameraMove = false;
@@ -463,7 +462,7 @@ public class GamePlayController : MonoBehaviour
     {
         if (hitPower <= 5) yield break;
 
-        poolCam.gameState = PoolCamBehaviour.GameState.Hit;
+        GameManager.instance.gameState = GameManager.GameState.Hit;
         spinObj.SetActive(false);
         manager.placeBallButton.SetActive(false);
         Vector3 startPos = cue.transform.localPosition;
@@ -573,8 +572,6 @@ public class GamePlayController : MonoBehaviour
         }
     }
 
-    public bool ballPlace;
-
     IEnumerator FoulReset()
     {
         firstBreak = false;
@@ -592,7 +589,7 @@ public class GamePlayController : MonoBehaviour
         {
             manager.startPanel.SetActive(true);
             manager.placeBallPop.SetActive(true);
-            poolCam.gameState = PoolCamBehaviour.GameState.Break;
+            GameManager.instance.gameState = GameManager.GameState.Break;
             HandleBreak();
             poolCam.PlaceCamera();
         }
@@ -608,7 +605,7 @@ public class GamePlayController : MonoBehaviour
         powerBar.SetActive(false);
         manager.startPanel.SetActive(true);
         manager.placeBallPop.SetActive(true);
-        poolCam.gameState = PoolCamBehaviour.GameState.Break;
+        GameManager.instance.gameState = GameManager.GameState.Break;
     }
 
     public bool CueBallValid()

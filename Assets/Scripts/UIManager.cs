@@ -13,6 +13,7 @@ public class UIManager : MonoBehaviour
     
     [SerializeField] RectTransform homePanel,playPanel , gameplayPanel, gameStartPanel;
     [SerializeField] GameObject gameManager, multiplayerPanel, networkObject;
+    [SerializeField] CustomButton multiplierMatchButton;
     [SerializeField] TMP_InputField nameInput;
     [SerializeField] TextMeshProUGUI statusText;    
     int index;
@@ -97,54 +98,15 @@ public class UIManager : MonoBehaviour
         GameManager.instance.localPlayerName = playerName;
         statusText.text = "Searching for opponent...";
         nameInput.interactable = false;
-
+        multiplierMatchButton.interactable = false;
         StartCoroutine(InitOnlineGame()); // Starts Fusion networking
     }
 
     IEnumerator InitOnlineGame()
     {
         yield return new WaitForSeconds(0.3f); // Optional delay
-        StartGame(); // Starts the actual online session
     }
 
-   
-    private NetworkRunner _runner;
-
-    async void StartGame()
-    {
-        // Create
-        // the Fusion runner and let it know that we will be providing user input
-
-        _runner = gameObject.AddComponent<NetworkRunner>();
-        _runner.ProvideInput = true;
-        _runner.AddCallbacks(networkObject.GetComponent<NetworkPlayersHandler>());
-        GameManager.instance.runner = _runner;
-        // Create the NetworkSceneInfo from the current scene
-        var scene = SceneRef.FromIndex(SceneManager.GetActiveScene().buildIndex);
-        var sceneInfo = new NetworkSceneInfo();
-        if (scene.IsValid)
-        {
-            sceneInfo.AddSceneRef(scene, LoadSceneMode.Additive);
-        }
-
-        // Start or join (depends on gamemode) a session with a specific name
-        var result = await _runner.StartGame(new StartGameArgs()
-        {
-            GameMode = GameMode.AutoHostOrClient,
-            SessionName = "TestRoom",
-            Scene = scene,
-            SceneManager = gameObject.AddComponent<NetworkSceneManagerDefault>()
-        });
-
-        if (result.Ok)
-        {
-            Debug.Log("Fusion: Game started successfully.");
-        }
-        else
-        {
-            Debug.LogError($"Fusion: Failed to start - {result.ShutdownReason}");
-        }
-    }
 
     public void StartOnline()
     {
