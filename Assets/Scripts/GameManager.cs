@@ -91,6 +91,7 @@ public class GameManager : MonoBehaviour
         StartCoroutine(Toss());
     }
 
+
     private IEnumerator Toss()
     {
         Debug.Log("toss tt");
@@ -100,10 +101,15 @@ public class GameManager : MonoBehaviour
 
         playerController.isWaiting = true;
         playerIndicator[rand].SetActive(true);
-        StartCoroutine(Popup($"{players[currentPlayer].name} will break"));
-        //yield return Popup($"{players[currentPlayer].name} will break");
+
+        
+
+        StartCoroutine(Popup($"{players[currentPlayer].name} will break", poolCam.SetInitialCameraAnim));
+
         yield return new WaitForSeconds(3f);
+        
         //yield return LerpTextAlpha(tossTxt, 0, 1, 2);
+
 
         placeBallPop.SetActive(players[currentPlayer].name != "CPU");
         //tossTxt.gameObject.SetActive(false);
@@ -214,15 +220,28 @@ public class GameManager : MonoBehaviour
         gameFx.PlayOneShot(clip);
     }
 
-    public IEnumerator Popup(string message)
+    public IEnumerator Popup(string message, Action callBack = null)
     {
         yield return null;
+
         messageText.text = message;
         messageObject.SetActive(true);
-        messageObject.GetComponent<RectTransform>().DOAnchorPosY(79, .6f).SetEase(Ease.InOutCubic).OnComplete(() => 
-        messageObject.GetComponent<RectTransform>().DOAnchorPosY(-93, .6f).SetEase(Ease.InOutCubic).SetDelay(1.3f).OnComplete(() => messageObject.SetActive(false)));
-        
+
+        RectTransform rect = messageObject.GetComponent<RectTransform>();
+
+        rect.DOAnchorPosY(79, 0.6f).SetEase(Ease.InOutCubic).OnComplete(() =>
+        {
+            rect.DOAnchorPosY(-93, 0.6f)
+                .SetEase(Ease.InOutCubic)
+                .SetDelay(1.3f)
+                .OnComplete(() =>
+                {
+                    messageObject.SetActive(false);
+                    callBack?.Invoke();
+                });
+        });
     }
+
 
     public bool CorrectBallPlayed(BallBehaviour.BallType ballType)
     {

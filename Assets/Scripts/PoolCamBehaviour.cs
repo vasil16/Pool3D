@@ -2,7 +2,6 @@ using System.Collections;
 using UnityEngine;
 using DG.Tweening;
 
-
 public class PoolCamBehaviour : MonoBehaviour
 {
     [SerializeField] Camera cam;
@@ -10,14 +9,11 @@ public class PoolCamBehaviour : MonoBehaviour
     [SerializeField] Vector3 ballFollowOffset, stickFollowOffset, cpuWaitPosition, cpuWaitRotation;
     [SerializeField] Vector3[] cpuWaitPositions, cpuWaitRotations;
     [SerializeField] int tCount;
-    [SerializeField] float touchTime, minFov, maxFov, zoomSpeed, rotationAmount, rotationThreshold;
-    
+    [SerializeField] float touchTime, minFov, maxFov, zoomSpeed, rotationAmount, rotationThreshold, distance, orbitSpeed;
+    [SerializeField] bool stopOrbit;
     [SerializeField] SwipeDirection swipeDirection;
 
     GamePlayController playerController;
-
-
-
 
     enum SwipeDirection
     {
@@ -55,25 +51,90 @@ public class PoolCamBehaviour : MonoBehaviour
 
     void Start()
     {
+        blurMaterial.SetFloat("_BlurSize", 15);
         stickFollowOffset = transform.position - cueStick.position;
         ballFollowOffset = transform.position - cueBall.position;
         playerController = GamePlayController.instance;
         minFov = cam.fieldOfView - 10;
         maxFov = cam.fieldOfView + 10;
+        //StartCoroutine(CamWalkaround());
     }
 
+    [SerializeField] Transform table;
+
+    IEnumerator CamWalkaround()
+    {
+        yield return null;
+
+        Tween orbitTween = null;
+
+        float startAngle = Mathf.Atan2(transform.position.z - table.position.z, transform.position.x - table.position.x) * Mathf.Rad2Deg;
+
+        orbitTween = DOTween.To(
+            () => startAngle,
+            x =>
+            {
+                float rad = x * Mathf.Deg2Rad;
+                Vector3 newPos = new Vector3(
+                    table.position.x + Mathf.Cos(rad) * distance,
+                    transform.position.y,
+                    table.position.z + Mathf.Sin(rad) * distance
+                );
+                transform.position = newPos;
+                transform.LookAt(table);
+            },
+            startAngle + 360f,
+            360f / orbitSpeed
+        )
+        .SetEase(Ease.Linear)
+        .SetLoops(-1, LoopType.Restart)
+        .OnUpdate(() =>
+        {
+            if (stopOrbit)
+                orbitTween.Kill();
+        });
+    }
 
     public void SetInitialCameraAnim()
     {
+        stopOrbit = true;
         StartCoroutine(SetCamera());
     }
+
+    [SerializeField] Material blurMaterial;
+    [SerializeField] GameObject blurOverlay;
 
     IEnumerator SetCamera()
     {
         yield return null;
-        float duration = 1f;
-        Vector3 endPos = new Vector3(-2.18f, 1.44f, 0);
-        transform.GetChild(0).DOLocalMove(endPos, duration);
+        Camera.main.targetTexture = null;
+        blurOverlay.SetActive(false);
+        //float duration = 1f;
+        //Vector3 endPos = new Vector3(1.508f, 0.77f, -0.5f);
+        //Quaternion finalRotation = new Quaternion(0, 0, 0, 1);
+        //transform.DOMove(endPos, duration).SetEase(Ease.InOutCubic).OnComplete(() =>
+        //{
+        //    //ballFollowOffset = transform.position - cueBall.position;
+        //    //stickFollowOffset = transform.position - cueStick.position;
+        //});
+        //transform.DORotateQuaternion(finalRotation, duration).SetEase(Ease.InOutCubic);
+        //float currentBlur = blurMaterial.GetFloat("_BlurSize");
+        //DOTween.To(
+        //    () => currentBlur,
+        //    x =>
+        //    {
+        //        currentBlur = x;
+        //        blurMaterial.SetFloat("_BlurSize", currentBlur);
+        //    },
+        //    0f,
+        //    duration
+        //).OnComplete(() =>
+        //{
+        //    // Optional: remove the RenderTexture to free memory
+        //    Camera.main.targetTexture = null;
+        //    blurOverlay.SetActive(false);
+
+        //});
     }
 
     //void CameraAction()
@@ -175,7 +236,7 @@ public class PoolCamBehaviour : MonoBehaviour
 
     public void PlaceCamera()
     {
-        transform.DOMove (cueBall.position + ballFollowOffset,1f).SetEase(Ease.InOutCubic);
+        transform.DOMove(cueBall.position + ballFollowOffset,1f).SetEase(Ease.InOutCubic);
     }
 
     void SwipePlace(Vector2 delta)

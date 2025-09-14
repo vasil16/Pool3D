@@ -69,6 +69,9 @@ public class UIManager : MonoBehaviour
         PlayButtonCallback();
     }
 
+    [SerializeField] GameObject blurOverlay;
+    [SerializeField] Material blurMaterial;
+
     void PlayButtonCallback()
     {
         homePanel.gameObject.SetActive(false);
