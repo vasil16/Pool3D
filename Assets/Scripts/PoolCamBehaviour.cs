@@ -107,9 +107,9 @@ public class PoolCamBehaviour : MonoBehaviour
     IEnumerator SetCamera()
     {
         yield return null;
-        Camera.main.targetTexture = null;
-        blurOverlay.SetActive(false);
-        //float duration = 1f;
+        //Camera.main.targetTexture = null;
+        //blurOverlay.SetActive(false);
+        float duration = .7f;
         //Vector3 endPos = new Vector3(1.508f, 0.77f, -0.5f);
         //Quaternion finalRotation = new Quaternion(0, 0, 0, 1);
         //transform.DOMove(endPos, duration).SetEase(Ease.InOutCubic).OnComplete(() =>
@@ -118,23 +118,23 @@ public class PoolCamBehaviour : MonoBehaviour
         //    //stickFollowOffset = transform.position - cueStick.position;
         //});
         //transform.DORotateQuaternion(finalRotation, duration).SetEase(Ease.InOutCubic);
-        //float currentBlur = blurMaterial.GetFloat("_BlurSize");
-        //DOTween.To(
-        //    () => currentBlur,
-        //    x =>
-        //    {
-        //        currentBlur = x;
-        //        blurMaterial.SetFloat("_BlurSize", currentBlur);
-        //    },
-        //    0f,
-        //    duration
-        //).OnComplete(() =>
-        //{
-        //    // Optional: remove the RenderTexture to free memory
-        //    Camera.main.targetTexture = null;
-        //    blurOverlay.SetActive(false);
+        float currentBlur = blurMaterial.GetFloat("_BlurSize");
+        DOTween.To(
+            () => currentBlur,
+            x =>
+            {
+                currentBlur = x;
+                blurMaterial.SetFloat("_BlurSize", currentBlur);
+            },
+            0f,
+            duration
+        ).OnComplete(() =>
+        {
+            // Optional: remove the RenderTexture to free memory
+            Camera.main.targetTexture = null;
+            blurOverlay.SetActive(false);
 
-        //});
+        });
     }
 
     //void CameraAction()
