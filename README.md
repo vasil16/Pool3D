@@ -1,18 +1,34 @@
-🎱 3D Pool Game – Logic & Physics Engine
-
 <img width="933" height="514" alt="Screenshot 2025-07-20 at 12 32 17 AM" src="https://github.com/user-attachments/assets/ebb1c5b7-7db4-4546-bfcd-7ac22b4c4b73" />
-<img width="935" height="512" alt="Screenshot 2025-07-20 at 12 32 33 AM" src="https://github.com/user-attachments/assets/c51cc7c5-72cf-412e-9cac-4cb3ed4d0e40" />
-
-A realistic 3D pool (billiards) game focused on gameplay logic, physics simulation, and AI shot evaluation. Designed and implemented from scratch using C# and Unity, with modular architecture and reusable logic components.
 
 
+# Pool3D
 
-🚀 Features
-🎯 Physics-Based Ball Movement
+A physics-based 3D pool simulation developed in Unity to explore realistic ball dynamics, AI shot planning, modular gameplay architecture, and rendering optimization.
 
-Custom ghost ball system for predicting ball trajectories
+This project serves as an engineering sandbox where I experiment with gameplay systems and software architecture beyond commercial production work.
 
-Dynamic collision and reflection logic using vector math
+
+
+
+## Features
+
+- Realistic ball physics
+
+- AI shot selection
+
+- Camera transitions
+
+- Cue aiming system
+
+- Rule management
+
+- Pocket detection
+
+- Collision prediction
+
+- Modular gameplay architecture
+
+- URP rendering
 
 <img width="2436" height="1125" alt="IMG_5394" src="https://github.com/user-attachments/assets/8fd67804-bf2b-49f9-b310-2b304868a251" />
 
@@ -49,6 +65,23 @@ Clean, maintainable scripts for ball movement, collision detection, turn system,
 
 🔹 Math & Vector-Based Simulation
 Used raycasting, dot product, and ghost ball geometry for predictive logic and AI calculations.
+
+## Engineering Challenges
+
+One of the primary challenges was developing AI capable of selecting feasible shots rather than simply targeting the nearest ball.
+
+The solution involved:
+
+• Candidate generation
+
+• Pocket evaluation
+
+• Obstruction checks
+
+• Shot scoring
+
+• Best-shot selection
+
 
 📂 Technologies Used
 Language: C#
