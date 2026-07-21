@@ -10,7 +10,6 @@ public class GamePlayController : MonoBehaviour
     public static GamePlayController instance;
 
     public List<GameObject> balls, cpuBalls;
-
     [SerializeField] Vector4 clampTableBreak, clampTableNormal;
     [SerializeField] private Vector3 cueOgPos, cueOgRot, spinMarkOffset;
     [SerializeField] private Vector2 deltaPosition, deltaPos;
@@ -262,6 +261,11 @@ public class GamePlayController : MonoBehaviour
         {
             hitPower = power.maxValue;
             yield return new WaitForSeconds(1.7f);
+            float tf = Mathf.InverseLerp(50f, 200f, hitPower);
+            float move = Mathf.Lerp(-0.1f, -.06f, tf);
+            Debug.Log("move " +move);
+            yield return(cue.transform.DOLocalMove(new Vector3(cue.transform.localPosition.x+move,cue.transform.localPosition.y, cue.transform.localPosition.z),.7f)).WaitForCompletion();
+            Debug.Log("move complete");
             StartCoroutine(PlayShot());
             yield break;
         }
@@ -315,6 +319,12 @@ public class GamePlayController : MonoBehaviour
         // Clamp to prevent overhit
         hitPower = Mathf.Clamp(calculatedPower, 50f, 200f);
         yield return new WaitForSeconds(0.6f);
+        // -.1,0
+        float t = Mathf.InverseLerp(50f, 200f, hitPower);
+        float maxMove = Mathf.Lerp(-1f, 0f, t);
+        Debug.Log("move " +maxMove);
+        yield return (cue.transform.DOLocalMove(new Vector3(cue.transform.localPosition.x+maxMove,cue.transform.localPosition.y, cue.transform.localPosition.z),.4f));
+        Debug.Log("move complete");
         StartCoroutine(PlayShot());
     }
 

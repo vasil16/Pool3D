@@ -96,20 +96,18 @@ public class GameManager : MonoBehaviour
     {
         Debug.Log("toss tt");
         yield return null;
-        int rand = UnityEngine.Random.Range(0, 2);
+        // int rand = UnityEngine.Random.Range(0, 2);
+        int rand = 1;
         currentPlayer = (Users)rand;
 
         playerController.isWaiting = true;
         playerIndicator[rand].SetActive(true);
-
-        
 
         StartCoroutine(Popup($"{players[currentPlayer].name} will break", poolCam.SetInitialCameraAnim));
 
         yield return new WaitForSeconds(3f);
         
         //yield return LerpTextAlpha(tossTxt, 0, 1, 2);
-
 
         placeBallPop.SetActive(players[currentPlayer].name != "CPU");
         //tossTxt.gameObject.SetActive(false);

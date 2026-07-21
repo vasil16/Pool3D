@@ -224,15 +224,17 @@ public class PoolCamBehaviour : MonoBehaviour
             Vector3 direction = obj.transform.position - cueStick.transform.position;
             direction.y = 0;
             direction.Normalize();
-
             Quaternion newRotation = Quaternion.LookRotation(direction);
-            cueStick.transform.DORotateQuaternion(Quaternion.Euler(0, newRotation.eulerAngles.y - 90, 0), duration).SetEase(Ease.OutSine).OnComplete(() =>
+            Quaternion targetRot = Quaternion.Euler(0, newRotation.eulerAngles.y - 90, 0);
+
+            cueStick.transform.DORotateQuaternion(targetRot, duration).SetEase(Ease.OutCubic).OnComplete(() =>
             {
-                transform.DORotateQuaternion(Quaternion.Euler(transform.eulerAngles.x, cueStick.eulerAngles.y, transform.eulerAngles.z), .3f);
+                transform.DORotateQuaternion(Quaternion.Euler(transform.eulerAngles.x, cueStick.eulerAngles.y, transform.eulerAngles.z), duration);
                 looked = false;
             });
         }
     }
+
 
     public void PlaceCamera()
     {
@@ -375,13 +377,49 @@ public class PoolCamBehaviour : MonoBehaviour
         transform.DOMove(cpuWaitPosition, duration).SetEase(Ease.OutSine).OnComplete(()=>doneCameraMove=true);
     }
 
+    // void ResetCam()
+    // {
+    //     StopAllCoroutines();
+    //     float speed = 2f;
+    //     Vector3 startPos = transform.position;
+    //     Quaternion startRotation = transform.rotation;
+    //     Vector3 targetPos = cueStick.position + stickFollowOffset;
+    //     Quaternion targetRot = Quaternion.Euler(0, cueStick.eulerAngles.y, 0);
+    //     float posMagnitude = Vector3.Distance(startPos,targetPos);
+    //     float rotMagnitude = Quaternion.Distance(startRotation, targetRot);
+    //     // float timeReq = Mathf.InverseLerp()
+    //     float duration = 0.3f;
+    //     transform.DORotateQuaternion(Quaternion.Euler(0, cueStick.eulerAngles.y, 0), duration).SetEase(Ease.OutSine);
+    //     transform.DOMove(cueStick.position + stickFollowOffset, duration).SetEase(Ease.OutSine).OnComplete(() => GameManager.instance.gameState = GameManager.GameState.Aim);
+    // }
+
     void ResetCam()
     {
         StopAllCoroutines();
-        Vector3 startPos = transform.position;
-        Quaternion startRotation = transform.rotation;
-        float duration = 0.3f;
-        transform.DORotateQuaternion(Quaternion.Euler(0, cueStick.eulerAngles.y, 0), duration).SetEase(Ease.OutSine);
-        transform.DOMove(cueStick.position + stickFollowOffset, duration).SetEase(Ease.OutSine).OnComplete(() => GameManager.instance.gameState = GameManager.GameState.Aim);
+
+        Vector3 targetPos = cueStick.position + stickFollowOffset;
+        Quaternion targetRot = Quaternion.Euler(0, cueStick.eulerAngles.y, 0);
+
+        float moveSpeed = 8f;        // units/sec
+        float rotationSpeed = 180f;  // deg/sec
+
+        float moveDistance = Vector3.Distance(transform.position, targetPos);
+        float rotationAngle = Quaternion.Angle(transform.rotation, targetRot);
+
+        float moveTime = moveDistance / moveSpeed;
+        float rotationTime = rotationAngle / rotationSpeed;
+
+        // Both finish together
+        float duration = Mathf.Max(moveTime, rotationTime);
+
+        Sequence seq = DOTween.Sequence();
+
+        seq.Join(transform.DOMove(targetPos, duration).SetEase(Ease.Linear));
+        seq.Join(transform.DORotateQuaternion(targetRot, duration).SetEase(Ease.Linear));
+
+        seq.OnComplete(() =>
+        {
+            GameManager.instance.gameState = GameManager.GameState.Aim;
+        });
     }
 }
