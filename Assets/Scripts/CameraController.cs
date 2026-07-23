@@ -2,7 +2,7 @@ using System.Collections;
 using UnityEngine;
 using DG.Tweening;
 
-public class PoolCamBehaviour : MonoBehaviour
+public class CameraController : MonoBehaviour
 {
     [SerializeField] Camera cam;
     [SerializeField] Transform cueStick, cueBall;
@@ -13,7 +13,7 @@ public class PoolCamBehaviour : MonoBehaviour
     [SerializeField] bool stopOrbit;
     [SerializeField] SwipeDirection swipeDirection;
 
-    GamePlayController playerController;
+    GameController playerController;
 
     enum SwipeDirection
     {
@@ -54,7 +54,7 @@ public class PoolCamBehaviour : MonoBehaviour
         blurMaterial.SetFloat("_BlurSize", 15);
         stickFollowOffset = transform.position - cueStick.position;
         ballFollowOffset = transform.position - cueBall.position;
-        playerController = GamePlayController.instance;
+        playerController = GameController.instance;
         minFov = cam.fieldOfView - 10;
         maxFov = cam.fieldOfView + 10;
         //StartCoroutine(CamWalkaround());
@@ -136,45 +136,6 @@ public class PoolCamBehaviour : MonoBehaviour
 
         });
     }
-
-    //void CameraAction()
-    //{
-    //    if (gameState == GameState.Waiting) return;
-    //    if (Input.touchCount > 0)
-    //    {
-    //        foreach (Touch touch in Input.touches)
-    //        {
-    //            if (playerController.touchDisabled || Utils.IsPointerOverUIObject(touch.position)) return;
-
-    //            if (tCount == 2)
-    //            {
-
-    //                Touch touch0 = Input.GetTouch(0);
-    //                Touch touch1 = Input.GetTouch(1);
-
-    //                if (touch0.phase == TouchPhase.Ended && touch1.phase == TouchPhase.Ended)
-    //                {
-
-    //                }
-    //                else
-    //                {
-    //                    Vector2 touch0PrevPos = touch0.position - touch0.deltaPosition;
-    //                    Vector2 touch1PrevPos = touch1.position - touch1.deltaPosition;
-
-    //                    float prevTouchDeltaMag = (touch0PrevPos - touch1PrevPos).magnitude;
-    //                    float touchDeltaMag = (touch0.position - touch1.position).magnitude;
-
-    //                    float deltaMagnitudeDiff = prevTouchDeltaMag - touchDeltaMag;
-
-    //                    cam.fieldOfView += deltaMagnitudeDiff * zoomSpeed;
-    //                    cam.fieldOfView = Mathf.Clamp(cam.fieldOfView, minFov, maxFov);
-
-    //                    return;
-    //                }
-    //            }
-    //        }
-    //    }
-    //}
 
     IEnumerator RotateEffect()
     {
@@ -376,22 +337,6 @@ public class PoolCamBehaviour : MonoBehaviour
         transform.DORotate(cpuWaitRotation, duration).SetEase(Ease.OutSine);
         transform.DOMove(cpuWaitPosition, duration).SetEase(Ease.OutSine).OnComplete(()=>doneCameraMove=true);
     }
-
-    // void ResetCam()
-    // {
-    //     StopAllCoroutines();
-    //     float speed = 2f;
-    //     Vector3 startPos = transform.position;
-    //     Quaternion startRotation = transform.rotation;
-    //     Vector3 targetPos = cueStick.position + stickFollowOffset;
-    //     Quaternion targetRot = Quaternion.Euler(0, cueStick.eulerAngles.y, 0);
-    //     float posMagnitude = Vector3.Distance(startPos,targetPos);
-    //     float rotMagnitude = Quaternion.Distance(startRotation, targetRot);
-    //     // float timeReq = Mathf.InverseLerp()
-    //     float duration = 0.3f;
-    //     transform.DORotateQuaternion(Quaternion.Euler(0, cueStick.eulerAngles.y, 0), duration).SetEase(Ease.OutSine);
-    //     transform.DOMove(cueStick.position + stickFollowOffset, duration).SetEase(Ease.OutSine).OnComplete(() => GameManager.instance.gameState = GameManager.GameState.Aim);
-    // }
 
     void ResetCam()
     {

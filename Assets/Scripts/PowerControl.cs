@@ -10,7 +10,7 @@ public class PowerControl :  Slider, IPointerUpHandler, IPointerDownHandler
 
     public override void OnPointerDown(PointerEventData eventData)
     {
-        GamePlayController.instance.touchDisabled = true;
+        GameController.instance.touchDisabled = true;
     }
 
     public override void OnPointerUp(PointerEventData eventData)
@@ -22,9 +22,9 @@ public class PowerControl :  Slider, IPointerUpHandler, IPointerDownHandler
 
     private void OnSliderPointerUp()
     {
-        GamePlayController.instance.touchDisabled = false;
+        GameController.instance.touchDisabled = false;
         Debug.Log("Slider pointer up event handled.");        
-        StartCoroutine(GamePlayController.instance.PlayShot());
+        StartCoroutine(GameController.instance.PlayShot());
     }
 
     public void sliderMech(float val)
@@ -32,7 +32,7 @@ public class PowerControl :  Slider, IPointerUpHandler, IPointerDownHandler
         modValue = Mathf.Lerp(-0.0308f, -0.097f, val / maxValue);
         float t = val / maxValue;
         targetGraphic.color = Color.Lerp(ogColor, finalColor, t);
-        GamePlayController.instance.cue.transform.localPosition = new Vector3(modValue, GamePlayController.instance.cue.transform.localPosition.y, GamePlayController.instance.cue.transform.localPosition.z);
-        GamePlayController.instance.hitPower = val;
+        GameController.instance.cue.transform.localPosition = new Vector3(modValue, GameController.instance.cue.transform.localPosition.y, GameController.instance.cue.transform.localPosition.z);
+        GameController.instance.hitPower = val;
     }
 }

@@ -5,9 +5,9 @@ using UnityEngine.UI;
 using DG.Tweening;
 using System;
 
-public class GamePlayController : MonoBehaviour
+public class GameController : MonoBehaviour
 {
-    public static GamePlayController instance;
+    public static GameController instance;
 
     public List<GameObject> balls, cpuBalls;
     [SerializeField] Vector4 clampTableBreak, clampTableNormal;
@@ -17,7 +17,7 @@ public class GamePlayController : MonoBehaviour
     [SerializeField] private float  powerMultiplier, cueBallRadius, ballRadius, ballYpos, dockYpos;
     [SerializeField] private Transform forceAt;
     [SerializeField] private LineRenderer lineCue, linePath;
-    [SerializeField] private PoolCamBehaviour poolCam;
+    [SerializeField] private CameraController poolCam;
     [SerializeField] private PowerControl power;
     [SerializeField] private RectTransform spinRect, circleRect, spinIndicator;
     
@@ -466,7 +466,7 @@ public class GamePlayController : MonoBehaviour
 
     #region GameMech
 
-    float slingDuration;
+    [SerializeField] float slingDuration;
 
     public IEnumerator PlayShot()
     {
@@ -490,9 +490,9 @@ public class GamePlayController : MonoBehaviour
         Vector3 offset = forceAt.position - spinMark.transform.position;
         Vector3 spinDirection = Vector3.Cross(direction, offset.normalized);
 
-        ballR.AddForceAtPosition(direction * hitPower * .008f, spinMark.transform.position, ForceMode.Impulse);
+        ballR.AddForceAtPosition(direction * hitPower * powerMultiplier, spinMark.transform.position, ForceMode.Impulse);
 
-        ballR.AddTorque(spinDirection * hitPower * 0.008f, ForceMode.Impulse);
+        //ballR.AddTorque(spinDirection * hitPower * powerMultiplier, ForceMode.Impulse);
         DisableLine();
         StartCoroutine(ResetCue());
     }

@@ -13,7 +13,7 @@ public class InputController : MonoBehaviour
 
     [SerializeField] RectTransform dragRotateRect, circleRect;
 
-    [SerializeField] PoolCamBehaviour camB;
+    [SerializeField] CameraController camB;
 
     // Swipe / Hold tracking
     private Vector2 touchStartPos;

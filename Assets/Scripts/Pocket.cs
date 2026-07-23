@@ -5,11 +5,11 @@ public class Pocket : MonoBehaviour
 {
     [SerializeField] AudioClip pocketClip;
 
-    GamePlayController playerController;
+    GameController playerController;
 
     private void Awake()
     {
-        playerController = GamePlayController.instance;
+        playerController = GameController.instance;
     }
 
     private void OnCollisionEnter(Collision other)

@@ -13,12 +13,12 @@ public class BallBehaviour : MonoBehaviour
 
     [SerializeField] public int ballCode;
     [SerializeField] AudioClip ballHit, cushionHit;
-    GamePlayController playerController;
+    GameController playerController;
     public BallType ballType;
 
     private void Awake()
     {
-        playerController = GamePlayController.instance;
+        playerController = GameController.instance;
     }
 
     private void OnCollisionEnter(Collision collision)

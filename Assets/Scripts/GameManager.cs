@@ -12,7 +12,7 @@ public class GameManager : MonoBehaviour
 {
     public static GameManager instance;
 
-    [SerializeField] PoolCamBehaviour poolCam;
+    [SerializeField] CameraController poolCam;
     [SerializeField] AnimationCurve lerpCurve;
     [SerializeField] public GameObject placeBallPop, startPanel, restartPanel, messageObject;
     [SerializeField] Sprite[] solidBalls;
@@ -36,7 +36,7 @@ public class GameManager : MonoBehaviour
 
     public Action<Users> onGameComplete;
 
-    private GamePlayController playerController;
+    private GameController playerController;
 
     public enum GameMode { offline, cpu, online }
     public enum Users { player1, player2 }
@@ -60,7 +60,7 @@ public class GameManager : MonoBehaviour
         {
             Destroy(this);
         }
-        playerController = GamePlayController.instance;
+        playerController = GameController.instance;
     }
 
     private void OnEnable()
