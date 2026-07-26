@@ -14,7 +14,7 @@ public class GameController : MonoBehaviour
     [SerializeField] private Vector3 cueOgPos, cueOgRot, spinMarkOffset;
     [SerializeField] private Vector2 deltaPosition, deltaPos;
     [SerializeField] private GameObject targetBall, cueBall, powerBar, aimDock, spinObj;
-    [SerializeField] private float  powerMultiplier, cueBallRadius, ballRadius, ballYpos, dockYpos;
+    [SerializeField] private float  powerMultiplier, cueBallRadius, ballRadius, ballYpos, dockYpos, slingDuration;
     [SerializeField] private Transform forceAt;
     [SerializeField] private LineRenderer lineCue, linePath;
     [SerializeField] private CameraController poolCam;
@@ -464,22 +464,21 @@ public class GameController : MonoBehaviour
 
     #endregion
 
-    #region GameMech
-
-    [SerializeField] float slingDuration;
+    #region GameMech    
 
     public IEnumerator PlayShot()
     {
+        Debug.Log("h");
         if (hitPower <= 5) yield break;
-
+        Debug.Log("h1");
         GameManager.instance.gameState = GameManager.GameState.Hit;
         spinObj.SetActive(false);
         manager.placeBallButton.SetActive(false);
         Vector3 startPos = cue.transform.localPosition;
 
-        slingDuration = Mathf.Lerp(0.4f, 0.24f, hitPower / power.maxValue);
+        //slingDuration = Mathf.Lerp(0.4f, 0.24f, hitPower / power.maxValue);
 
-        cue.transform.DOLocalMove(cueOgPos, slingDuration).SetEase(Ease.OutSine);
+        yield return (cue.transform.DOLocalMove(cueOgPos, slingDuration).SetEase(Ease.OutSine)).WaitForCompletion();
 
         isWaiting = true;
         powerBar.SetActive(false);

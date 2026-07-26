@@ -93,7 +93,7 @@ LightmapSettings:
     m_ExportTrainingData: 0
     m_TrainingDataDestination: TrainingData
     m_LightProbeSampleCountMultiplier: 4
-  m_LightingDataAsset: {fileID: 112000000, guid: 970bbb6afb515442fbdff8e231e2354c,
+  m_LightingDataAsset: {fileID: 112000000, guid: cfc1e022c461c411086452a76a4e05e9,
     type: 2}
   m_LightingSettings: {fileID: 4890085278179872738, guid: b4cb7c2b5332045a890ef9e976b23708,
     type: 2}
@@ -17113,7 +17113,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 7fb2b93870aec4e58951422ca4db3425, type: 2}
+  - {fileID: 2100000, guid: 5adfa64605fc84c24b77f25359396ab9, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
