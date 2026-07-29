@@ -12,6 +12,7 @@ public class CameraController : MonoBehaviour
     [SerializeField] float touchTime, minFov, maxFov, zoomSpeed, rotationAmount, rotationThreshold, distance, orbitSpeed;
     [SerializeField] bool stopOrbit;
     [SerializeField] SwipeDirection swipeDirection;
+    Coroutine rotationCoroutine;
 
     GameController playerController;
 
@@ -275,7 +276,11 @@ public class CameraController : MonoBehaviour
         {
             swipeDirection = delta.y > 0 ? SwipeDirection.Up : SwipeDirection.Down;
         }
-        StartCoroutine(RotateEffect());        
+        if(rotationCoroutine!=null)
+        {
+            StopCoroutine(rotationCoroutine);
+        }
+        rotationCoroutine = StartCoroutine(RotateEffect());        
     }
 
     void DragAim(Vector2 delta)

@@ -31,8 +31,7 @@ public class BallBehaviour : MonoBehaviour
         }
 
         if (collision.gameObject.CompareTag("playBall"))
-        {
-            
+        {            
             if (playerController.ballAssigned)
             {
                 if (!playerController.firstHit)

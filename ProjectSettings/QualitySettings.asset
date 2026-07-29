@@ -6,7 +6,7 @@ QualitySettings:
   serializedVersion: 5
   m_CurrentQuality: 2
   m_QualitySettings:
-  - serializedVersion: 5
+  - serializedVersion: 4
     name: Very Low
     pixelLightCount: 0
     shadows: 0
@@ -34,7 +34,6 @@ QualitySettings:
     adaptiveVsyncExtraA: 0
     adaptiveVsyncExtraB: 0
     lodBias: 0.3
-    meshLodThreshold: 1
     maximumLODLevel: 0
     enableLODCrossFade: 1
     streamingMipmapsActive: 0
@@ -60,7 +59,7 @@ QualitySettings:
     terrainFadeLength: 5
     terrainMaxTrees: 50
     excludedTargetPlatforms: []
-  - serializedVersion: 5
+  - serializedVersion: 4
     name: Low
     pixelLightCount: 0
     shadows: 0
@@ -88,7 +87,6 @@ QualitySettings:
     adaptiveVsyncExtraA: 0
     adaptiveVsyncExtraB: 0
     lodBias: 0.4
-    meshLodThreshold: 1
     maximumLODLevel: 0
     enableLODCrossFade: 1
     streamingMipmapsActive: 0
@@ -102,7 +100,7 @@ QualitySettings:
     asyncUploadBufferSize: 16
     asyncUploadPersistentBuffer: 1
     resolutionScalingFixedDPIFactor: 1
-    customRenderPipeline: {fileID: 11400000, guid: 3241032d1d58a42d29975c8799bb2eb7,
+    customRenderPipeline: {fileID: 11400000, guid: 93240023a8a2441e399ba799c6f86a84,
       type: 2}
     terrainQualityOverrides: 0
     terrainPixelError: 1
@@ -114,7 +112,7 @@ QualitySettings:
     terrainFadeLength: 5
     terrainMaxTrees: 50
     excludedTargetPlatforms: []
-  - serializedVersion: 5
+  - serializedVersion: 4
     name: Medium
     pixelLightCount: 1
     shadows: 1
@@ -142,7 +140,6 @@ QualitySettings:
     adaptiveVsyncExtraA: 0
     adaptiveVsyncExtraB: 0
     lodBias: 0.7
-    meshLodThreshold: 1
     maximumLODLevel: 0
     enableLODCrossFade: 1
     streamingMipmapsActive: 0
@@ -156,7 +153,7 @@ QualitySettings:
     asyncUploadBufferSize: 16
     asyncUploadPersistentBuffer: 1
     resolutionScalingFixedDPIFactor: 1
-    customRenderPipeline: {fileID: 11400000, guid: e1260c1148f6143b28bae5ace5e9c5d1,
+    customRenderPipeline: {fileID: 11400000, guid: edfd115305aa74db4a0412096557ca94,
       type: 2}
     terrainQualityOverrides: 0
     terrainPixelError: 1
@@ -168,7 +165,7 @@ QualitySettings:
     terrainFadeLength: 5
     terrainMaxTrees: 50
     excludedTargetPlatforms: []
-  - serializedVersion: 5
+  - serializedVersion: 4
     name: High
     pixelLightCount: 2
     shadows: 2
@@ -196,7 +193,6 @@ QualitySettings:
     adaptiveVsyncExtraA: 0
     adaptiveVsyncExtraB: 0
     lodBias: 0.9
-    meshLodThreshold: 1
     maximumLODLevel: 0
     enableLODCrossFade: 1
     streamingMipmapsActive: 0
@@ -210,7 +206,7 @@ QualitySettings:
     asyncUploadBufferSize: 16
     asyncUploadPersistentBuffer: 1
     resolutionScalingFixedDPIFactor: 1
-    customRenderPipeline: {fileID: 11400000, guid: b49bc277e6e8d499aa59035001617009,
+    customRenderPipeline: {fileID: 11400000, guid: 7e53d905161fa4a42beb9ee343ddfa89,
       type: 2}
     terrainQualityOverrides: 0
     terrainPixelError: 1
@@ -222,7 +218,7 @@ QualitySettings:
     terrainFadeLength: 5
     terrainMaxTrees: 50
     excludedTargetPlatforms: []
-  - serializedVersion: 5
+  - serializedVersion: 4
     name: Very High
     pixelLightCount: 3
     shadows: 2
@@ -250,7 +246,6 @@ QualitySettings:
     adaptiveVsyncExtraA: 0
     adaptiveVsyncExtraB: 0
     lodBias: 1.5
-    meshLodThreshold: 1
     maximumLODLevel: 0
     enableLODCrossFade: 1
     streamingMipmapsActive: 1
@@ -276,7 +271,7 @@ QualitySettings:
     terrainFadeLength: 5
     terrainMaxTrees: 50
     excludedTargetPlatforms: []
-  - serializedVersion: 5
+  - serializedVersion: 4
     name: Ultra
     pixelLightCount: 4
     shadows: 2
@@ -304,7 +299,6 @@ QualitySettings:
     adaptiveVsyncExtraA: 0
     adaptiveVsyncExtraB: 0
     lodBias: 2
-    meshLodThreshold: 1
     maximumLODLevel: 0
     enableLODCrossFade: 1
     streamingMipmapsActive: 0
@@ -318,7 +312,7 @@ QualitySettings:
     asyncUploadBufferSize: 16
     asyncUploadPersistentBuffer: 1
     resolutionScalingFixedDPIFactor: 1
-    customRenderPipeline: {fileID: 11400000, guid: 4196c6a61cce54d669342b04c9159f77,
+    customRenderPipeline: {fileID: 11400000, guid: da63688590b9546698275b44739bbc48,
       type: 2}
     terrainQualityOverrides: 0
     terrainPixelError: 1
@@ -339,6 +333,7 @@ QualitySettings:
     LinuxHeadlessSimulation: 5
     Lumin: 5
     Nintendo Switch: 5
+    Nintendo Switch 2: 5
     PS4: 5
     PS5: 5
     Server: 3

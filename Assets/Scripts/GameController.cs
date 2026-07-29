@@ -18,7 +18,8 @@ public class GameController : MonoBehaviour
     [SerializeField] private Transform forceAt;
     [SerializeField] private LineRenderer lineCue, linePath;
     [SerializeField] private CameraController poolCam;
-    [SerializeField] private PowerControl power;
+    //[SerializeField] private PowerControl power;
+    [SerializeField] CuePowerControl power;
     [SerializeField] private RectTransform spinRect, circleRect, spinIndicator;
     
     [SerializeField] private GameObject[] pockets;
@@ -32,6 +33,7 @@ public class GameController : MonoBehaviour
     private Rigidbody ballR;
 
     public float hitPower, dockOffset;
+    public float maxHitPower;
 
     public bool cpuMode;
 
@@ -77,29 +79,29 @@ public class GameController : MonoBehaviour
     //    }
     //}
 
-    void OnDrawGizmos()
-    {
-        // Draw the direction to the pocket in red
-        if (lockedPocket != null && cueBall != null)
-        {
-            Gizmos.color = Color.red;
-            Gizmos.DrawLine(cueBall.transform.position, hitPoint);
-        }
+    //void OnDrawGizmos()
+    //{
+    //    // Draw the direction to the pocket in red
+    //    if (lockedPocket != null && cueBall != null)
+    //    {
+    //        Gizmos.color = Color.red;
+    //        Gizmos.DrawLine(cueBall.transform.position, hitPoint);
+    //    }
 
-        // Draw the pocket direction from the ball to the pocket in green
-        if (lastPocketDirection != Vector3.zero && cueBall != null)
-        {
-            Gizmos.color = Color.green;
-            Gizmos.DrawLine(lockedBall.transform.position, lastPocketDirection);
-        }
+    //    // Draw the pocket direction from the ball to the pocket in green
+    //    if (lastPocketDirection != Vector3.zero && cueBall != null)
+    //    {
+    //        Gizmos.color = Color.green;
+    //        Gizmos.DrawLine(lockedBall.transform.position, lastPocketDirection);
+    //    }
 
-        // Draw the cue ball hitting direction in blue
-        if (lastHittingDirection != Vector3.zero && cueBall != null)
-        {
-            Gizmos.color = Color.blue;
-            Gizmos.DrawLine(cueBall.transform.position, lastHittingDirection);
-        }
-    }
+    //    // Draw the cue ball hitting direction in blue
+    //    if (lastHittingDirection != Vector3.zero && cueBall != null)
+    //    {
+    //        Gizmos.color = Color.blue;
+    //        Gizmos.DrawLine(cueBall.transform.position, lastHittingDirection);
+    //    }
+    //}
 
 
     #endregion
@@ -231,12 +233,10 @@ public class GameController : MonoBehaviour
     #region CpuPlay
     public Transform lockedPocket;
     public Vector3 hitPoint;
-    bool playableBallFound;
-
-    Vector3 lastPocketDirection;
-    Vector3 lastHittingDirection;
-
     Transform lockedBall;
+
+    public List<CpuShotOption> debugShotOptions = new List<CpuShotOption>();
+    [SerializeField] private LayerMask ballLayerMask; // Set this to your Ball layer in Inspector
 
     IEnumerator HandleCpuCueBallPlace()
     {
@@ -248,8 +248,6 @@ public class GameController : MonoBehaviour
         yield return null;
     }
 
-    public List<CpuShotOption> debugShotOptions = new List<CpuShotOption>();
-
     IEnumerator HandleCpuPlay()
     {
         GameManager.instance.gameState = GameManager.GameState.Waiting;
@@ -259,23 +257,24 @@ public class GameController : MonoBehaviour
 
         if (firstBreak)
         {
-            hitPower = power.maxValue;
+            hitPower = MAX_POWER; // 100
             yield return new WaitForSeconds(1.7f);
-            float tf = Mathf.InverseLerp(50f, 200f, hitPower);
-            float move = Mathf.Lerp(-0.1f, -.06f, tf);
-            Debug.Log("move " +move);
-            yield return(cue.transform.DOLocalMove(new Vector3(cue.transform.localPosition.x+move,cue.transform.localPosition.y, cue.transform.localPosition.z),.7f)).WaitForCompletion();
-            Debug.Log("move complete");
+
+            // Lerp normalized to 0-100
+            float breakT = Mathf.InverseLerp(0f, MAX_POWER, hitPower);
+            float breakMove = Mathf.Lerp(-0.1f, -.06f, breakT);
+
+            yield return cue.transform.DOLocalMove(new Vector3(cue.transform.localPosition.x + breakMove, cue.transform.localPosition.y, cue.transform.localPosition.z), .7f).WaitForCompletion();
             StartCoroutine(PlayShot());
             yield break;
         }
 
         yield return new WaitForSeconds(1f);
-        var bestShot = EvaluateAllPossibleShots();
+        CpuShotOption bestShot = EvaluateAllPossibleShots();
 
         if (bestShot == null)
         {
-            Debug.Log("No valid shots.");
+            Debug.LogError("No valid CPU shots found.");
             yield break;
         }
 
@@ -283,12 +282,11 @@ public class GameController : MonoBehaviour
         lockedPocket = bestShot.pocket;
         hitPoint = bestShot.hitPoint;
 
-        Debug.Log($"CPU selected: {lockedBall.name} -> {lockedPocket.name}, Score: {bestShot.score:F2}");
+        Vector3 cueBallPos = GetFlatPosition(cueBall.transform.position);
+        Vector3 aimDirection = (GetFlatPosition(hitPoint) - cueBallPos).normalized;
 
-        Vector3 cueDirection = (hitPoint - cueBall.transform.position).normalized;
-        cueDirection.y = 0;
         cue.SetActive(true);
-        Quaternion newRotation = Quaternion.LookRotation(cueDirection);
+        Quaternion newRotation = Quaternion.LookRotation(aimDirection);
         newRotation = Quaternion.Euler(0, newRotation.eulerAngles.y - 90, 0);
 
         float elapsedTime = 0f;
@@ -302,87 +300,90 @@ public class GameController : MonoBehaviour
             yield return null;
         }
 
-        yield return new WaitForSeconds(1f);
-        //hitPower = 80f;
-        Vector3 cueDir = (hitPoint - cueBall.transform.position).normalized;
-        float basePower = 120f;
-        float cueBallFactor = 1.2f;
-        float ballToPocketFactor = 1.8f;
-        float anglePenalty = Mathf.Clamp01(1f - Mathf.Abs(Vector3.Dot(cueDir.normalized, (lockedPocket.position - lockedBall.position).normalized)));
+        yield return new WaitForSeconds(0.5f);
 
-        float cueDistance = Vector3.Distance(cueBall.transform.position, hitPoint);
-        float ballDistance = Vector3.Distance(lockedBall.position, lockedPocket.position);
+        // Calculate conditional hitPower (Scale 0 - 100)
+        Vector3 ballPos = GetFlatPosition(lockedBall.position);
+        Vector3 pocketPos = GetFlatPosition(lockedPocket.position);
 
-        // Main power equation
-        float calculatedPower = basePower + (cueDistance * cueBallFactor) + (ballDistance * ballToPocketFactor) + (anglePenalty * 40f);
+        Vector3 cueToGhost = (GetFlatPosition(hitPoint) - cueBallPos).normalized;
+        Vector3 ballToPocket = (pocketPos - ballPos).normalized;
 
-        // Clamp to prevent overhit
-        hitPower = Mathf.Clamp(calculatedPower, 50f, 200f);
-        yield return new WaitForSeconds(0.6f);
-        // -.1,0
-        float t = Mathf.InverseLerp(50f, 200f, hitPower);
-        float maxMove = Mathf.Lerp(-1f, 0f, t);
-        Debug.Log("move " +maxMove);
-        yield return (cue.transform.DOLocalMove(new Vector3(cue.transform.localPosition.x+maxMove,cue.transform.localPosition.y, cue.transform.localPosition.z),.4f));
-        Debug.Log("move complete");
-        StartCoroutine(PlayShot());
+        float cueDist = Vector3.Distance(cueBallPos, GetFlatPosition(hitPoint));
+        float ballDist = Vector3.Distance(ballPos, pocketPos);
+        float cutDot = Mathf.Clamp01(Vector3.Dot(cueToGhost, ballToPocket));
+
+        hitPower = DeduceShotPower(cueDist, ballDist, cutDot);
+
+        // Animate cue pull back mapped strictly to [0, 100]
+        float t = Mathf.Clamp01(hitPower / 100f);
+        float pullBackOffset = Mathf.Lerp(0f, -0.1f, t);
+
+        Vector3 startPos = cue.transform.localPosition;
+        Vector3 targetPullbackPos = new Vector3(startPos.x + pullBackOffset, startPos.y, startPos.z);
+
+        yield return cue.transform.DOLocalMove(targetPullbackPos, 0.4f) .SetEase(Ease.OutQuad).WaitForCompletion(); StartCoroutine(PlayShot());
+    }
+
+    const float MIN_POWER = 15f;
+    const float MAX_POWER = 100f;
+
+    // Call this to calculate hitPower based on shot conditions
+    float DeduceShotPower(float cueDist, float ballDist, float cutDot)
+    {
+        // Condition 1 & 2: Distance travel requirement
+        // Assuming table distance units scale such that combined dist adds base power requirement
+        float distancePower = (cueDist * 8f) + (ballDist * 10f);
+
+        // Base minimum force to guarantee the ball reaches the pocket edge
+        float requiredBasePower = MIN_POWER + distancePower;
+
+        // Condition 3: Cut Angle Energy Transfer Loss
+        // Cut dot is between 0.3 (steep cut) and 1.0 (straight shot)
+        // Energy transfer efficiency scales with cutDot. Thin cuts require more force.
+        float cutAngleMultiplier = 1f / Mathf.Max(cutDot, 0.25f);
+
+        float calculatedPower = requiredBasePower * cutAngleMultiplier;
+
+        return Mathf.Clamp(calculatedPower, MIN_POWER, MAX_POWER);
     }
 
     CpuShotOption EvaluateAllPossibleShots()
     {
-        List<GameObject> cpuPlayableBalls;
-        if (manager.player2.pocketedBalls.Count == 7)
-        {
-            cpuPlayableBalls =  new()
-            {
-                balls[7]
-            };
-        }
-        else
-        {
-            cpuPlayableBalls = ballAssigned ? cpuBalls : balls;
-        }
+        List<GameObject> cpuPlayableBalls = (manager.player2.pocketedBalls.Count == 7)
+            ? new List<GameObject> { balls[7] }
+            : (ballAssigned ? cpuBalls : balls);
+
         debugShotOptions.Clear();
         List<CpuShotOption> shotOptions = new List<CpuShotOption>();
 
+        Vector3 cueBallPos = GetFlatPosition(cueBall.transform.position);
+
         foreach (GameObject ball in cpuPlayableBalls)
         {
-            if (!ball.activeInHierarchy) continue;         
+            if (!ball.activeInHierarchy) continue;
+
+            Vector3 ballPos = GetFlatPosition(ball.transform.position);
 
             foreach (GameObject pocket in pockets)
             {
+                Vector3 pocketPos = GetFlatPosition(pocket.transform.position);
+
                 if (!IsShotPossible(ball, pocket)) continue;
 
-                Vector3 cueToBall = (ball.transform.position - cueBall.transform.position).normalized;
-                Vector3 ballToPocket = (pocket.transform.position - ball.transform.position).normalized;
+                Vector3 targetHitPoint = HitPoint(ballPos, pocketPos);
+                Vector3 cueToGhost = (targetHitPoint - cueBallPos).normalized;
+                Vector3 ballToPocket = (pocketPos - ballPos).normalized;
 
-                float cueAlignment = Vector3.Dot(cueToBall, ballToPocket);
-                if (cueAlignment < 0.5f) continue;
+                float alignment = Vector3.Dot(cueToGhost, ballToPocket);
+                float cueDist = Vector3.Distance(cueBallPos, targetHitPoint);
+                float pocketDist = Vector3.Distance(ballPos, pocketPos);
 
-                Vector3 hitPoint = HitPoint(ball.transform.position, pocket.transform.position);
-                float cueDist = Vector3.Distance(cueBall.transform.position, hitPoint);
+                float score = (alignment * 150f) - (cueDist * 2f) - (pocketDist * 2.5f);
 
-                Vector3 cueDir = (hitPoint - cueBall.transform.position).normalized;
-                if (Physics.SphereCast(cueBall.transform.position, cueBallRadius * 0.95f, cueDir, out RaycastHit hit, cueDist))
-                {
-                    if (hit.collider.CompareTag("playBall") && hit.collider.transform != ball.transform)
-                    {
-                        Debug.Log($"⚠️ Blocked on final aim: {ball.name} to {pocket.name} by {hit.collider.name}");
-                        continue; // reject this shot
-                    }
-                }
-
-                float pocketDist = Vector3.Distance(ball.transform.position, pocket.transform.position);
-                float alignment = Vector3.Dot(cueToBall, ballToPocket);
-
-                float score = (alignment * 100f) + (cueAlignment * 80f) - (cueDist * 1.2f) - (pocketDist * 1.5f);
-
-                CpuShotOption option = new CpuShotOption(ball.transform, pocket.transform, hitPoint, cueDist, pocketDist, alignment, cueAlignment, score);
+                CpuShotOption option = new CpuShotOption(ball.transform, pocket.transform, targetHitPoint, cueDist, pocketDist, alignment, alignment, score);
                 shotOptions.Add(option);
                 debugShotOptions.Add(option);
-
-                Debug.DrawLine(cueBall.transform.position, hitPoint, Color.green, 2f);
-                Debug.DrawLine(ball.transform.position, pocket.transform.position, Color.yellow, 2f);
             }
         }
 
@@ -391,77 +392,84 @@ public class GameController : MonoBehaviour
             shotOptions.Sort((a, b) => b.score.CompareTo(a.score));
             return shotOptions[0];
         }
-        else
+
+        // Best Fallback Evaluation
+        CpuShotOption bestFallback = null;
+        float highestFallbackScore = float.NegativeInfinity;
+
+        foreach (GameObject ball in cpuPlayableBalls)
         {
-            foreach (GameObject ball in cpuPlayableBalls)
+            if (!ball.activeInHierarchy) continue;
+            Vector3 ballPos = GetFlatPosition(ball.transform.position);
+
+            foreach (GameObject pocket in pockets)
             {
-                if (!ball.activeInHierarchy) continue;
+                Vector3 pocketPos = GetFlatPosition(pocket.transform.position);
+                Vector3 dir = (pocketPos - ballPos).normalized;
+                Vector3 fallbackHitPoint = ballPos - dir * (2f * ballRadius);
 
-                foreach (GameObject pocket in pockets)
+                float cueToBallDist = Vector3.Distance(cueBallPos, fallbackHitPoint);
+                float ballToPocketDist = Vector3.Distance(ballPos, pocketPos);
+                float alignment = Vector3.Dot((ballPos - cueBallPos).normalized, dir);
+
+                float fallbackScore = (alignment * 50f) - cueToBallDist - ballToPocketDist;
+
+                if (fallbackScore > highestFallbackScore)
                 {
-                    Vector3 dir = (pocket.transform.position - ball.transform.position).normalized;
-                    Vector3 fallbackHitPoint = ball.transform.position - dir * (2 * ballRadius);
-
-                    float cueToBallDist = Vector3.Distance(cueBall.transform.position, fallbackHitPoint);
-                    float ballToPocketDist = Vector3.Distance(ball.transform.position, pocket.transform.position);
-                    float alignment = Vector3.Dot((ball.transform.position - cueBall.transform.position).normalized, dir);
-                    float cueAlign = alignment;
-
-                    float fallbackScore = -1000f; // super low to mark it as fallback
-
-                    var fallbackShot = new CpuShotOption(ball.transform, pocket.transform, fallbackHitPoint,
-                        cueToBallDist, ballToPocketDist, alignment, cueAlign, fallbackScore);
-
-                    debugShotOptions.Add(fallbackShot);
-                    return fallbackShot;
+                    highestFallbackScore = fallbackScore;
+                    bestFallback = new CpuShotOption(ball.transform, pocket.transform, fallbackHitPoint, cueToBallDist, ballToPocketDist, alignment, alignment, fallbackScore);
                 }
             }
         }
-        return null;
+
+        if (bestFallback != null) debugShotOptions.Add(bestFallback);
+        return bestFallback;
     }
 
     bool IsShotPossible(GameObject ball, GameObject pocket)
     {
-        // Ball to pocket
-        Vector3 ballToPocket = (pocket.transform.position - ball.transform.position).normalized;
-        RaycastHit[] pocketHits = ball.GetComponent<Rigidbody>().SweepTestAll(ballToPocket);
+        Vector3 ballPos = GetFlatPosition(ball.transform.position);
+        Vector3 pocketPos = GetFlatPosition(pocket.transform.position);
+        Vector3 cueBallPos = GetFlatPosition(cueBall.transform.position);
 
-        foreach (RaycastHit hit in pocketHits)
+        Vector3 ballToPocket = (pocketPos - ballPos).normalized;
+
+        // Check path from Object Ball to Pocket
+        if (Physics.SphereCast(ballPos, ballRadius * 0.95f, ballToPocket, out RaycastHit hitPocket, Vector3.Distance(ballPos, pocketPos), ballLayerMask))
         {
-            if (hit.collider.CompareTag("playBall") || hit.collider.CompareTag("cushion"))
+            if (hitPocket.collider.gameObject != pocket)
                 return false;
         }
 
-        // Cue to ball
-        Vector3 cueDir = (ball.transform.position - cueBall.transform.position).normalized;
-        float cueDist = Vector3.Distance(cueBall.transform.position, ball.transform.position);
+        // Check path from Cue Ball to Ghost Ball HitPoint
+        Vector3 targetHitPoint = HitPoint(ballPos, pocketPos);
+        Vector3 cueToGhost = (targetHitPoint - cueBallPos).normalized;
+        float cueToGhostDist = Vector3.Distance(cueBallPos, targetHitPoint);
 
-        if (Physics.SphereCast(cueBall.transform.position, cueBallRadius * 0.95f, cueDir, out RaycastHit hitCue, cueDist))
+        // Offset SphereCast start position outside cue ball to prevent self-intersection
+        Vector3 castStart = cueBallPos + (cueToGhost * cueBallRadius);
+
+        if (Physics.SphereCast(castStart, cueBallRadius * 0.95f, cueToGhost, out RaycastHit hitCue, cueToGhostDist - cueBallRadius, ballLayerMask))
         {
-            if (hitCue.collider.CompareTag("playBall") && hitCue.transform.gameObject != ball)
+            if (hitCue.collider.transform != ball.transform)
                 return false;
         }
 
-        // Angle logic
-        Vector3 cueToBall = (ball.transform.position - cueBall.transform.position).normalized;
-        Vector3 ballToPocketDir = (pocket.transform.position - ball.transform.position).normalized;
-
-        float dot = Vector3.Dot(cueToBall, ballToPocketDir);
+        // Cut angle check: reject impossible angles (> 72 degrees cut)
+        float dot = Vector3.Dot(cueToGhost, ballToPocket);
         return dot > 0.3f;
     }
-
 
     Vector3 HitPoint(Vector3 ballPos, Vector3 pocketPos)
     {
         Vector3 ballToPocket = (pocketPos - ballPos).normalized;
-
-        // Ghost ball position = where cue ball center should be to send object ball into pocket
-        Vector3 ghostBallPos = ballPos - ballToPocket * (2f * ballRadius);
-
-        return ghostBallPos;
+        return ballPos - ballToPocket * (cueBallRadius + ballRadius);
     }
 
-
+    Vector3 GetFlatPosition(Vector3 pos)
+    {
+        return new Vector3(pos.x, 0f, pos.z);
+    }
     #endregion
 
     #region GameMech    
@@ -527,7 +535,7 @@ public class GameController : MonoBehaviour
         spun = false;
         hasSpin = false;
         hitPower = 0;
-        power.value = 0;
+        //power.value = 0;
 
         if (gameOver) yield break;
 
@@ -660,7 +668,7 @@ public class GameController : MonoBehaviour
     }
 
     [Range(-0.2f, 0.2f)]
-    public float visualInaccuracyOffset = 0.05f; // +ve shifts right, -ve shifts left
+    public float visualInaccuracyOffset = 0.05f;
 
     public void RenderTrajectory()
     {
@@ -678,37 +686,33 @@ public class GameController : MonoBehaviour
 
         if (Physics.SphereCast(currentPosition, cueBallRadius, currentDirection, out RaycastHit hit, maxStepDistance, collisionLayers))
         {
-            Vector3 cueBallSurfaceContactPoint = currentPosition + currentDirection * hit.distance;
-            Debug.DrawRay(hit.point, hit.point - hit.collider.transform.position, Color.red);
-            linePoints.Add(cueBallSurfaceContactPoint);
-
             GameObject hitObject = hit.collider.gameObject;
             int hitLayerValue = 1 << hitObject.layer;
 
             if ((playBallLayer.value & hitLayerValue) != 0)
             {
                 Vector3 hitBallCenter = hit.collider.transform.position;
-                Vector3 cueBallCenterAtImpact = currentPosition + currentDirection * hit.distance;
+                float combinedRadius = cueBallRadius + ballRadius;
 
-                // The correct travel direction
+                float exactContactDistance = SolveContactDistance(currentPosition, currentDirection, hitBallCenter, combinedRadius);
+                Vector3 cueBallCenterAtImpact = currentPosition + currentDirection * exactContactDistance;
+
+                linePoints.Add(cueBallCenterAtImpact);
+
                 Vector3 objectBallTravelDir = (hitBallCenter - cueBallCenterAtImpact).normalized;
 
-                // Apply visual offset (left or right)
-                Vector3 sideOffset = Vector3.Cross(Vector3.up, objectBallTravelDir).normalized;
-                Vector3 adjustedDirection = (objectBallTravelDir + sideOffset * visualInaccuracyOffset).normalized;
-
                 if (linePath != null)
-                {
                     RenderTargetBallPath(hitBallCenter, objectBallTravelDir);
-                    //RenderTargetBallPath(hit.collider.transform.position, hit.point);
-                }
 
                 if (aimDock != null)
                 {
                     aimDock.SetActive(true);
-                    Vector3 dockPos = currentPosition + currentDirection * (hit.distance - aimWidth);
-                    aimDock.transform.position = dockPos;
+                    aimDock.transform.position = currentPosition + currentDirection * (exactContactDistance - aimWidth);
                 }
+            }
+            else
+            {
+                linePoints.Add(currentPosition + currentDirection * hit.distance);
             }
         }
         else
@@ -723,15 +727,24 @@ public class GameController : MonoBehaviour
     void RenderTargetBallPath(Vector3 startPos, Vector3 direction)
     {
         if (linePath == null) return;
+
+        float pathLength = 0.2f;
+        if (Physics.SphereCast(startPos, ballRadius, direction, out RaycastHit targetHit, pathLength, collisionLayers))
+            pathLength = targetHit.distance;
+
         linePath.positionCount = 2;
         linePath.SetPosition(0, startPos);
-        linePath.SetPosition(1, startPos + direction * 0.2f);
+        linePath.SetPosition(1, startPos + direction * pathLength);
+    }
 
-        if (Physics.SphereCast(startPos, ballRadius, direction, out RaycastHit targetHit, .1f, collisionLayers))
-        {
-            Vector3 targetBallSurfaceContact = startPos + direction * .2f;
-            linePath.SetPosition(1, targetBallSurfaceContact);
-        }
+    float SolveContactDistance(Vector3 origin, Vector3 dir, Vector3 targetCenter, float combinedRadius)
+    {
+        Vector3 originToTarget = targetCenter - origin;
+        float tClosest = Vector3.Dot(originToTarget, dir);
+        float perpDistSq = originToTarget.sqrMagnitude - tClosest * tClosest;
+        float halfChordSq = combinedRadius * combinedRadius - perpDistSq;
+        if (halfChordSq < 0f) halfChordSq = 0f; // guard float error right at grazing contact
+        return tClosest - Mathf.Sqrt(halfChordSq);
     }
 
     #endregion
