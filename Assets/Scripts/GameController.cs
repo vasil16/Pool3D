@@ -50,6 +50,7 @@ public class GameController : MonoBehaviour
         
         EventHandler.AddSpin += HandleSpinControl;
         EventHandler.MoveCueBall += MoveCueBall;
+        PoolPhysicsManager.instance.OnShotFinished += ShotComplete;
     }
 
     private void OnDestroy()
@@ -57,6 +58,7 @@ public class GameController : MonoBehaviour
         
         EventHandler.AddSpin -= HandleSpinControl;
         EventHandler.MoveCueBall -= MoveCueBall;
+        PoolPhysicsManager.instance.OnShotFinished -= ShotComplete;
     }
 
     void Start()
@@ -498,6 +500,7 @@ public class GameController : MonoBehaviour
         Vector3 spinDirection = Vector3.Cross(direction, offset.normalized);
 
         ballR.AddForceAtPosition(direction * hitPower * powerMultiplier, spinMark.transform.position, ForceMode.Impulse);
+        //PoolPhysicsManager.instance.Shoot(direction, hitPower);
 
         //ballR.AddTorque(spinDirection * hitPower * powerMultiplier, ForceMode.Impulse);
         DisableLine();
@@ -527,8 +530,10 @@ public class GameController : MonoBehaviour
         //dragPower = false;
         yield return new WaitForSeconds(2f);
         yield return new WaitUntil(BallStopped);
-        yield return new WaitForSeconds(2f);
-        ballR.linearVelocity = ballR.angularVelocity = Vector3.zero;
+        //yield return new WaitUntil(()=>shotComplete==true);
+        shotComplete = false;
+        yield return new WaitForSeconds(2);
+        //ballR.linearVelocity = ballR.angularVelocity = Vector3.zero;
         spinIndicator.anchoredPosition = Vector2.zero;
         spinRect.anchoredPosition = Vector2.zero;
         spinMark.transform.localPosition = spinMarkOffset;
@@ -815,6 +820,14 @@ public class GameController : MonoBehaviour
     //        checkRoutine = null;
     //    }
     //}
+
+    public bool shotComplete;
+
+    public void ShotComplete()
+    {
+        Debug.Log("compl");
+        shotComplete = true;        
+    }
 
     public bool BallStopped()
     {

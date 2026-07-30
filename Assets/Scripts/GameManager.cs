@@ -164,7 +164,7 @@ public class GameManager : MonoBehaviour
         
         
         placeBallButton.SetActive(true);
-        
+
 
         foreach (GameObject ball in playerController.balls)
         {

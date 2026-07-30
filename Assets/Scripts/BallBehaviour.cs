@@ -1,6 +1,7 @@
 using System.Collections;
 using UnityEngine;
 
+
 public class BallBehaviour : MonoBehaviour
 {
     public enum BallType
@@ -10,6 +11,8 @@ public class BallBehaviour : MonoBehaviour
         white,
         black
     }
+
+    
 
     [SerializeField] public int ballCode;
     [SerializeField] AudioClip ballHit, cushionHit;
